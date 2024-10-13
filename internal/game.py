@@ -17,6 +17,8 @@ class Game:
     # Information relevant to the night
     # who was healed last night
     last_healed: int
+    # where Tula went last night
+    last_visited: int
     # last action of a maniac
     last_maniac: str
     # amount of players with role that already made a decision
@@ -45,9 +47,11 @@ class Game:
             "Sheriff": 1,
             "Doctor": 1,
             "Don": 2,
-            "Maniac": 1
+            "Maniac": 1,
+            "Tula": 1
         }
         self.last_healed = -1
+        self.last_visited = -1
         self.last_maniac = "maniac_kill"
         roles = ["Mafia", "Mafia", "Doctor", "Sheriff"]
         if len(players) <= 7:

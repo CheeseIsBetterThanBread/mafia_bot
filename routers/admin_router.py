@@ -90,6 +90,7 @@ async def set_night_command(message: Message) -> None:
 
         alive += f"- {player.tg_username}\n"
         still_alive.append(convert_username_to_id[player.tg_username])
+        player.alibi = False
 
     answer: str = "It's night time\n"
     for chat_id in still_alive:

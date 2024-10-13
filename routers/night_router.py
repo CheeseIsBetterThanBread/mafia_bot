@@ -1,3 +1,5 @@
+from multiprocessing.connection import Connection
+
 from aiogram import Router
 from aiogram.filters import Command
 from aiogram.types import Message
@@ -176,5 +178,50 @@ async def check_player_command(message: Message) -> None:
         await message.answer("Some random guy\n")
 
     mafia_round.state += 1
+    if mafia_round.state == mafia_round.night_actions:
+        await end_night()
+
+
+@router.message(Command('visit'))
+async def visit_command(message: Message) -> None:
+    if mafia_round.state == -1:
+        await message.answer("You have to wait for the night\n")
+        return
+
+    user: str = message.from_user.username
+    weird_man: str = message.text.split(' ')[1:][0][1:]
+
+    whore: int = mafia_round.find_user(user)
+    if whore == -1 or mafia_round.players[whore].role not in ["Tula"]:
+        await message.answer("You have no rights here\n")
+        return
+    if not mafia_round.players[whore].alive:
+        await message.answer("No one will accept your services\n")
+        return
+
+    visited: int = mafia_round.find_user(weird_man)
+    if visited == -1:
+        await message.answer("This player does not exist\n")
+        return
+    if not mafia_round.players[visited].alive:
+        await message.answer("You have pretty weird taste in clients, that is not allowed\n")
+        return
+    if visited == mafia_round.last_visited:
+        await message.answer("You can't visit player twice in a row\n")
+        return
+
+    if mafia_round.important['visit'] != -1:
+        player: str = mafia_round.players[mafia_round.important['visit']].tg_username
+        await message.answer(
+            f"You can't change your choice\n"
+            f"You've already chosen {player}\n"
+        )
+        return
+
+    mafia_round.important['visit'] = visited
+    mafia_round.last_visited = visited
+    mafia_round.players[visited].alibi = True
+    mafia_round.state += 1
+
     if mafia_round.state == mafia_round.night_actions:
         await end_night()
