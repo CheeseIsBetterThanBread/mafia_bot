@@ -11,6 +11,7 @@ dp = Dispatcher()
 dp.include_routers(main_router)
 
 commands = [
+    BotCommand(command = 'info', description = "Learn about given role"),
     BotCommand(command = 'help', description = "Get help"),
     BotCommand(command = 'register', description = "Enter a game"),
     BotCommand(command = "list", description = "See all current players"),

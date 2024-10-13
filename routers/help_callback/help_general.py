@@ -4,6 +4,14 @@ from aiogram.types import Message
 router = Router(name = __name__)
 
 
+@router.message(F.text == "info")
+async def help_info(message: Message) -> None:
+    answer: str = (
+        f"You can get information about your role\n"
+    )
+    await message.answer(answer)
+
+
 @router.message(F.text == "register")
 async def help_register(message: Message) -> None:
     answer: str = (

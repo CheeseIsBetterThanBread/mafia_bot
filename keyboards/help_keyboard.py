@@ -1,6 +1,7 @@
 from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
 
 def build_help_keyboard() -> ReplyKeyboardMarkup:
+    button_info = KeyboardButton(text = 'info')
     button_register = KeyboardButton(text = 'register')
     button_leave = KeyboardButton(text = 'leave')
     button_list = KeyboardButton(text = 'list')
