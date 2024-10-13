@@ -21,8 +21,12 @@ class Game:
     last_visited: int
     # last action of a maniac
     last_maniac: str
+    # who was muted last night
+    last_robbed: int
     # amount of players with role that already made a decision
     state: int
+    # which group was muted
+    muted_group: str
     # who was killed and healed
     important: dict[str, int] = {}
 
@@ -49,7 +53,8 @@ class Game:
             "Don": 2,
             "Maniac": 1,
             "Tula": 1,
-            "Immortal": 0
+            "Immortal": 0,
+            "Thief": 1
         }
         self.last_healed = -1
         self.last_visited = -1
@@ -78,3 +83,24 @@ class Game:
                 return index
 
         return -1
+
+
+    def find_role(self, role: str) -> list[int]:
+        answer: list[int] = []
+        for index in range(len(self.players)):
+            player: Player = self.players[index]
+            if not player.alive:
+                continue
+
+            if player.role == role or (player.role == "Don" and role == "Mafia"):
+                answer.append(index)
+
+        return answer
+
+
+    def find_alive(self) -> list[str]:
+        answer: list[str] = []
+        for player in self.players:
+            if player.alive:
+                answer.append(player.tg_username)
+        return answer

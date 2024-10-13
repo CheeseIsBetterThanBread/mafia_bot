@@ -40,12 +40,7 @@ async def allow_voting_command(message: Message) -> None:
         return
 
     mafia_round.allowed_to_vote = True
-    still_alive: list[int] = []
-    for player in mafia_round.players:
-        if not player.alive:
-            continue
-
-        still_alive.append(convert_username_to_id[player.tg_username])
+    still_alive: list[int] = [convert_username_to_id[item] for item in mafia_round.find_alive()]
 
     answer: str = "You can vote now\n"
     for chat_id in still_alive:
@@ -91,6 +86,7 @@ async def set_night_command(message: Message) -> None:
         alive += f"- {player.tg_username}\n"
         still_alive.append(convert_username_to_id[player.tg_username])
         player.alibi = False
+        player.muted = False
 
     answer: str = "It's night time\n"
     for chat_id in still_alive:

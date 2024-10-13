@@ -18,11 +18,14 @@ async def reset() -> None:
     mafia_round.state = -1
     mafia_round.allowed_to_vote = False
 
+    mafia_round.important['mute'] = -1
     mafia_round.important['visit'] = -1
     mafia_round.important['kill'] = -1
     mafia_round.important['heal'] = -1
     mafia_round.important['maniac_kill'] = -1
     mafia_round.important['maniac_heal'] = -1
+    mafia_round.important['check'] = -1
+    mafia_round.important['don_check'] = -1
 
     usernames: list[str] = []
     for user in mafia_round.players:
@@ -53,13 +56,14 @@ async def end_night() -> None:
                        mafia_round.important["maniac_kill"]]
     healed: list[int] = [mafia_round.important["heal"],
                          mafia_round.important["maniac_heal"]]
-    killed: list[int] = [item for item in shot if item != -1 and item not in healed]
+    killed: list[int] = [item for item in shot if item >= 0 and item not in healed]
 
     client: int = mafia_round.important['visit']
     if whore != -1:
         if whore not in shot:
-            pass
-        else:
+            if client in killed:
+                killed.remove(client)
+        elif client >= 0:
             if client not in killed:
                 killed.append(client)
 
@@ -81,6 +85,12 @@ async def end_night() -> None:
             mafia_round.night_actions -= mafia_round.actions[lost_role]
 
             answer += f"{mafia_round.players[corpse].tg_username} did not survive\n"
+
+    muted: str = ""
+    for user in mafia_round.players:
+        if user.alive and user.muted:
+            muted += f"{user.tg_username} was muted\n"
+    answer = muted + answer
 
     for chat_id in still_alive:
         await bot.send_message(chat_id = chat_id, text = answer)
