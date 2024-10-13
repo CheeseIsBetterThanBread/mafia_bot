@@ -13,7 +13,7 @@ dp.include_routers(main_router)
 commands = [
     BotCommand(command = 'info', description = "Learn about given role"),
     BotCommand(command = 'help', description = "Get help"),
-    BotCommand(command = 'register', description = "Enter a game"),
+    BotCommand(command = 'start', description = "Enter a game"),
     BotCommand(command = "list", description = "See all current players"),
 
     BotCommand(command = "put_up", description = "Put someone up for a vote"),

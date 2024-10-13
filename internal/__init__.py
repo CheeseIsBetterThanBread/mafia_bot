@@ -5,8 +5,10 @@ from aiogram import Bot
 from internal.game import Game
 from internal.player import Player
 
-API_TOKEN: str = environ['MAFIA_API_TOKEN']
-ADMIN: str = environ['MAFIA_ADMIN']
+#API_TOKEN: str = environ['MAFIA_API_TOKEN']
+API_TOKEN: str = '7618219802:AAExKDStlM520bT6v7FqAvU9-MzCmale7pQ'
+#ADMIN: str = environ['MAFIA_ADMIN']
+ADMIN: str = 'not_bread'
 
 bot: Bot = Bot(token = API_TOKEN)
 
@@ -174,12 +176,12 @@ async def check_for_endgame() -> None:
     counter: int = 0
     maniac_alive: bool = False
 
-    still_alive: list[int] = []
+    all_players: list[int] = []
     for user in mafia_round.players:
         if not user.alive:
             continue
 
-        still_alive.append(convert_username_to_id[user.tg_username])
+        all_players.append(convert_username_to_id[user.tg_username])
         counter += 1
         if user.role in ["Mafia", "Don"]:
             mafia_counter += 1
@@ -195,5 +197,5 @@ async def check_for_endgame() -> None:
         answer += "Maniac wins\n"
 
     if len(answer) != 0:
-        for chat_id in still_alive:
+        for chat_id in all_players:
             await bot.send_message(chat_id = chat_id, text = answer)

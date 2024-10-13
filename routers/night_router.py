@@ -253,12 +253,16 @@ async def check_player_command(message: Message) -> None:
 
     if mafia_round.players[checked].role in ["Mafia", "Don"] and role == "Sheriff":
         await message.answer("That's mafia\n")
+        mafia_round.important['check'] = checked
     elif role == "Sheriff":
         await message.answer("He's innocent\n")
+        mafia_round.important['check'] = checked
     elif mafia_round.players[checked].role == "Sheriff":
         await message.answer("That's sheriff\n")
+        mafia_round.important['don_check'] = checked
     else:
         await message.answer("Some random guy\n")
+        mafia_round.important['don_check'] = checked
 
     mafia_round.state += 1
     await message.answer(f"You've checked {suspicious_man}\n")
@@ -334,10 +338,11 @@ async def mute_command(message: Message) -> None:
         await message.answer("You can't mute one player for two nights in a row\n")
         return
 
-    if await already_muted(message, 'mute'):
+    if await already_chosen(message, 'mute'):
         return
 
     mafia_round.important['mute'] = robbed
+    mafia_round.last_robbed = robbed
     mafia_round.players[robbed].muted = True
     mafia_round.muted_group = mafia_round.players[robbed].role
     mafia_round.state += 1
