@@ -5,16 +5,20 @@ from player import Player
 
 class Game:
     # General information about game
-    # amount of players that are not peaceful
-    not_trivial: int
+    # amount of actions that need to happen during the night
+    night_actions: int
     # roles in the game
     roles: list[str] = []
     # list of players
     players: list[Player] = []
+    # amount of actions per player
+    actions: dict[str, int] = {}
 
     # Information relevant to the night
     # who was healed last night
     last_healed: int
+    # last action of a maniac
+    last_maniac: str
     # amount of players with role that already made a decision
     state: int
     # who was killed and healed
@@ -35,14 +39,22 @@ class Game:
 
 
     def set_up(self, players: list[str]) -> None:
+        self.actions: dict[str, int] = {
+            "Peace": 0,
+            "Mafia": 1,
+            "Sheriff": 1,
+            "Doctor": 1,
+            "Don": 2,
+            "Maniac": 1
+        }
         self.last_healed = -1
-        self.not_trivial = 4
+        self.last_maniac = "maniac_kill"
         roles = ["Mafia", "Mafia", "Doctor", "Sheriff"]
         if len(players) <= 7:
             for i in range(len(players) - 4):
                 roles.append("Peace")
         else: # count == 8
-            self.not_trivial += 1
+            self.night_actions += 1
             for i in range(len(players) - 5):
                 roles.append("Peace")
             roles.append("Maniac")
@@ -52,6 +64,7 @@ class Game:
 
         for index in range(len(players)):
             self.players.append(Player(players[index], roles[index]))
+            self.night_actions += self.actions[roles[index]]
 
 
     def find_user(self, username: str) -> int:

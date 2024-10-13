@@ -20,6 +20,8 @@ async def reset() -> None:
 
     mafia_round.important['kill'] = -1
     mafia_round.important['heal'] = -1
+    mafia_round.important['maniac_kill'] = -1
+    mafia_round.important['maniac_heal'] = -1
 
     usernames: list[str] = []
     for user in mafia_round.players:
@@ -38,16 +40,22 @@ async def end_night() -> None:
 
         still_alive.append(convert_username_to_id[user.tg_username])
 
-    answer: str
-    killed: int = mafia_round.important["kill"]
-    if mafia_round.important["kill"] == mafia_round.important["heal"]:
-        answer = f"Everyone survived this night\n"
+    answer: str = ""
+    shot: list[int] = [mafia_round.important["kill"],
+                       mafia_round.important["maniac_kill"]]
+    healed: list[int] = [mafia_round.important["heal"],
+                         mafia_round.important["maniac_heal"]]
+    killed: list[int] = [item for item in shot if item != -1 and item not in healed]
+    if len(killed) == 0:
+        answer += f"Everyone survived this night\n"
     else:
-        mafia_round.players[killed].alive = False
-        if mafia_round.players[killed].role != "Peace":
-            mafia_round.not_trivial -= 1
+        for corpse in killed:
+            mafia_round.players[corpse].alive = False
 
-        answer = f"{mafia_round.players[killed].tg_username} did not survive\n"
+            lost_role: str = mafia_round.players[corpse].role
+            mafia_round.night_actions -= mafia_round.actions[lost_role]
+
+            answer += f"{mafia_round.players[corpse].tg_username} did not survive\n"
 
     for chat_id in still_alive:
         await bot.send_message(chat_id = chat_id, text = answer)
@@ -96,8 +104,9 @@ async def kick_players() -> None:
     for index in mafia_round.kicked:
         answer += f"- {mafia_round.players[index].tg_username}\n"
         mafia_round.players[index].alive = False
-        if mafia_round.players[index].role != "Peace":
-            mafia_round.not_trivial -= 1
+
+        lost_role: str = mafia_round.players[index].role
+        mafia_round.night_actions -= mafia_round.actions[lost_role]
 
     for chat_id in still_alive:
         await bot.send_message(chat_id = chat_id, text = answer)
@@ -122,6 +131,8 @@ async def forgive_players() -> None:
 async def check_for_endgame() -> None:
     mafia_counter: int = 0
     counter: int = 0
+    maniac_alive: bool = False
+
     still_alive: list[int] = []
     for user in mafia_round.players:
         if not user.alive:
@@ -129,9 +140,19 @@ async def check_for_endgame() -> None:
 
         still_alive.append(convert_username_to_id[user.tg_username])
         counter += 1
-        if user.role == "Mafia":
+        if user.role in ["Mafia", "Don"]:
             mafia_counter += 1
+        elif user.role == "Maniac":
+            maniac_alive = True
 
-    if mafia_counter * 2 >= counter:
+    answer: str = ""
+    if mafia_counter * 2 >= counter and not maniac_alive:
+        answer += "Mafia won this round\n"
+    elif not maniac_alive and mafia_counter == 0:
+        answer += "Innocent people win\n"
+    elif maniac_alive and counter == 2:
+        answer += "Maniac wins\n"
+
+    if len(answer) != 0:
         for chat_id in still_alive:
-            await bot.send_message(chat_id = chat_id, text = "Mafia won this round\n")
+            await bot.send_message(chat_id = chat_id, text = answer)
