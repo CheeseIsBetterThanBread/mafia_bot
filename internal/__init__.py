@@ -53,6 +53,7 @@ async def end_night() -> None:
         await bot.send_message(chat_id = chat_id, text = answer)
 
     await reset()
+    await check_for_endgame()
 
 
 async def count_votes() -> None:
@@ -101,6 +102,8 @@ async def kick_players() -> None:
     for chat_id in still_alive:
         await bot.send_message(chat_id = chat_id, text = answer)
 
+    await check_for_endgame()
+
 
 async def forgive_players() -> None:
     still_alive: list[int] = []
@@ -114,3 +117,21 @@ async def forgive_players() -> None:
 
     for chat_id in still_alive:
         await bot.send_message(chat_id = chat_id, text = answer)
+
+
+async def check_for_endgame() -> None:
+    mafia_counter: int = 0
+    counter: int = 0
+    still_alive: list[int] = []
+    for user in mafia_round.players:
+        if not user.alive:
+            continue
+
+        still_alive.append(convert_username_to_id[user.tg_username])
+        counter += 1
+        if user.role == "Mafia":
+            mafia_counter += 1
+
+    if mafia_counter * 2 >= counter:
+        for chat_id in still_alive:
+            await bot.send_message(chat_id = chat_id, text = "Mafia won this round\n")
