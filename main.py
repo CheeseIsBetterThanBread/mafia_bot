@@ -19,9 +19,11 @@ commands = [
     BotCommand(command = "vote", description = "Vote for person"),
     BotCommand(command = "display", description = "See players that can be voted for"),
 
-    BotCommand(command = "kill", description = "Mafia's night action"),
-    BotCommand(command = "heal", description = "Doctor's night action"),
-    BotCommand(command = "check", description = "Sheriff's night action"),
+    BotCommand(command = "kill", description = "Mafia's/Maniac's night action"),
+    BotCommand(command = "heal", description = "Doctor's/Maniac's night action"),
+    BotCommand(command = "check", description = "Sheriff's/Don's night action"),
+    BotCommand(command = "visit", description = "Tula's night action"),
+    BotCommand(command = "mute", description = "Thief's night action"),
 
     BotCommand(command = 'leave', description = "Leave a game")
 ]

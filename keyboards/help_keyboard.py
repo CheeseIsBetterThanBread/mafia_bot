@@ -18,9 +18,13 @@ def build_help_keyboard() -> ReplyKeyboardMarkup:
     button_kill = KeyboardButton(text = 'kill')
     button_heal = KeyboardButton(text = 'heal')
     button_check = KeyboardButton(text = 'check')
+    button_visit = KeyboardButton(text = 'visit')
+    button_mute = KeyboardButton(text = 'mute')
     row_night: list[KeyboardButton] = [button_kill,
                                        button_heal,
-                                       button_check]
+                                       button_check,
+                                       button_visit,
+                                       button_mute]
 
     rows: list[list[KeyboardButton]] = [row_general, row_day, row_night]
     markup = ReplyKeyboardMarkup(keyboard = rows, resize_keyboard = True,
