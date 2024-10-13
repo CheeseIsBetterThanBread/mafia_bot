@@ -12,6 +12,10 @@ router = Router(name = __name__)
 
 @router.message(Command('put_up'))
 async def put_up_player_command(message: Message) -> None:
+    if mafia_round.allowed_to_vote:
+        await message.answer("You can't put up a player anymore")
+        return
+
     user: str = message.from_user.username
     victim: str = message.text.split(' ')[1:][0][1:]
 
@@ -43,7 +47,7 @@ async def display_victims_command(message: Message) -> None:
         return
 
     victims: list[int] = []
-    for _, victim_index in mafia_round.for_vote:
+    for _, victim_index in mafia_round.for_vote.items():
         if victim_index == -1:
             continue
 
@@ -76,7 +80,7 @@ async def vote_player(message: Message) -> None:
         return
 
     victims: set[int] = set()
-    for person, victim_index in mafia_round.for_vote:
+    for person, victim_index in mafia_round.for_vote.items():
         victims.add(victim_index)
 
     victim_index: int = mafia_round.find_user(victim)
@@ -88,7 +92,7 @@ async def vote_player(message: Message) -> None:
     await message.answer(f"You've voted for {victim}\n")
 
     counter: int = 0
-    for _, victim_index in mafia_round.voted:
+    for _, victim_index in mafia_round.voted.items():
         if victim_index != -1:
             counter += 1
 

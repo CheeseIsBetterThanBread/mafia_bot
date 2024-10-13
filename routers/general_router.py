@@ -23,6 +23,17 @@ async def start_command(message: Message) -> None:
 
     await message.answer(f"Hi, {user}, you can see my commands with /help\n")
 
+    if user in candidates:
+        await message.answer("You've already registered\n")
+        return
+
+    candidates.append(user)
+    await message.answer("You've registered\n")
+
+    notification: str = f"Player {user} joined the game\n"
+    await bot.send_message(chat_id = convert_username_to_id[ADMIN],
+                           text = notification)
+
 
 @router.message(Command('info'))
 async def info_command(message: Message) -> None:
@@ -103,7 +114,6 @@ async def info_command(message: Message) -> None:
 @router.message(Command('register'))
 async def register_command(message: Message) -> None:
     user: str = message.from_user.username
-    user_id: int = message.from_user.id
 
     if user in candidates:
         await message.answer("You've already registered\n")

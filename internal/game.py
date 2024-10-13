@@ -1,6 +1,6 @@
-from random import shuffle
+from random import randint, shuffle
 
-from player import Player
+from internal.player import Player
 
 
 class Game:
@@ -56,25 +56,51 @@ class Game:
             "Immortal": 0,
             "Thief": 1
         }
+
+        self.night_actions = 0
         self.last_healed = -1
         self.last_visited = -1
+        self.last_robbed = -1
         self.last_maniac = "maniac_kill"
-        roles = ["Mafia", "Mafia", "Doctor", "Sheriff"]
-        if len(players) <= 7:
-            for i in range(len(players) - 4):
-                roles.append("Peace")
-        else: # count == 8
-            self.night_actions += 1
-            for i in range(len(players) - 5):
-                roles.append("Peace")
-            roles.append("Maniac")
+
+        if len(players) == 5:
+            self.roles = ["Thief", "Tula", "Maniac", "Immortal", "Mafia"]
+
+        elif len(players) == 6:
+            roles_first = ["Mafia", "Mafia", "Doctor", "Sheriff", "Peace", "Peace"]
+            roles_second = ["Mafia", "Maniac", "Peace", "Peace", "Peace", "Peace"]
+            roles = [roles_first, roles_second]
+            index: int = randint(0, len(roles) - 1)
+            self.roles = roles[index]
+
+        elif len(players) == 7:
+            roles_first = ["Don", "Mafia", "Tula", "Sheriff", "Peace", "Peace", "Peace"]
+            roles_second = ["Mafia", "Maniac", "Thief", "Peace", "Peace", "Peace", "Peace"]
+            roles_third = ["Don", "Mafia", "Sheriff", "Immortal", "Peace", "Peace", "Peace"]
+            roles = [roles_first, roles_second, roles_third]
+            index: int = randint(0, len(roles) - 1)
+            self.roles = roles[index]
+
+        elif len(players) == 8:
+            roles_first = ["Mafia", "Mafia", "Thief", "Peace", "Peace", "Peace", "Peace", "Peace"]
+            roles_second = ["Don", "Mafia", "Sheriff", "Maniac", "Doctor", "Peace", "Peace", "Peace"]
+            roles_third = ["Don", "Mafia", "Sheriff", "Maniac", "Tula", "Peace", "Peace", "Peace"]
+            roles_fourth = ["Don", "Mafia", "Sheriff", "Immortal", "Peace", "Peace", "Peace", "Peace"]
+            roles = [roles_first, roles_second, roles_third, roles_fourth]
+            index: int = randint(0, len(roles) - 1)
+            self.roles = roles[index]
+
+        elif len(players) <= 10:
+            self.roles = ["Don", "Mafia", "Mafia", "Sheriff", "Doctor", "Immortal", "Maniac"]
+            for _ in range(len(players) - 7):
+                self.roles.append("Peace")
 
         for _ in range(len(players) // 2):
-            shuffle(roles)
+            shuffle(self.roles)
 
         for index in range(len(players)):
-            self.players.append(Player(players[index], roles[index]))
-            self.night_actions += self.actions[roles[index]]
+            self.players.append(Player(players[index], self.roles[index]))
+            self.night_actions += self.actions[self.roles[index]]
 
 
     def find_user(self, username: str) -> int:

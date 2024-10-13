@@ -101,7 +101,7 @@ async def end_night() -> None:
 
 async def count_votes() -> None:
     victims: list[int] = []
-    for _, victim_index in mafia_round.voted:
+    for _, victim_index in mafia_round.voted.items():
         victims.append(victim_index)
 
     unique: set[int] = set(victims)

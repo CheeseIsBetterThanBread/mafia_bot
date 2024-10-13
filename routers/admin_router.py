@@ -23,13 +23,19 @@ async def start_game_command(message: Message) -> None:
         await message.answer("Permission denied\n")
         return
 
-    mafia_round.set_up(candidates)
+    tmp = set(candidates)
+    mafia_round.set_up(list(tmp))
     candidates.clear()
     await reset()
+
+    roles: str = "In this game there are these roles:\n"
+    for role in sorted(mafia_round.roles):
+        roles += f"- {role}\n"
 
     for player in mafia_round.players:
         chat_id: int = convert_username_to_id[player.tg_username]
         await bot.send_message(chat_id = chat_id, text = player.role)
+        await bot.send_message(chat_id = chat_id, text = roles)
 
 
 @router.message(Command('allow'))
