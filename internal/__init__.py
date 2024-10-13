@@ -58,11 +58,11 @@ async def end_night() -> None:
                        mafia_round.important["maniac_kill"]]
     healed: list[int] = [mafia_round.important["heal"],
                          mafia_round.important["maniac_heal"]]
-    killed: list[int] = [item for item in shot if item >= 0 and item not in healed]
+    killed: list[int] = list(set(item for item in shot if item >= 0 and item not in healed))
 
     client: int = mafia_round.important['visit']
     if whore != -1:
-        if whore not in shot:
+        if whore not in shot or client == whore:
             if client in killed:
                 killed.remove(client)
         elif client >= 0:
@@ -178,10 +178,10 @@ async def check_for_endgame() -> None:
 
     all_players: list[int] = []
     for user in mafia_round.players:
+        all_players.append(convert_username_to_id[user.tg_username])
         if not user.alive:
             continue
 
-        all_players.append(convert_username_to_id[user.tg_username])
         counter += 1
         if user.role in ["Mafia", "Don"]:
             mafia_counter += 1

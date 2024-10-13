@@ -64,7 +64,7 @@ class Game:
         self.last_maniac = "maniac_kill"
 
         if len(players) == 5:
-            self.roles = ["Thief", "Tula", "Maniac", "Sheriff", "Don"]
+            self.roles = ["Thief", "Tula", "Maniac", "Immortal", "Don"]
 
         elif len(players) == 6:
             roles_first = ["Mafia", "Mafia", "Doctor", "Sheriff", "Peace", "Peace"]
