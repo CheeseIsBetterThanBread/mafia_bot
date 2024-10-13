@@ -35,6 +35,7 @@ async def reset() -> None:
 
 async def end_night() -> None:
     still_alive: list[int] = []
+    immortal: int = -1
     whore: int = -1
     for index in range(len(mafia_round.players)):
         user: Player = mafia_round.players[index]
@@ -44,6 +45,8 @@ async def end_night() -> None:
         still_alive.append(convert_username_to_id[user.tg_username])
         if user.role == "Tula":
             whore = index
+        elif user.role == "Immortal":
+            immortal = index
 
     answer: str = ""
     shot: list[int] = [mafia_round.important["kill"],
@@ -60,10 +63,13 @@ async def end_night() -> None:
             if client not in killed:
                 killed.append(client)
 
-            if client in healed:
+            if client in healed and client in killed:
                 killed.remove(client)
-            if whore in healed:
+            if whore in healed and whore in killed:
                 killed.remove(whore)
+
+    if immortal in killed:
+        killed.remove(immortal)
 
     if len(killed) == 0:
         answer += f"Everyone survived this night\n"

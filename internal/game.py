@@ -48,7 +48,8 @@ class Game:
             "Doctor": 1,
             "Don": 2,
             "Maniac": 1,
-            "Tula": 1
+            "Tula": 1,
+            "Immortal": 0
         }
         self.last_healed = -1
         self.last_visited = -1
