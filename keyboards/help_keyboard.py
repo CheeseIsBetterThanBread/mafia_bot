@@ -2,11 +2,11 @@ from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
 
 def build_help_keyboard() -> ReplyKeyboardMarkup:
     button_info = KeyboardButton(text = 'info')
-    button_start = KeyboardButton(text = 'start')
+    button_register = KeyboardButton(text = 'register')
     button_leave = KeyboardButton(text = 'leave')
     button_list = KeyboardButton(text = 'list')
     row_general: list[KeyboardButton] = [button_info,
-                                         button_start,
+                                         button_register,
                                          button_leave,
                                          button_list]
 

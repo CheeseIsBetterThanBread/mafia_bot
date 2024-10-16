@@ -12,7 +12,7 @@ async def help_info(message: Message) -> None:
     await message.answer(answer)
 
 
-@router.message(F.text == "start")
+@router.message(F.text == "register")
 async def help_register(message: Message) -> None:
     answer: str = (
         f"You can register into a game\n"

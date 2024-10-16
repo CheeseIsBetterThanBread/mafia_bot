@@ -23,6 +23,10 @@ async def start_command(message: Message) -> None:
 
     await message.answer(f"Hi, {user}, you can see my commands with /help\n")
 
+
+@router.message(Command('register'))
+async def register_command(message: Message) -> None:
+    user: str = message.from_user.username
     if user in candidates:
         await message.answer("You've already registered\n")
         return
