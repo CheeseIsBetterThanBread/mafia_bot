@@ -1,2 +1,5 @@
 .venv/
 .idea/
+**/__pycache__/
+
+storage.txt
