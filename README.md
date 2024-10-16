@@ -12,8 +12,8 @@
 
 Не знаю, как это делается на Windows, но на Linux достаточно прописать
 ```bash
-export MAFIA_API_TOKEN="<your api token>"
-export MAFIA_ADMIN="<your tg username>"
+export TELEGRAM_MAFIA_API_TOKEN="<your api token>"
+export TELEGRAM_ADMIN="<your tg username>"
 ```
 
 *В целом можно обойтись и без них, 
