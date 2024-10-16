@@ -101,13 +101,32 @@ async def end_night() -> None:
 
 
 async def count_votes() -> None:
+    vote_distribution: dict[str, list[str]] = {}
     victims: list[int] = []
-    for _, victim_index in mafia_round.voted.items():
+    for name, victim_index in mafia_round.voted.items():
         victims.append(victim_index)
+        vote_distribution[mafia_round.players[victim_index].tg_username].append(name)
+
+    general_response: str = "There are results of your voting:\n\n"
+    for victim, enemies in vote_distribution.items():
+        general_response += f"- for {victim} voted:\n"
+        for enemy in enemies:
+            general_response += f"-- {enemy}\n"
+        general_response += '\n'
 
     unique: set[int] = set(victims)
     max_count: int = max(victims.count(item) for item in unique)
     mafia_round.kicked = [item for item in unique if victims.count(item) == max_count]
+
+    still_alive: list[int] = []
+    for user in mafia_round.players:
+        if not user.alive:
+            continue
+
+        still_alive.append(convert_username_to_id[user.tg_username])
+
+    for chat_id in still_alive:
+        await bot.send_message(chat_id = chat_id, text = general_response)
 
     if len(mafia_round.kicked) == 1:
         await kick_players()
@@ -116,13 +135,6 @@ async def count_votes() -> None:
     answer: str = "There is a balance between players:\n"
     for index in mafia_round.kicked:
         answer += f"- {mafia_round.players[index].tg_username}\n"
-
-    still_alive: list[int] = []
-    for user in mafia_round.players:
-        if not user.alive:
-            continue
-
-        still_alive.append(convert_username_to_id[user.tg_username])
 
     for chat_id in still_alive:
         await bot.send_message(chat_id = chat_id, text = answer)
