@@ -5,10 +5,9 @@ from aiogram import Bot
 from internal.game import Game
 from internal.player import Player
 
-#API_TOKEN: str = environ['MAFIA_API_TOKEN']
-API_TOKEN: str = '7618219802:AAExKDStlM520bT6v7FqAvU9-MzCmale7pQ'
-#ADMIN: str = environ['MAFIA_ADMIN']
-ADMIN: str = 'not_bread'
+API_TOKEN: str = environ['TELEGRAM_MAFIA_API_TOKEN']
+ADMIN: str = environ['TELEGRAM_ADMIN']
+STORAGE: str = "/home/cheese/PycharmProjects/mafia_bot/storage.txt"
 
 bot: Bot = Bot(token = API_TOKEN)
 

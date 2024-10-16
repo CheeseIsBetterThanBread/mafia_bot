@@ -10,11 +10,45 @@ from internal import (
     forgive_players,
     kick_players,
     mafia_round,
-    reset
+    reset,
+    STORAGE
 )
 from internal.player import Player
 
 router = Router(name = __name__)
+
+
+async def import_names(path: str) -> None:
+    with open(path, 'r') as file:
+        for line in file:
+            key, value = line.strip().split(":")
+            convert_username_to_id[key] = int(value)
+
+
+async def export_names(path: str) -> None:
+    with open(path, 'w') as file:
+        for key, value in convert_username_to_id.items():
+            file.write(f"{key}:{value}\n")
+
+
+@router.message(Command('extract'))
+async def extract_command(message: Message) -> None:
+    user: str = message.from_user.username
+    if user != ADMIN:
+        await message.answer("Permission denied\n")
+        return
+
+    await import_names(STORAGE)
+
+
+@router.message(Command('store'))
+async def store_command(message: Message) -> None:
+    user: str = message.from_user.username
+    if user != ADMIN:
+        await message.answer("Permission denied\n")
+        return
+
+    await export_names(STORAGE)
 
 
 @router.message(Command('start_game'))
