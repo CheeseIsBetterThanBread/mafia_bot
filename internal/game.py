@@ -5,6 +5,8 @@ from internal.player import Player
 
 class Game:
     # General information about game
+    # has it started
+    is_on: bool
     # amount of actions that need to happen during the night
     night_actions: int
     # roles in the game
@@ -41,7 +43,7 @@ class Game:
     kicked: list[int] = []
 
     def __init__(self):
-        pass
+        self.is_on = False
 
 
     def set_up(self, players: list[str]) -> None:
@@ -57,6 +59,7 @@ class Game:
             "Thief": 1
         }
 
+        self.is_on = True
         self.night_actions = 0
         self.last_healed = -1
         self.last_visited = -1

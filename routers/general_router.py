@@ -1,5 +1,3 @@
-from pyexpat.errors import messages
-
 from aiogram import Router
 from aiogram.filters import Command
 from aiogram.types import Message
@@ -26,6 +24,10 @@ async def start_command(message: Message) -> None:
 
 @router.message(Command('register'))
 async def register_command(message: Message) -> None:
+    if mafia_round.is_on:
+        await message.answer("You're too late\n")
+        return
+
     user: str = message.from_user.username
     if user in candidates:
         await message.answer("You've already registered\n")
@@ -115,26 +117,10 @@ async def info_command(message: Message) -> None:
         )
     await message.answer(answer)
 
-@router.message(Command('register'))
-async def register_command(message: Message) -> None:
-    user: str = message.from_user.username
-
-    if user in candidates:
-        await message.answer("You've already registered\n")
-        return
-
-    candidates.append(user)
-    await message.answer("You've registered\n")
-
-    notification: str = f"Player {user} joined the game\n"
-    await bot.send_message(chat_id = convert_username_to_id[ADMIN],
-                           text = notification)
-
-
 @router.message(Command('leave'))
 async def leave_command(message: Message) -> None:
-    if len(candidates) == 0:
-        await message.answer("You can't leave now\n")
+    if mafia_round.is_on:
+        await message.answer("You can't leave, we've already started\n")
         return
 
     user: str = message.from_user.username

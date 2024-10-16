@@ -196,5 +196,6 @@ async def check_for_endgame() -> None:
         answer += "Maniac wins\n"
 
     if len(answer) != 0:
+        mafia_round.is_on = False
         for chat_id in all_players:
             await bot.send_message(chat_id = chat_id, text = answer)
