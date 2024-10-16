@@ -3,7 +3,7 @@ import asyncio
 from aiogram import Dispatcher
 from aiogram.types import BotCommand
 
-from internal import bot
+from internal import bot, import_names, STORAGE
 from routers import router as main_router
 
 
@@ -31,6 +31,7 @@ commands = [
 
 
 async def main() -> None:
+    await import_names(STORAGE)
     await bot.set_my_commands(commands)
     await dp.start_polling(bot)
 

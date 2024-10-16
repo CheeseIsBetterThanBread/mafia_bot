@@ -8,6 +8,7 @@ from internal import (
     candidates,
     convert_username_to_id,
     forgive_players,
+    import_names,
     kick_players,
     mafia_round,
     reset,

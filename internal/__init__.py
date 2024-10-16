@@ -211,3 +211,10 @@ async def check_for_endgame() -> None:
         mafia_round.is_on = False
         for chat_id in all_players:
             await bot.send_message(chat_id = chat_id, text = answer)
+
+
+async def import_names(path: str) -> None:
+    with open(path, 'r') as file:
+        for line in file:
+            key, value = line.strip().split(":")
+            convert_username_to_id[key] = int(value)
