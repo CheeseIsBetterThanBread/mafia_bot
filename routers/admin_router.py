@@ -150,3 +150,22 @@ async def set_night_command(message: Message) -> None:
 
         await bot.send_message(chat_id = convert_username_to_id[player.tg_username],
                                text = alive)
+
+
+@router.message(Command('abort'))
+async def abort_command(message: Message) -> None:
+    user: str = message.from_user.username
+    if user != ADMIN:
+        await message.answer("Permission denied\n")
+        return
+
+    if not mafia_round.is_on:
+        await message.answer("Game is already over\n")
+        return
+
+    mafia_round.is_on = False
+
+    notification: str = "Game has been aborted\n"
+    for player in mafia_round.players:
+        chat_id: int = convert_username_to_id[player.tg_username]
+        await bot.send_message(chat_id = chat_id, text = notification)
