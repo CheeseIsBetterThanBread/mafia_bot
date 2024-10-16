@@ -98,7 +98,8 @@ async def kill_player_command(message: Message) -> None:
         if mafia_round.state == mafia_round.night_actions:
             await end_night()
         return
-    elif len(thieves) != 0 and role in ["Don", "Mafia"] and mafia_round.muted_group == "Mafia":
+    elif (len(thieves) != 0 and role in ["Don", "Mafia"] and
+          mafia_round.muted_group in ["Don", "Mafia"]):
         if await already_muted(message, 'kill'):
             return
 

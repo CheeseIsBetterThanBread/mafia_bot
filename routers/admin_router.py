@@ -12,6 +12,7 @@ from internal import (
     mafia_round,
     reset
 )
+from internal.player import Player
 
 router = Router(name = __name__)
 
@@ -28,6 +29,15 @@ async def start_game_command(message: Message) -> None:
     candidates.clear()
     await reset()
 
+    mafia_team: list[int] = mafia_round.find_role("Mafia")
+    mafia_info: str = "These guys are mafia:\n"
+    for index in mafia_team:
+        killer: Player = mafia_round.players[index]
+        if killer.role == "Don":
+            mafia_info += f"- {killer.tg_username}, Don\n"
+        else:
+            mafia_info += f"- {killer.tg_username}\n"
+
     roles: str = "In this game there are these roles:\n"
     for role in sorted(mafia_round.roles):
         roles += f"- {role}\n"
@@ -36,6 +46,8 @@ async def start_game_command(message: Message) -> None:
         chat_id: int = convert_username_to_id[player.tg_username]
         await bot.send_message(chat_id = chat_id, text = player.role)
         await bot.send_message(chat_id = chat_id, text = roles)
+        if player.role in ["Don", "Mafia"]:
+            await bot.send_message(chat_id = chat_id, text = mafia_info)
 
 
 @router.message(Command('allow'))
