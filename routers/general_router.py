@@ -157,6 +157,38 @@ async def help_command(message: Message) -> None:
 
 @router.message()
 async def default_response(message: Message) -> None:
+    user: str = message.from_user.username
+    player_index: int = mafia_round.find_user(user)
+    is_mafia: bool = (player_index != -1 and
+                      mafia_round.players[player_index].role in ["Don", "Mafia"])
+    is_alive: bool = (player_index != -1 and
+                      mafia_round.players[player_index].alive)
+    if mafia_round.is_on and is_mafia:
+        if not is_alive:
+            answer: str = (
+                f"Mafia can't speak with dead people\n"
+            )
+            await message.answer(answer)
+            return
+
+        if mafia_round.state < 0:
+            answer: str = (
+                "Shh, people in town might hear you\n"
+                "Wait for the night\n"
+            )
+            await message.answer(answer)
+            return
+
+        answer: str = f"From {user}:\n{message.text}"
+        mafia_team: list[int] = mafia_round.find_role("Mafia")
+        this_id: int = message.from_user.id
+        for chat_id in mafia_team:
+            if chat_id == this_id:
+                continue
+
+            await bot.send_message(chat_id = chat_id, text = answer)
+        return
+
     answer: str = (
         f"Sorry, I don't know this command\n"
         f"For more information check out /help\n"
