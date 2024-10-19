@@ -246,6 +246,7 @@ async def check_player_command(message: Message) -> None:
         return
 
     role: str = mafia_round.players[checker].role
+    # erase last argument if sheriff can't check dead people
     checked: int = await find_recipient(message, suspicious_man, role == "Sheriff")
     if checked == -1:
         return
