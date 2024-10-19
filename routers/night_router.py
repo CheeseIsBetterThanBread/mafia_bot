@@ -26,12 +26,15 @@ async def check_for_access(message: Message, available_roles: list[str]) -> int:
     return index
 
 
-async def find_recipient(message: Message, user: str) -> int:
+async def find_recipient(message: Message, user: str, is_sheriff: bool = False) -> int:
     recipient: int = mafia_round.find_user(user)
 
     if recipient == -1:
         await message.answer("This player does not exist\n")
         return -1
+
+    if is_sheriff:
+        return recipient
 
     if not mafia_round.players[recipient].alive:
         await message.answer("Player has to be alive\n")
@@ -242,11 +245,11 @@ async def check_player_command(message: Message) -> None:
             await end_night()
         return
 
-    checked: int = await find_recipient(message, suspicious_man)
+    role: str = mafia_round.players[checker].role
+    checked: int = await find_recipient(message, suspicious_man, role == "Sheriff")
     if checked == -1:
         return
 
-    role: str = mafia_round.players[checker].role
     if role == "Sheriff" and await already_chosen(message, 'check'):
         return
     elif role == "Don" and await already_chosen(message, 'don_check'):

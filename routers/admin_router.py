@@ -77,6 +77,8 @@ async def start_game_command(message: Message) -> None:
     for role in sorted(mafia_round.roles):
         roles += f"- {role}\n"
 
+    await export_names(STORAGE)
+
     for player in mafia_round.players:
         chat_id: int = convert_username_to_id[player.tg_username]
         await bot.send_message(chat_id = chat_id, text = player.role)
