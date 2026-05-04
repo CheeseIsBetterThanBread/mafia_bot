@@ -7,3 +7,6 @@
 .coverage
 .coverage_value
 **/htmlcov/
+
+# logs
+**/logs
