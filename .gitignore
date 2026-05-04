@@ -1,3 +1,9 @@
 # IDE
 **/.venv/
 **/.idea/
+**/__pycache__/
+
+# coverage reports
+.coverage
+.coverage_value
+**/htmlcov/
