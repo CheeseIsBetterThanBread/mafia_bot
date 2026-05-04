@@ -1,0 +1,18 @@
+[run]
+source =
+    adapters
+    adapters/telegram
+    connection
+    engine
+    engine/phases
+    engine/services
+    utils
+omit =
+    */config/*
+    */tests/*
+    */__init__.py
+
+[report]
+exclude_lines =
+    pragma: no cover
+    if __name__ == .__main__.:
