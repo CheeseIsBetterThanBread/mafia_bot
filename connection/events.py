@@ -1,12 +1,6 @@
 class Event:
     def get_log_string(self):...
 
-    @staticmethod
-    def _get_current_time():
-        from datetime import datetime
-        now = datetime.now()
-        return now.strftime("%d/%m/%Y")
-
 
 # Базовые классы
 class QueryBase(Event):
@@ -17,13 +11,11 @@ class QueryBase(Event):
         self.user_id = user_id
 
     def get_log_string(self):
-        template_string = "[{date}] Query({query}): {chat_id} - {user_id} - {count}"
+        template_string = "[{query}]: {chat_id} - {user_id}"
         return template_string.format(
-            date=self._get_current_time(),
             query=self.cmd,
             chat_id=self.chat_id,
-            user_id=self.user_id,
-            count=len(self.admin_ids)
+            user_id=self.user_id
         )
 
 
@@ -38,14 +30,12 @@ class QueryWithTarget(QueryWithCallback):
         self.target_id = target_id
 
     def get_log_string(self):
-        template_string = "[{date}] Query({query}): {chat_id} - {user_id} - {target_id} - {count}"
+        template_string = "[{query}]: {chat_id} - {user_id} - {target_id}"
         return template_string.format(
-            date=self._get_current_time(),
             query=self.cmd,
             chat_id=self.chat_id,
             user_id=self.user_id,
-            target_id = self.target_id,
-            count=len(self.admin_ids)
+            target_id = self.target_id
         )
 
 class ResponseBase(Event):
@@ -55,9 +45,8 @@ class ResponseBase(Event):
         self.parse_mode = parse_mode
 
     def get_log_string(self):
-        template_string = "[{date}] Response: {chat_id} - {parse_mode} - {text_head}"
+        template_string = "[Response]: {chat_id} - {parse_mode} - {text_head}"
         return template_string.format(
-            date=self._get_current_time(),
             chat_id=self.chat_id,
             parse_mode = self.parse_mode if self.parse_mode else "default",
             text_head = self.text.split('\n')[0]
@@ -87,9 +76,8 @@ class JoinQuery(QueryWithCallback):
         self.username = username
 
     def get_log_string(self):
-        template_string = "[{date}] Query({query}): {chat_id} - {user_id} - {username} - {count}"
+        template_string = "[{query}]: {chat_id} - {user_id} - {username} - {count}"
         return template_string.format(
-            date=self._get_current_time(),
             query=self.cmd,
             chat_id=self.chat_id,
             user_id=self.user_id,
@@ -132,15 +120,11 @@ class NightActionQuery(QueryWithCallback):
         self.target = target
 
     def get_log_string(self):
-        template_string = "[{date}] Query({query}): {chat_id} - {user_id} - {action} - {target} - {count}"
+        template_string = "[{query}]: {chat_id} - {action}"
         return template_string.format(
-            date=self._get_current_time(),
             query=self.cmd,
             chat_id=self.chat_id,
-            user_id=self.user_id,
-            action=self.action,
-            target=self.target,
-            count=len(self.admin_ids)
+            action=self.action
         )
 
 # Обработка чата мафии
@@ -150,11 +134,9 @@ class MafiaChatQuery(QueryBase):
         self.text = text
 
     def get_log_string(self):
-        template_string = "[{date}] Query({query}): {chat_id} - {user_id} - {text_head}"
+        template_string = "[{query}]: {chat_id} - {text_head}"
         return template_string.format(
-            date=self._get_current_time(),
             query=self.cmd,
             chat_id=self.chat_id,
-            user_id=self.user_id,
             text_head=self.text.split('\n')[0]
         )
