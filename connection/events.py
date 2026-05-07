@@ -18,7 +18,6 @@ class QueryBase(Event):
             user_id=self.user_id
         )
 
-
 class QueryWithCallback(QueryBase):
     def __init__(self, cmd, admin_ids, chat_id, user_id, callback):
         super().__init__(cmd, admin_ids, chat_id, user_id)
