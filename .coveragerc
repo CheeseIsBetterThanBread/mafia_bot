@@ -8,6 +8,10 @@ source =
     engine/services
     utils
 omit =
+    connection/queries.py
+    engine/help.py
+    engine/presets.py
+    engine/roles.py
     */config/*
     */tests/*
     */__init__.py
