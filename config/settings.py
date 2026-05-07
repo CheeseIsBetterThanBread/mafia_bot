@@ -18,8 +18,9 @@ ROOT_DIR = CONFIG_DIR.parent
 LOGS_DIR = ROOT_DIR / "logs"
 LOGS_DIR.mkdir(exist_ok=True)
 
-MAIN_LOG = LOGS_DIR / "main.log"
-ERROR_LOG = LOGS_DIR / "error.log"
+LOG_FILE = LOGS_DIR / "app.log"
+MAX_BYTES_PER_FILE = 2 ** 20
+BACKUP_FILES = 3
 
 # --- callback contract ---
 NOMINATE_CALLBACK_TEMPLATE = "nom|{chat_id}|{player_number}"
