@@ -15,6 +15,7 @@ omit =
     */config/*
     */tests/*
     */__init__.py
+    */bot.py
 
 [report]
 exclude_lines =
