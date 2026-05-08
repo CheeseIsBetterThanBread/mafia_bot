@@ -55,7 +55,7 @@ class FallBack:
     async def emit(_):
         raise ValueError("Failed to connect to EventBus")
 
-fallback = FallBack()
+fallback_bus = FallBack()
 
 # --- START / HELP ---
 
@@ -83,7 +83,7 @@ async def cmd_start_game(message: Message):
         message.from_user.id,
         message.chat.type
     )
-    await getattr(router, "bus", fallback).emit(query)
+    await getattr(router, "bus", fallback_bus).emit(query)
 
 
 # --- JOIN (кнопка) ---
@@ -98,7 +98,7 @@ async def handle_join_game(callback: CallbackQuery):
         callback,
         callback.from_user.username
     )
-    await getattr(router, "bus", fallback).emit(query)
+    await getattr(router, "bus", fallback_bus).emit(query)
 
 # --- НАЧАЛО ИГРЫ ---
 
@@ -110,7 +110,7 @@ async def cmd_run(message: Message):
         message.chat.id,
         message.from_user.id
     )
-    await getattr(router, "bus", fallback).emit(query)
+    await getattr(router, "bus", fallback_bus).emit(query)
 
 # --- ЗАПРОС ИНФОРМАЦИИ ---
 
@@ -122,7 +122,7 @@ async def cmd_alive(message: Message):
         message.chat.id,
         message.from_user.id
     )
-    await getattr(router, "bus", fallback).emit(query)
+    await getattr(router, "bus", fallback_bus).emit(query)
 
 
 @router.message(Command("description"))
@@ -133,7 +133,7 @@ async def cmd_description(message: Message):
         message.chat.id,
         message.from_user.id
     )
-    await getattr(router, "bus", fallback).emit(query)
+    await getattr(router, "bus", fallback_bus).emit(query)
 
 
 @router.message(Command("roles"))
@@ -144,7 +144,7 @@ async def cmd_roles(message: Message):
         message.chat.id,
         message.from_user.id
     )
-    await getattr(router, "bus", fallback).emit(query)
+    await getattr(router, "bus", fallback_bus).emit(query)
 
 
 @router.message(Command("nominated"))
@@ -155,7 +155,7 @@ async def cmd_nominated(message: Message):
         message.chat.id,
         message.from_user.id
     )
-    await getattr(router, "bus", fallback).emit(query)
+    await getattr(router, "bus", fallback_bus).emit(query)
 
 
 @router.message(Command("voted"))
@@ -166,7 +166,7 @@ async def cmd_voted(message: Message):
         message.chat.id,
         message.from_user.id
     )
-    await getattr(router, "bus", fallback).emit(query)
+    await getattr(router, "bus", fallback_bus).emit(query)
 
 
 @router.message(Command("status"))
@@ -177,7 +177,7 @@ async def cmd_status(message: Message):
         message.chat.id,
         message.from_user.id
     )
-    await getattr(router, "bus", fallback).emit(query)
+    await getattr(router, "bus", fallback_bus).emit(query)
 
 # --- РЕЧИ ---
 
@@ -189,7 +189,7 @@ async def cmd_speech(message: Message):
         message.chat.id,
         message.from_user.id
     )
-    await getattr(router, "bus", fallback).emit(query)
+    await getattr(router, "bus", fallback_bus).emit(query)
 
 
 @router.message(Command("end_speech"))
@@ -200,7 +200,7 @@ async def cmd_end_speech(message: Message):
         message.chat.id,
         message.from_user.id
     )
-    await getattr(router, "bus", fallback).emit(query)
+    await getattr(router, "bus", fallback_bus).emit(query)
 
 # --- ВЫСТАВЛЕНИЕ ---
 
@@ -212,7 +212,7 @@ async def cmd_nominate(message: Message):
         message.chat.id,
         message.from_user.id
     )
-    await getattr(router, "bus", fallback).emit(query)
+    await getattr(router, "bus", fallback_bus).emit(query)
 
 
 @router.callback_query(F.data.startswith(NOMINATE_CALLBACK_TEMPLATE.split('|')[0] + '|'))
@@ -229,7 +229,7 @@ async def handle_nominate(callback: CallbackQuery):
         callback,
         target
     )
-    await getattr(router, "bus", fallback).emit(query)
+    await getattr(router, "bus", fallback_bus).emit(query)
 
 # --- ГОЛОСОВАНИЕ ---
 
@@ -241,7 +241,7 @@ async def cmd_vote(message: Message):
         message.chat.id,
         message.from_user.id
     )
-    await getattr(router, "bus", fallback).emit(query)
+    await getattr(router, "bus", fallback_bus).emit(query)
 
 
 @router.callback_query(F.data.startswith(VOTE_CALLBACK_TEMPLATE.split('|')[0] + '|'))
@@ -258,7 +258,7 @@ async def handle_vote(callback: CallbackQuery):
         callback,
         target
     )
-    await getattr(router, "bus", fallback).emit(query)
+    await getattr(router, "bus", fallback_bus).emit(query)
 
 
 @router.message(Command("balance"))
@@ -269,7 +269,7 @@ async def cmd_balance(message: Message):
         message.chat.id,
         message.from_user.id
     )
-    await getattr(router, "bus", fallback).emit(query)
+    await getattr(router, "bus", fallback_bus).emit(query)
 
 
 @router.callback_query(F.data.startswith(BALANCE_CALLBACK_TEMPLATE.split('|')[0] + '|'))
@@ -286,7 +286,7 @@ async def handle_balance(callback: CallbackQuery):
         callback,
         target
     )
-    await getattr(router, "bus", fallback).emit(query)
+    await getattr(router, "bus", fallback_bus).emit(query)
 
 # --- ФОРСИРОВАНИЕ НОЧИ ---
 
@@ -298,7 +298,7 @@ async def cmd_start_night(message: Message):
         message.chat.id,
         message.from_user.id
     )
-    await getattr(router, "bus", fallback).emit(query)
+    await getattr(router, "bus", fallback_bus).emit(query)
 
 
 @router.message(Command("skip_night"))
@@ -309,7 +309,7 @@ async def cmd_skip_night(message: Message):
         message.chat.id,
         message.from_user.id
     )
-    await getattr(router, "bus", fallback).emit(query)
+    await getattr(router, "bus", fallback_bus).emit(query)
 
 # --- НОЧНЫЕ ДЕЙСТВИЯ ---
 
@@ -328,7 +328,7 @@ async def handle_night_action(callback: CallbackQuery):
         action,
         target
     )
-    await getattr(router, "bus", fallback).emit(query)
+    await getattr(router, "bus", fallback_bus).emit(query)
 
 # --- ЧАТ МАФИИ (ЛС) ---
 
@@ -344,9 +344,9 @@ async def mafia_chat(message: Message):
         TELEGRAM_ADMINS,
         message.chat.id,
         message.from_user.id,
-        message.text
+        str(message.text)
     )
-    await getattr(router, "bus", fallback).emit(query)
+    await getattr(router, "bus", fallback_bus).emit(query)
 
 # --- FALLBACK (на всякий случай) ---
 
