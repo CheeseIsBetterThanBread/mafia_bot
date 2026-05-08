@@ -1,10 +1,9 @@
 import pytest
-from unittest.mock import Mock, AsyncMock, patch, MagicMock
+from unittest.mock import Mock, AsyncMock, patch
 
-from aiogram.types import Message, CallbackQuery, Chat, User
-from aiogram.enums import ChatType
+from aiogram.types import Message, CallbackQuery
 
-from adapters.telegram.handlers import setup_bus, FallBack, fallback_bus
+from adapters.telegram.handlers import setup_bus, fallback_bus
 from config.settings import (
     NOMINATE_CALLBACK_TEMPLATE,
     VOTE_CALLBACK_TEMPLATE,
