@@ -5,13 +5,14 @@ from aiogram import Bot
 from aiogram.types import InlineKeyboardMarkup, CallbackQuery
 from aiogram.client.default import Default
 
-from adapters.telegram.adapter import TelegramAdapter, get_parse_mode
-from connection.events import (
+from adapters.telegram.adapter import (
+    get_parse_mode,
+    EventBus,
     ResponseBase,
     ResponseWithAlert,
-    ResponseWithOptions
+    ResponseWithOptions,
+    TelegramAdapter
 )
-from connection.event_bus import EventBus
 
 
 class TestGetParseMode:
@@ -20,7 +21,6 @@ class TestGetParseMode:
         assert result == "HTML"
 
     def test_get_parse_mode_with_none(self):
-        from aiogram.client.default import Default
         result = get_parse_mode(None)
         assert isinstance(result, Default)
 

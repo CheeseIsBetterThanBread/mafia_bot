@@ -3,8 +3,12 @@ from collections import deque
 import pytest
 from unittest.mock import patch, Mock
 
-from engine.game_state import Game, GameState
-from engine.roles import MAFIA_TEAM
+from engine.game_state import (
+    Game,
+    GameState,
+    MAFIA_TEAM,
+    ROOM_PRESETS
+)
 
 
 class TestGameInitialization:
@@ -194,8 +198,6 @@ class TestRolePreset:
 
     @patch('engine.game_state.choice')
     def test_set_preset_with_valid_count(self, mock_choice, game):
-        from engine.presets import ROOM_PRESETS
-
         mock_preset = ['mafia', 'commissar', 'civilian']
         mock_choice.return_value = mock_preset
 
@@ -207,7 +209,6 @@ class TestRolePreset:
 
     @patch('engine.game_state.choice')
     def test_set_preset_different_counts(self, mock_choice, game):
-        from engine.presets import ROOM_PRESETS
         max_count = max(ROOM_PRESETS.keys())
 
         test_counts = [5, 8, 10, 12, 15]

@@ -2,9 +2,11 @@ from random import shuffle
 
 import pytest
 
-from engine.models import Player
-
-from utils.helpers import alive_sorted, rotate_queue
+from utils.helpers import (
+    alive_sorted,
+    rotate_queue,
+    Player
+)
 
 
 @pytest.fixture

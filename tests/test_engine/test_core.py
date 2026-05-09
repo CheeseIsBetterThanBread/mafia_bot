@@ -1,10 +1,13 @@
 import pytest
 from unittest.mock import Mock, patch
 
-from connection.event_bus import EventBus
-from connection.events import QueryBase
-
-from engine.core import EventDispatcher, Game, GameEngine
+from engine.core import (
+    EventBus,
+    EventDispatcher,
+    Game,
+    GameEngine,
+    QueryBase
+)
 
 
 class TestGameEngine:

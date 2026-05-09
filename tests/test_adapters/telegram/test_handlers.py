@@ -1,22 +1,7 @@
 import pytest
 from unittest.mock import Mock, AsyncMock, patch
 
-from aiogram.types import Message, CallbackQuery
-
-from adapters.telegram.handlers import setup_bus, fallback_bus
-from config.settings import (
-    NOMINATE_CALLBACK_TEMPLATE,
-    VOTE_CALLBACK_TEMPLATE,
-    BALANCE_CALLBACK_TEMPLATE,
-    NIGHT_CALLBACK_TEMPLATE
-)
-from connection.events import (
-    StartGameQuery, JoinQuery, RunQuery, InfoQuery,
-    SpeechRelatedQuery, PreNominateQuery, NominateQuery,
-    PreVoteQuery, VoteQuery, PreBalanceQuery, BalanceQuery,
-    StartNightQuery, SkipNightQuery, NightActionQuery, MafiaChatQuery
-)
-from connection.queries import QueryType
+from adapters.telegram.handlers import *
 
 
 @pytest.fixture
@@ -80,7 +65,6 @@ class TestTelegramHandlers:
     async def test_cmd_start_private_chat(self, mock_message):
         mock_message.chat.type = "private"
 
-        from adapters.telegram.handlers import cmd_start
         await cmd_start(mock_message)
 
         mock_message.answer.assert_called()
@@ -90,14 +74,12 @@ class TestTelegramHandlers:
     async def test_cmd_start_group_chat(self, mock_message):
         mock_message.chat.type = "group"
 
-        from adapters.telegram.handlers import cmd_start
         await cmd_start(mock_message)
 
         assert mock_message.answer.call_count == 0
 
     @pytest.mark.asyncio
     async def test_cmd_help(self, mock_message):
-        from adapters.telegram.handlers import cmd_help
         await cmd_help(mock_message)
 
         mock_message.answer.assert_called_once()
@@ -108,7 +90,6 @@ class TestTelegramHandlers:
     async def test_cmd_start_game(self, mock_message, setup_router):
         router, mock_bus = setup_router
 
-        from adapters.telegram.handlers import cmd_start_game
         await cmd_start_game(mock_message)
 
         mock_bus.emit.assert_called_once()
@@ -124,7 +105,6 @@ class TestTelegramHandlers:
         router, mock_bus = setup_router
         mock_callback.data = "join_game"
 
-        from adapters.telegram.handlers import handle_join_game
         await handle_join_game(mock_callback)
 
         mock_bus.emit.assert_called_once()
@@ -140,7 +120,6 @@ class TestTelegramHandlers:
     async def test_cmd_run(self, mock_message, setup_router):
         router, mock_bus = setup_router
 
-        from adapters.telegram.handlers import cmd_run
         await cmd_run(mock_message)
 
         mock_bus.emit.assert_called_once()
@@ -160,11 +139,6 @@ class TestTelegramHandlers:
     ])
     async def test_info_commands(self, mock_message, setup_router, command, expected_type):
         router, mock_bus = setup_router
-
-        from adapters.telegram.handlers import (
-            cmd_alive, cmd_description, cmd_roles,
-            cmd_nominated, cmd_voted, cmd_status
-        )
 
         commands_map = {
             "alive": cmd_alive,
@@ -191,8 +165,6 @@ class TestTelegramHandlers:
     async def test_speech_commands(self, mock_message, setup_router, command, expected_type):
         router, mock_bus = setup_router
 
-        from adapters.telegram.handlers import cmd_speech, cmd_end_speech
-
         commands_map = {
             "speech": cmd_speech,
             "end_speech": cmd_end_speech,
@@ -210,7 +182,6 @@ class TestTelegramHandlers:
     async def test_cmd_nominate(self, mock_message, setup_router):
         router, mock_bus = setup_router
 
-        from adapters.telegram.handlers import cmd_nominate
         await cmd_nominate(mock_message)
 
         mock_bus.emit.assert_called_once()
@@ -237,10 +208,8 @@ class TestTelegramHandlers:
                 'player_number': player_number
             }
 
-            from adapters.telegram.handlers import handle_nominate
             await handle_nominate(mock_callback)
 
-            from config.settings import NOMINATE_TYPES
             MockParser.assert_called_once_with(NOMINATE_CALLBACK_TEMPLATE, NOMINATE_TYPES)
 
             mock_parser.parse.assert_called_once_with(mock_callback.data)
@@ -256,7 +225,6 @@ class TestTelegramHandlers:
     async def test_cmd_vote(self, mock_message, setup_router):
         router, mock_bus = setup_router
 
-        from adapters.telegram.handlers import cmd_vote
         await cmd_vote(mock_message)
 
         mock_bus.emit.assert_called_once()
@@ -283,10 +251,8 @@ class TestTelegramHandlers:
                 'player_number': player_number
             }
 
-            from adapters.telegram.handlers import handle_vote
             await handle_vote(mock_callback)
 
-            from config.settings import VOTE_TYPES
             MockParser.assert_called_once_with(VOTE_CALLBACK_TEMPLATE, VOTE_TYPES)
 
             mock_parser.parse.assert_called_once_with(mock_callback.data)
@@ -302,7 +268,6 @@ class TestTelegramHandlers:
     async def test_cmd_balance(self, mock_message, setup_router):
         router, mock_bus = setup_router
 
-        from adapters.telegram.handlers import cmd_balance
         await cmd_balance(mock_message)
 
         mock_bus.emit.assert_called_once()
@@ -329,10 +294,8 @@ class TestTelegramHandlers:
                 'number': number
             }
 
-            from adapters.telegram.handlers import handle_balance
             await handle_balance(mock_callback)
 
-            from config.settings import BALANCE_TYPES
             MockParser.assert_called_once_with(BALANCE_CALLBACK_TEMPLATE, BALANCE_TYPES)
 
             mock_parser.parse.assert_called_once_with(mock_callback.data)
@@ -348,7 +311,6 @@ class TestTelegramHandlers:
     async def test_cmd_start_night(self, mock_message, setup_router):
         router, mock_bus = setup_router
 
-        from adapters.telegram.handlers import cmd_start_night
         await cmd_start_night(mock_message)
 
         mock_bus.emit.assert_called_once()
@@ -361,7 +323,6 @@ class TestTelegramHandlers:
     async def test_cmd_skip_night(self, mock_message, setup_router):
         router, mock_bus = setup_router
 
-        from adapters.telegram.handlers import cmd_skip_night
         await cmd_skip_night(mock_message)
 
         mock_bus.emit.assert_called_once()
@@ -391,10 +352,8 @@ class TestTelegramHandlers:
                 'target': target
             }
 
-            from adapters.telegram.handlers import handle_night_action
             await handle_night_action(mock_callback)
 
-            from config.settings import NIGHT_TYPES
             MockParser.assert_called_once_with(NIGHT_CALLBACK_TEMPLATE, NIGHT_TYPES)
 
             mock_parser.parse.assert_called_once_with(mock_callback.data)
@@ -413,7 +372,6 @@ class TestTelegramHandlers:
         mock_message.chat.type = "private"
         mock_message.text = MockText("Hello from mafia")
 
-        from adapters.telegram.handlers import mafia_chat
         await mafia_chat(mock_message)
 
         mock_bus.emit.assert_called_once()
@@ -429,7 +387,6 @@ class TestTelegramHandlers:
         mock_message.chat.type = "private"
         mock_message.text = None
 
-        from adapters.telegram.handlers import mafia_chat
         await mafia_chat(mock_message)
 
         mock_bus.emit.assert_not_called()
@@ -440,7 +397,6 @@ class TestTelegramHandlers:
         mock_message.chat.type = "private"
         mock_message.text = MockText("/start", True)
 
-        from adapters.telegram.handlers import mafia_chat
         await mafia_chat(mock_message)
 
         mock_bus.emit.assert_not_called()
@@ -460,7 +416,6 @@ class TestTelegramHandlers:
     @pytest.mark.asyncio
     async def test_router_without_bus(self, mock_message):
         from adapters.telegram.handlers import router as clean_router
-        from adapters.telegram.handlers import cmd_start_game
 
         if hasattr(clean_router, 'bus'):
             delattr(clean_router, 'bus')
@@ -472,15 +427,11 @@ class TestTelegramHandlers:
     async def test_full_workflow_start_game_to_join(self, setup_router, mock_message, mock_callback):
         router, mock_bus = setup_router
 
-        from adapters.telegram.handlers import cmd_start_game, handle_join_game
-
-        # Создаем игру
         await cmd_start_game(mock_message)
         assert mock_bus.emit.call_count == 1
         start_query = mock_bus.emit.call_args[0][0]
         assert isinstance(start_query, StartGameQuery)
 
-        # Присоединяемся к игре
         mock_bus.emit.reset_mock()
         mock_callback.data = "join_game"
         await handle_join_game(mock_callback)
@@ -499,19 +450,15 @@ class TestEdgeCases:
             mock_parser = MockParser.return_value
             mock_parser.parse.side_effect = ValueError("Invalid data")
 
-            from adapters.telegram.handlers import handle_nominate
             with pytest.raises(TypeError):
                 await handle_nominate(mock_callback)
 
-            from adapters.telegram.handlers import handle_vote
             with pytest.raises(TypeError):
                 await handle_vote(mock_callback)
 
-            from adapters.telegram.handlers import handle_balance
             with pytest.raises(TypeError):
                 await handle_balance(mock_callback)
 
-            from adapters.telegram.handlers import handle_night_action
             with pytest.raises(TypeError):
                 await handle_night_action(mock_callback)
 
@@ -521,7 +468,6 @@ class TestEdgeCases:
         mock_message.chat.type = "private"
         mock_message.text = MockText("Привет, мафия! 🎭")
 
-        from adapters.telegram.handlers import mafia_chat
         await mafia_chat(mock_message)
 
         mock_bus.emit.assert_called_once()
