@@ -1,5 +1,6 @@
-import pytest
 from random import shuffle
+
+import pytest
 
 from engine.models import Player
 
