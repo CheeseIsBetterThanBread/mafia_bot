@@ -30,8 +30,7 @@ async def check_victory(bus: EventBus, game: Game):
 
     town = len(alive) - mafia - maniac
 
-    # маньяк 1v1
-    if len(alive) == 2 and maniac > 0:
+    if len(alive) <= 2 and maniac > 0:
         response = ResponseBase(
             game.chat_id,
             "🔪 Маньяк остался один на один с жертвой! ПОБЕДА МАНЬЯКА!",
