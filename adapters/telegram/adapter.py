@@ -13,7 +13,7 @@ from connection.event_bus import EventBus
 
 
 def get_parse_mode(mode: str | None):
-    if mode:
+    if mode is not None:
         return mode
 
     return Default("parse_mode")
@@ -37,7 +37,7 @@ class TelegramAdapter(Adapter):
 
         @self.bus.on(ResponseWithAlert)
         async def alert_handler(response: ResponseWithAlert):
-            if response.is_valid():
+            if response.is_valid:
                 await response.callback.message.edit_text(
                     response.text,
                     reply_markup=response.callback.message.reply_markup,
