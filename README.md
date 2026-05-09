@@ -1,7 +1,7 @@
 # Mafia Bot
 
 <!-- COVERAGE_BADGE_START -->
-![Coverage](https://img.shields.io/badge/coverage-24%25-red)
+![Coverage](https://img.shields.io/badge/coverage-27%25-red)
 <!-- COVERAGE_BADGE_END -->
 
 Event-driven Mafia bot with pluggable adapters (Telegram, Discord, etc.)
