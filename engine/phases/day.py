@@ -31,7 +31,8 @@ async def start_day(bus: EventBus, game: Game):
 
     response = ResponseBase(
         game.chat_id,
-        f"☀️ Наступает День {game.day_count}.\nПервым говорит Игрок №{first.number}. Напишите /speech."
+        f"☀️ Наступает День {game.day_count}.\nПервым говорит Игрок №{first.number}. Напишите /speech.",
+        valid=True
     )
     await bus.emit(response)
 
@@ -45,7 +46,8 @@ async def next_speaker(bus: EventBus, game: Game):
         glued = game.speech_queue.popleft()
         response = ResponseBase(
             game.chat_id,
-            f"🤐 Игрок №{glued.number} заклеен Вором и пропускает свою речь."
+            f"🤐 Игрок №{glued.number} заклеен Вором и пропускает свою речь.",
+            valid=True
         )
         await bus.emit(response)
 
@@ -53,14 +55,16 @@ async def next_speaker(bus: EventBus, game: Game):
         current = game.speech_queue[0]
         response = ResponseBase(
             game.chat_id,
-            f"🗣 Очередь Игрока №{current.number}. Напишите /speech для начала речи."
+            f"🗣 Очередь Игрока №{current.number}. Напишите /speech для начала речи.",
+            valid=True
         )
         await bus.emit(response)
         return
 
     response = ResponseBase(
         game.chat_id,
-        "🎙 Все речи окончены!"
+        "🎙 Все речи окончены!",
+        valid=True
     )
     await bus.emit(response)
 

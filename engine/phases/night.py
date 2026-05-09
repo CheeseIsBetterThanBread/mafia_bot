@@ -6,6 +6,8 @@ from config.settings import NIGHT_CALLBACK_TEMPLATE, NULL_OPTION
 from connection.events import ResponseBase, ResponseWithOptions
 from connection.event_bus import EventBus
 
+from utils.logger import LOGGER
+
 from engine.game_state import Game, GameState
 from engine.services.night_resolution import resolve_night
 
@@ -32,7 +34,8 @@ async def start_night(bus: EventBus, game: Game):
 
     response = ResponseBase(
         game.chat_id,
-        "🌙 Ждем ход Вора (у него есть 1 минута)..."
+        "🌙 Ждем ход Вора (у него есть 1 минута)...",
+        valid=True
     )
     await bus.emit(response)
 
@@ -41,7 +44,8 @@ async def start_night(bus: EventBus, game: Game):
 
         response = ResponseBase(
             game.chat_id,
-            "🤐 Вор никого не заклеил."
+            "🤐 Вор никого не заклеил.",
+            valid=True
         )
         await bus.emit(response)
 
@@ -58,16 +62,18 @@ async def start_night(bus: EventBus, game: Game):
     response = ResponseWithOptions(
         thief_options,
         thief.user_id,
-        "Кого будем клеить?"
+        "Кого будем клеить?",
+        valid=True
     )
     try:
         await bus.emit(response)
         return
     except Exception as e:
-        print(f"Ошибка отправки Вору: {e}")
+        LOGGER.error(f"Ошибка отправки Вору: {e}")
         response = ResponseBase(
             game.chat_id,
-            "🤐 Вор никого не заклеил."
+            "🤐 Вор никого не заклеил.",
+            valid=True
         )
         await bus.emit(response)
 
@@ -84,7 +90,8 @@ async def start_night_others(bus: EventBus, game: Game):
 
     response = ResponseBase(
         game.chat_id,
-        "⏳ Мафия и активные роли делают свой ход. У вас есть ровно 3 минуты на все действия!"
+        "⏳ Мафия и активные роли делают свой ход. У вас есть ровно 3 минуты на все действия!",
+        valid=True
     )
     await bus.emit(response)
 
@@ -123,7 +130,8 @@ async def start_night_others(bus: EventBus, game: Game):
                 response = ResponseWithOptions(
                     action_options,
                     p.user_id,
-                    text
+                    text,
+                    valid=True
                 )
                 await bus.emit(response)
 
@@ -136,7 +144,8 @@ async def thief_timeout_logic(bus: EventBus, game: Game, current_day: int):
     if game.state == GameState.NIGHT_THIEF and game.day_count == current_day:
         response = ResponseBase(
             game.chat_id,
-            "🤐 Вор никого не заклеил."
+            "🤐 Вор никого не заклеил.",
+            valid=True
         )
         await bus.emit(response)
 
@@ -154,7 +163,8 @@ async def night_timeout_logic(bus: EventBus, game: Game, current_day: int):
             response = ResponseBase(
                 uid,
                 "⏳ <b>Осталась 1 минута!</b> Поторопитесь сделать свой выбор, иначе ваш ход сгорит.",
-                parse_mode="HTML"
+                parse_mode="HTML",
+                valid=True
             )
             await bus.emit(response)
 
@@ -164,7 +174,8 @@ async def night_timeout_logic(bus: EventBus, game: Game, current_day: int):
             response = ResponseBase(
                 game.chat_id,
                 "⏰ <b>Время вышло!</b> Ночь затянулась.",
-                parse_mode="HTML"
+                parse_mode="HTML",
+                valid=True
             )
             await bus.emit(response)
 

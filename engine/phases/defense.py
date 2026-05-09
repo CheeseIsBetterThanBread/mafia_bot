@@ -10,7 +10,8 @@ async def start_defense(bus: EventBus, game: Game):
     if not game.nominated:
         response = ResponseBase(
             game.chat_id,
-            "Никто не выставлен. Город засыпает..."
+            "Никто не выставлен. Город засыпает...",
+            valid=True
         )
         await bus.emit(response)
 
@@ -30,7 +31,8 @@ async def start_defense(bus: EventBus, game: Game):
     first = game.defense_queue[0]
     response = ResponseBase(
         game.chat_id,
-        f"⚖️ Выставлены игроки: {game.nominated}.\nПереходим к оправдательным речам! Первым говорит Игрок №{first.number}. Напишите /speech."
+        f"⚖️ Выставлены игроки: {game.nominated}.\nПереходим к оправдательным речам! Первым говорит Игрок №{first.number}. Напишите /speech.",
+        valid=True
     )
     await bus.emit(response)
 
@@ -44,7 +46,8 @@ async def next_defense_speaker(bus: EventBus, game: Game):
         glued = game.defense_queue.popleft()
         response = ResponseBase(
             game.chat_id,
-            f"🤐 Игрок №{glued.number} заклеен Вором и пропускает свою оправдательную речь."
+            f"🤐 Игрок №{glued.number} заклеен Вором и пропускает свою оправдательную речь.",
+            valid=True
         )
         await bus.emit(response)
 
@@ -52,14 +55,16 @@ async def next_defense_speaker(bus: EventBus, game: Game):
         current = game.defense_queue[0]
         response = ResponseBase(
             game.chat_id,
-            f"🗣 Очередь оправдываться Игрока №{current.number}. Напишите /speech для начала речи."
+            f"🗣 Очередь оправдываться Игрока №{current.number}. Напишите /speech для начала речи.",
+            valid=True
         )
         await bus.emit(response)
         return
 
     response = ResponseBase(
         game.chat_id,
-        "🎙 Все оправдательные речи окончены!"
+        "🎙 Все оправдательные речи окончены!",
+        valid=True
     )
     await bus.emit(response)
 

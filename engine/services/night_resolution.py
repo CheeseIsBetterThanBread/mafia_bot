@@ -15,7 +15,7 @@ async def generate_random_moves(bus: EventBus, game: Game):
             continue
 
         if p.is_glued:
-            continue  # Заклеенные просто спят законно
+            continue
 
         if p.role == "Ниндзя":
             target = random.choice(alive_players)
@@ -23,7 +23,8 @@ async def generate_random_moves(bus: EventBus, game: Game):
 
             response = ResponseBase(
                 p.user_id,
-                f"⚠️ Вы проспали ход! Бот случайно бросил ваш сюрикен в Игрока №{target.number}."
+                f"⚠️ Вы проспали ход! Бот случайно бросил ваш сюрикен в Игрока №{target.number}.",
+                valid=True
             )
             asyncio.create_task(bus.emit(response))
             continue
@@ -36,7 +37,8 @@ async def generate_random_moves(bus: EventBus, game: Game):
 
                 response = ResponseBase(
                     p.user_id,
-                    f"⚠️ Вы проспали ход! Бот случайно отправил вас к Игроку №{target.number}."
+                    f"⚠️ Вы проспали ход! Бот случайно отправил вас к Игроку №{target.number}.",
+                    valid=True
                 )
                 asyncio.create_task(bus.emit(response))
             else:
@@ -53,7 +55,8 @@ async def generate_random_moves(bus: EventBus, game: Game):
 
             response = ResponseBase(
                 p.user_id,
-                f"⚠️ Вы проспали ход! Бот случайно отправил вас убивать Игрока №{target.number}."
+                f"⚠️ Вы проспали ход! Бот случайно отправил вас убивать Игрока №{target.number}.",
+                valid=True
             )
             asyncio.create_task(bus.emit(response))
             continue
@@ -64,7 +67,8 @@ async def generate_random_moves(bus: EventBus, game: Game):
 
             response = ResponseBase(
                 p.user_id,
-                f"⚠️ Вы проспали ход! Бот случайно отправил вас убивать Игрока №{target.number}."
+                f"⚠️ Вы проспали ход! Бот случайно отправил вас убивать Игрока №{target.number}.",
+                valid=True
             )
             asyncio.create_task(bus.emit(response))
             continue
@@ -184,11 +188,12 @@ async def resolve_night(bus: EventBus, game: Game):
 
     response = ResponseBase(
         game.chat_id,
-        announcement
+        announcement,
+        valid=True
     )
     await bus.emit(response)
 
-    from engine.victory import check_victory
+    from engine.services.victory import check_victory
     if await check_victory(bus, game):
         return
 
