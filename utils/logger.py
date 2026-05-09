@@ -1,7 +1,7 @@
 import logging
 from logging.handlers import RotatingFileHandler
 
-from config.settings import LOG_FILE, MAX_BYTES_PER_FILE, BACKUP_FILES
+from config.settings import LOG_FILE, MAX_BYTES_PER_FILE, BACKUP_FILES, LOG_FORMAT
 
 
 def setup_rotating_logger(log_file, max_bytes, backup_count, logger_name='App'):
@@ -15,9 +15,7 @@ def setup_rotating_logger(log_file, max_bytes, backup_count, logger_name='App'):
         encoding='utf-8'
     )
 
-    formatter = logging.Formatter(
-        '%(asctime)s - %(levelname)s - %(funcName)s - %(message)s'
-    )
+    formatter = logging.Formatter(LOG_FORMAT)
     handler.setFormatter(formatter)
     logger.addHandler(handler)
 
