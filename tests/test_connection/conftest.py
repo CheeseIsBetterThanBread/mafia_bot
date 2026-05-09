@@ -1,12 +1,6 @@
 from contextlib import contextmanager
 import io
 import logging
-import sys
-from pathlib import Path
-
-
-root_dir = Path(__file__).parent.parent.parent
-sys.path.insert(0, str(root_dir))
 
 
 @contextmanager

@@ -5,8 +5,17 @@ from engine.models import Player
 
 from utils.helpers import alive_sorted, rotate_queue
 
-from tests.test_utils.conftest import raw_players
 
+@pytest.fixture
+def raw_players():
+    ids_and_usernames = [
+        (3, "Chuck"),
+        (2, "Bob"),
+        (5, "Eve"),
+        (1, "Alice"),
+        (4, "Daniel")
+    ]
+    return ids_and_usernames
 
 @pytest.fixture
 def players(raw_players):
