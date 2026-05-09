@@ -1,5 +1,3 @@
-from contextlib import contextmanager
-import io
 import logging
 
 import pytest
@@ -7,7 +5,7 @@ from unittest.mock import AsyncMock
 
 from connection.middleware import logging_middleware, error_middleware
 
-from tests.test_connection.conftest import capture_logger_output
+from tests.conftest import capture_logger_output
 
 
 class MockEvent:

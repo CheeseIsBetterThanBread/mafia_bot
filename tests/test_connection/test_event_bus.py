@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock
 
 from connection.event_bus import EventBus, prepare_bus
 
-from tests.test_connection.conftest import capture_logger_output
+from tests.conftest import capture_logger_output
 
 
 class TestEventBus:
