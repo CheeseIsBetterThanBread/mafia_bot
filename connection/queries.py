@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class QueryType(Enum):
     START_GAME = "start_game"
     JOIN_GAME = "join_game"

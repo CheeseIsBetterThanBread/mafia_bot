@@ -1,3 +1,4 @@
+import asyncio
 from random import shuffle
 
 from config.settings import (
@@ -23,6 +24,7 @@ from engine.phases.night import start_night, start_night_others
 from engine.phases.voting import finish_voting, resolve_balance
 
 from engine.services.night_resolution import resolve_night
+
 
 class EventDispatcher:
     def __init__(self, engine):
@@ -444,7 +446,6 @@ class EventDispatcher:
             )
             await self.bus.emit(response)
 
-        import asyncio
         async def timer_task():
             try:
                 await asyncio.sleep(speech_time - WARNING_OFFSET)

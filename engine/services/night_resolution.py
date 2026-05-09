@@ -5,6 +5,8 @@ from connection.events import ResponseBase
 from connection.event_bus import EventBus
 
 from engine.game_state import Game
+from engine.phases.day import start_day
+from engine.services.victory import check_victory
 
 
 async def generate_random_moves(bus: EventBus, game: Game):
@@ -193,9 +195,7 @@ async def resolve_night(bus: EventBus, game: Game):
     )
     await bus.emit(response)
 
-    from engine.services.victory import check_victory
     if await check_victory(bus, game):
         return
 
-    from engine.phases.day import start_day
     await start_day(bus, game)

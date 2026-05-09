@@ -4,6 +4,8 @@ from connection.events import ResponseBase
 from connection.event_bus import EventBus
 
 from engine.game_state import Game, GameState
+from engine.phases.voting import start_voting
+from engine.phases.night import start_night
 
 
 async def start_defense(bus: EventBus, game: Game):
@@ -15,7 +17,6 @@ async def start_defense(bus: EventBus, game: Game):
         )
         await bus.emit(response)
 
-        from engine.phases.night import start_night
         await start_night(bus, game)
         return
 
@@ -68,5 +69,4 @@ async def next_defense_speaker(bus: EventBus, game: Game):
     )
     await bus.emit(response)
 
-    from engine.phases.voting import start_voting
     await start_voting(bus, game)

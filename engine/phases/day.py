@@ -1,6 +1,8 @@
 from connection.events import ResponseBase
 from connection.event_bus import EventBus
+
 from engine.game_state import Game, GameState
+from engine.phases.defense import start_defense
 
 
 async def start_day(bus: EventBus, game: Game):
@@ -68,5 +70,4 @@ async def next_speaker(bus: EventBus, game: Game):
     )
     await bus.emit(response)
 
-    from engine.phases.defense import start_defense
     await start_defense(bus, game)
