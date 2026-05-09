@@ -1,5 +1,6 @@
 from collections import deque
 from enum import Enum
+from random import choice
 
 from config.settings import SECONDS_PER_PLAYER, SPEECH_LOWER_BOUND, SPEECH_UPPER_BOUND
 from utils.helpers import alive_sorted, rotate_queue
@@ -76,16 +77,20 @@ class Game:
         alive = alive_sorted(self.get_alive_players())
 
         if not alive:
-            return deque()
+            return deque(), -1
 
         queue, self.day_starter_num = rotate_queue(alive, self.day_starter_num)
-        return rotate_queue(alive, self.day_starter_num)
+        return queue, self.day_starter_num
 
     # --- ROLE PRESET PICK ---
 
     def set_preset(self, count: int):
-        import random
-        self.current_preset = random.choice(ROOM_PRESETS[count]).copy()
+        max_count = max(ROOM_PRESETS.keys())
+        self.current_preset = choice(ROOM_PRESETS[min(count, max_count)]).copy()
+
+        if count > max_count:
+            self.current_preset += ['Мирный житель'] * (count - max_count)
+
         return self.current_preset
 
     # --- DYNAMIC SPEECH TIME ---
