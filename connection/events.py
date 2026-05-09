@@ -38,10 +38,11 @@ class QueryWithTarget(QueryWithCallback):
         )
 
 class ResponseBase(Event):
-    def __init__(self, chat_id, text, parse_mode = None):
+    def __init__(self, chat_id, text, parse_mode = None, valid = False):
         self.chat_id = chat_id
         self.text = text
         self.parse_mode = parse_mode
+        self.is_valid = valid
 
     def get_log_string(self):
         template_string = "[Response]: {chat_id} - {parse_mode} - {text_head}"
@@ -53,13 +54,12 @@ class ResponseBase(Event):
 
 class ResponseWithAlert(ResponseBase):
     def __init__(self, callback, valid, chat_id, text, parse_mode=None):
-        super().__init__(chat_id, text, parse_mode)
+        super().__init__(chat_id, text, parse_mode, valid)
         self.callback = callback
-        self.is_valid = valid
 
 class ResponseWithOptions(ResponseBase):
-    def __init__(self, candidates, chat_id, text, parse_mode = None):
-        super().__init__(chat_id, text, parse_mode)
+    def __init__(self, candidates, chat_id, text, parse_mode = None, valid=False):
+        super().__init__(chat_id, text, parse_mode, valid)
         self.candidates = candidates
 
 # Обработка /start_game
