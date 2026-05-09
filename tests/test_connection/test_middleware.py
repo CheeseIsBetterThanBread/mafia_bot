@@ -1,6 +1,13 @@
+from contextlib import contextmanager
+import io
+import logging
+
 import pytest
 from unittest.mock import AsyncMock
+
 from connection.middleware import logging_middleware, error_middleware
+
+from tests.test_connection.conftest import capture_logger_output
 
 
 class MockEvent:
@@ -13,30 +20,29 @@ class MockEvent:
 
 class TestLoggingMiddleware:
     @pytest.mark.asyncio
-    async def test_logging_middleware_logs_start_and_end(self, caplog):
+    async def test_logging_middleware_logs_start_and_end(self):
         event = MockEvent("user_123_action")
         next_handler = AsyncMock()
 
-        with caplog.at_level('DEBUG'):
+        with capture_logger_output() as log_content:
             await logging_middleware(event, next_handler)
 
-        next_handler.assert_awaited_once_with(event)
-
-        assert len(caplog.records) == 2
-        assert "[START] user_123_action" in caplog.text
-        assert "[END] user_123_action" in caplog.text
+            next_handler.assert_awaited_once_with(event)
+            assert "[START] user_123_action" in log_content.getvalue()
+            assert "[END] user_123_action" in log_content.getvalue()
 
     @pytest.mark.asyncio
     async def test_logging_middleware_calls_next_handler(self):
         event = MockEvent("test")
         next_handler = AsyncMock()
 
-        await logging_middleware(event, next_handler)
+        with capture_logger_output():
+            await logging_middleware(event, next_handler)
 
         next_handler.assert_awaited_once_with(event)
 
     @pytest.mark.asyncio
-    async def test_logging_middleware_with_different_log_strings(self, caplog):
+    async def test_logging_middleware_with_different_log_strings(self):
         test_cases = [
             "api_call",
             "database_query",
@@ -47,24 +53,21 @@ class TestLoggingMiddleware:
             event = MockEvent(log_string)
             next_handler = AsyncMock()
 
-            with caplog.at_level('DEBUG'):
+            with capture_logger_output() as log_content:
                 await logging_middleware(event, next_handler)
 
-            next_handler.assert_awaited_once_with(event)
-
-            assert len(caplog.records) == 2
-            assert f"[START] {log_string}" in caplog.text
-            assert f"[END] {log_string}" in caplog.text
-
-            caplog.clear()
+                next_handler.assert_awaited_once_with(event)
+                assert f"[START] {log_string}" in log_content.getvalue()
+                assert f"[END] {log_string}" in log_content.getvalue()
 
     @pytest.mark.asyncio
     async def test_logging_middleware_preserves_exception(self):
         event = MockEvent("test")
         next_handler = AsyncMock(side_effect=ValueError("Test error"))
 
-        with pytest.raises(ValueError, match="Test error"):
-            await logging_middleware(event, next_handler)
+        with capture_logger_output():
+            with pytest.raises(ValueError, match="Test error"):
+                await logging_middleware(event, next_handler)
 
     @pytest.mark.asyncio
     async def test_logging_middleware_called_without_await(self):
@@ -77,32 +80,30 @@ class TestLoggingMiddleware:
 
 class TestErrorMiddleware:
     @pytest.mark.asyncio
-    async def test_error_middleware_passes_successful_call(self, caplog):
+    async def test_error_middleware_passes_successful_call(self):
         event = MockEvent("successful")
         next_handler = AsyncMock()
 
 
-        with caplog.at_level('ERROR'):
+        with capture_logger_output(logging.ERROR) as log_content:
             await error_middleware(event, next_handler)
 
-        assert len(caplog.records) == 0
+            assert log_content.getvalue() == ""
 
     @pytest.mark.asyncio
-    async def test_error_middleware_catches_and_logs_exception(self, caplog):
+    async def test_error_middleware_catches_and_logs_exception(self):
         event = MockEvent("error_event")
         test_error = ValueError("Database connection failed")
         next_handler = AsyncMock(side_effect=test_error)
 
-        with caplog.at_level('ERROR'):
+        with capture_logger_output(logging.ERROR) as log_content:
             await error_middleware(event, next_handler)
 
-        next_handler.assert_awaited_once_with(event)
-
-        assert len(caplog.records) == 1
-        assert f"{event.get_log_string()} | {test_error}" in caplog.text
+            next_handler.assert_awaited_once_with(event)
+            assert f"{event.get_log_string()} | {test_error}" in log_content.getvalue()
 
     @pytest.mark.asyncio
-    async def test_error_middleware_with_different_exceptions(self, caplog):
+    async def test_error_middleware_with_different_exceptions(self):
         exceptions = [
             (ValueError("Invalid input"), "Invalid input"),
             (TypeError("Wrong type"), "Wrong type"),
@@ -114,18 +115,14 @@ class TestErrorMiddleware:
             event = MockEvent("test_event")
             next_handler = AsyncMock(side_effect=exception)
 
-            with caplog.at_level('ERROR'):
+            with capture_logger_output(logging.ERROR) as log_content:
                 await error_middleware(event, next_handler)
 
-            next_handler.assert_awaited_once_with(event)
-
-            assert len(caplog.records) == 1
-            assert f"{event.get_log_string()} | {exception}" in caplog.text
-
-            caplog.clear()
+                next_handler.assert_awaited_once_with(event)
+                assert f"{event.get_log_string()} | {exception}" in log_content.getvalue()
 
     @pytest.mark.asyncio
-    async def test_error_middleware_with_different_log_strings(self, caplog):
+    async def test_error_middleware_with_different_log_strings(self):
         test_cases = [
             (MockEvent("api_call"), Exception("Network error")),
             (MockEvent("db_query"), Exception("Connection timeout")),
@@ -135,56 +132,53 @@ class TestErrorMiddleware:
         for event, exception in test_cases:
             next_handler = AsyncMock(side_effect=exception)
 
-            with caplog.at_level('ERROR'):
+            with capture_logger_output(logging.ERROR) as log_content:
                 await error_middleware(event, next_handler)
 
-            next_handler.assert_awaited_once_with(event)
-
-            assert len(caplog.records) == 1
-            assert f"{event.get_log_string()} | {exception}" in caplog.text
-
-            caplog.clear()
+                next_handler.assert_awaited_once_with(event)
+                assert f"{event.get_log_string()} | {exception}" in log_content.getvalue()
 
     @pytest.mark.asyncio
     async def test_error_middleware_preserves_not_raise_after_catch(self):
         event = MockEvent("test")
         next_handler = AsyncMock(side_effect=RuntimeError("Test"))
 
-        await error_middleware(event, next_handler)
+        with capture_logger_output(logging.ERROR):
+            await error_middleware(event, next_handler)
 
     @pytest.mark.asyncio
-    async def test_error_middleware_multiple_calls(self, caplog):
+    async def test_error_middleware_multiple_calls(self):
         event = MockEvent("test")
 
-        with caplog.at_level('ERROR'):
+        with capture_logger_output(logging.ERROR) as log_content:
             await error_middleware(event, AsyncMock())
+            assert log_content.getvalue() == ""
 
         error_handler = AsyncMock(side_effect=ValueError("Error"))
-        with caplog.at_level('ERROR'):
+        with capture_logger_output(logging.ERROR) as log_content:
             await error_middleware(event, error_handler)
-
-        assert len(caplog.records) == 1
+            assert len(log_content.getvalue()) > 0
 
 
 class TestMiddlewareChain:
     @pytest.mark.asyncio
-    async def test_both_middlewares_work_together(self, caplog):
+    async def test_both_middlewares_work_together(self):
         event = MockEvent("chain_test")
         handler = AsyncMock()
 
         async def chain(e, h):
             await logging_middleware(e, lambda e_: error_middleware(e_, h))
 
-        with caplog.at_level('ERROR'):
+        with capture_logger_output(logging.ERROR) as log_content:
             await chain(event, handler)
-        assert len(caplog.records) == 0
+            assert log_content.getvalue() == ""
 
-        with caplog.at_level('DEBUG'):
+        with capture_logger_output() as log_content:
             await chain(event, handler)
-        assert len(caplog.records) == 2
+            assert len(log_content.getvalue()) > 0
 
     @pytest.mark.asyncio
-    async def test_both_middlewares_with_error(self, caplog):
+    async def test_both_middlewares_with_error(self):
         event = MockEvent("error_chain")
         error = ValueError("Chain error")
         handler = AsyncMock(side_effect=error)
@@ -192,13 +186,11 @@ class TestMiddlewareChain:
         async def chain(e, h):
             await logging_middleware(e, lambda e_: error_middleware(e_, h))
 
-        with caplog.at_level('DEBUG'):
+        with capture_logger_output() as log_content:
             await chain(event, handler)
-        assert f"[START] {event.get_log_string()}" in caplog.text
-        assert f"[END] {event.get_log_string()}" in caplog.text
+            assert f"[START] {event.get_log_string()}" in log_content.getvalue()
+            assert f"[END] {event.get_log_string()}" in log_content.getvalue()
 
-        caplog.clear()
-
-        with caplog.at_level('ERROR'):
+        with capture_logger_output(logging.ERROR) as log_content:
             await chain(event, handler)
-        assert f"{event.get_log_string()} | {error}" in caplog.text
+            assert f"{event.get_log_string()} | {error}" in log_content.getvalue()

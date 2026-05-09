@@ -1,8 +1,11 @@
 import asyncio
+
 import pytest
 from unittest.mock import AsyncMock
 
 from connection.event_bus import EventBus, prepare_bus
+
+from tests.test_connection.conftest import capture_logger_output
 
 
 class TestEventBus:
@@ -311,12 +314,13 @@ class TestIntegration:
         async def handle_user_deleted(event):
             results.append(f"User {event.user_id} deleted")
 
-        await bus.emit(UserCreated(1))
-        await bus.emit(UserDeleted(1))
+        with capture_logger_output():
+            await bus.emit(UserCreated(1))
+            await bus.emit(UserDeleted(1))
 
-        assert len(results) == 2
-        assert "User 1 created" in results
-        assert "User 1 deleted" in results
+            assert len(results) == 2
+            assert "User 1 created" in results
+            assert "User 1 deleted" in results
 
     @pytest.mark.asyncio
     async def test_complex_event_hierarchy(self):
