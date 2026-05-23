@@ -91,7 +91,8 @@ async def resolve_night(bus: EventBus, game: Game):
     putana_client = None
 
     shurikens_before = {p.number for p in game.get_alive_players() if p.surikens > 0}
-    mafia_blocked = any(p.is_glued for p in game.get_alive_players() if p.role in game.mafia_team)
+    mafia_dead = not any(p.is_alive for p in game.get_alive_players() if p.role in game.mafia_team)
+    mafia_blocked = any(p.is_glued for p in game.get_alive_players() if p.role in game.mafia_team) or mafia_dead
 
     actions = []
     for uid, acts in game.night_actions.items():
