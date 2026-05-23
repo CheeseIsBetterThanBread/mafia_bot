@@ -180,7 +180,8 @@ async def resolve_night(bus: EventBus, game: Game):
 
     announcement = "☀️ Город просыпается.\n\n"
     if killed_this_night:
-        for num in killed_this_night: game.players_by_number[num].is_alive = False
+        for num in killed_this_night:
+            game.players_by_number[num].is_alive = False
         announcement += f"💀 Этой ночью были убиты: {', '.join(map(str, killed_this_night))}.\n"
     else:
         announcement += "🕊 Этой ночью никто не умер!\n"
