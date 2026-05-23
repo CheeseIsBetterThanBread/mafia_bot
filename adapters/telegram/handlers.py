@@ -347,9 +347,3 @@ async def mafia_chat(message: Message):
         str(message.text)
     )
     await getattr(router, "bus", fallback_bus).emit(query)
-
-# --- FALLBACK (на всякий случай) ---
-
-@router.message()
-async def fallback(message: Message):
-    await message.answer("Unknown command")
