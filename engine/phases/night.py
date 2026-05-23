@@ -1,7 +1,15 @@
 import asyncio
 import random
 
-from config.settings import NIGHT_CALLBACK_TEMPLATE, NULL_OPTION
+from config.settings import (
+    NIGHT_CALLBACK_TEMPLATE,
+    NULL_OPTION,
+    THIEF_TIME,
+    THIEF_LOWER,
+    THIEF_UPPER,
+    NIGHT_TIME,
+    REMINDER_OFFSET
+)
 
 from connection.events import ResponseBase, ResponseWithOptions
 from connection.event_bus import EventBus
@@ -33,13 +41,13 @@ async def start_night(bus: EventBus, game: Game):
 
     response = ResponseBase(
         game.chat_id,
-        "🌙 Ждем ход Вора (у него есть 1 минута)...",
+        f"🌙 Ждем ход Вора (у него есть {THIEF_TIME} секунд)...",
         valid=True
     )
     await bus.emit(response)
 
     if not thief:
-        await asyncio.sleep(random.randint(20, 45))
+        await asyncio.sleep(random.randint(THIEF_LOWER, THIEF_UPPER))
 
         response = ResponseBase(
             game.chat_id,
@@ -89,7 +97,7 @@ async def start_night_others(bus: EventBus, game: Game):
 
     response = ResponseBase(
         game.chat_id,
-        "⏳ Мафия и активные роли делают свой ход. У вас есть ровно 3 минуты на все действия!",
+        f"⏳ Мафия и активные роли делают свой ход. У вас есть {NIGHT_TIME} секунд на все действия!",
         valid=True
     )
     await bus.emit(response)
@@ -140,7 +148,7 @@ async def start_night_others(bus: EventBus, game: Game):
 
 
 async def thief_timeout_logic(bus: EventBus, game: Game, current_day: int):
-    await asyncio.sleep(60)
+    await asyncio.sleep(THIEF_TIME)
     if game.state == GameState.NIGHT_THIEF and game.day_count == current_day:
         response = ResponseBase(
             game.chat_id,
@@ -157,18 +165,18 @@ async def thief_timeout_logic(bus: EventBus, game: Game, current_day: int):
 
 
 async def night_timeout_logic(bus: EventBus, game: Game, current_day: int):
-    await asyncio.sleep(120)
+    await asyncio.sleep(NIGHT_TIME - REMINDER_OFFSET)
     if game.state == GameState.NIGHT and game.day_count == current_day:
         for uid in game.expected_night_actors.keys():
             response = ResponseBase(
                 uid,
-                "⏳ <b>Осталась 1 минута!</b> Поторопитесь сделать свой выбор, иначе ваш ход сгорит.",
+                f"⏳ <b>Осталось {REMINDER_OFFSET} секунд!</b> Поторопитесь сделать свой выбор, иначе ваш ход сгорит.",
                 parse_mode="HTML",
                 valid=True
             )
             await bus.emit(response)
 
-        await asyncio.sleep(60)
+        await asyncio.sleep(REMINDER_OFFSET)
 
         if game.state == GameState.NIGHT and game.day_count == current_day:
             response = ResponseBase(

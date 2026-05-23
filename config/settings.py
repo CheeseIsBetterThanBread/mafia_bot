@@ -5,11 +5,18 @@ TELEGRAM_BOT_TOKEN = ""
 TELEGRAM_ADMIN_ID = 0
 TELEGRAM_ADMINS = [TELEGRAM_ADMIN_ID]
 
-# --- timers ---
+# --- day timers ---
 SECONDS_PER_PLAYER = 8
 SPEECH_LOWER_BOUND = 60
 SPEECH_UPPER_BOUND = 90
 WARNING_OFFSET = 10
+
+# --- night timers ---
+THIEF_TIME = 60
+THIEF_LOWER = 20
+THIEF_UPPER = 45
+NIGHT_TIME = 180
+REMINDER_OFFSET = 60
 
 # --- logging ---
 CONFIG_DIR = Path(__file__).parent.resolve()
