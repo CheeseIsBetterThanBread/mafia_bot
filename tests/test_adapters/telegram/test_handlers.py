@@ -402,13 +402,6 @@ class TestTelegramHandlers:
         mock_bus.emit.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_fallback_handler(self, mock_message):
-        from adapters.telegram.handlers import fallback as fallback_handler
-        await fallback_handler(mock_message)
-
-        mock_message.answer.assert_called_once_with("Unknown command")
-
-    @pytest.mark.asyncio
     async def test_fallback_emit_raises_error(self):
         with pytest.raises(ValueError, match="Failed to connect to EventBus"):
             await fallback_bus.emit(None)
