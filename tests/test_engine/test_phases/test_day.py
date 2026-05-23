@@ -303,8 +303,8 @@ class TestIntegrationDayPhases:
 
     @pytest.mark.asyncio
     async def test_speech_cycle_with_glued_players(self, mock_bus, game):
-        glued_player = choice(game.get_alive_players())
-        game.players[glued_player.number].is_glued = True
+        glued_player = choice([2, 3, 4])
+        game.players[glued_player].is_glued = True
 
         await start_day(mock_bus, game)
 
