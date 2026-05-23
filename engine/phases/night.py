@@ -1,4 +1,4 @@
-import asyncio
+from asyncio import create_task, sleep
 import random
 
 from config.settings import (
@@ -24,7 +24,7 @@ async def start_night(bus: EventBus, game: Game):
     game.night_actions = {}
     game.expected_night_actors = {}
 
-    asyncio.create_task(thief_timeout_logic(bus, game, game.day_count))
+    create_task(thief_timeout_logic(bus, game, game.day_count))
 
     for p in game.players.values():
         p.is_glued = False
@@ -47,7 +47,7 @@ async def start_night(bus: EventBus, game: Game):
     await bus.emit(response)
 
     if not thief:
-        await asyncio.sleep(random.randint(THIEF_LOWER, THIEF_UPPER))
+        await sleep(random.randint(THIEF_LOWER, THIEF_UPPER))
 
         response = ResponseBase(
             game.chat_id,
@@ -102,7 +102,7 @@ async def start_night_others(bus: EventBus, game: Game):
     )
     await bus.emit(response)
 
-    asyncio.create_task(night_timeout_logic(bus, game, game.day_count))
+    create_task(night_timeout_logic(bus, game, game.day_count))
 
     for p in alive_players:
         if p.role == "Вор" or p.is_glued: continue
@@ -148,7 +148,7 @@ async def start_night_others(bus: EventBus, game: Game):
 
 
 async def thief_timeout_logic(bus: EventBus, game: Game, current_day: int):
-    await asyncio.sleep(THIEF_TIME)
+    await sleep(THIEF_TIME)
     if game.state == GameState.NIGHT_THIEF and game.day_count == current_day:
         response = ResponseBase(
             game.chat_id,
@@ -165,7 +165,7 @@ async def thief_timeout_logic(bus: EventBus, game: Game, current_day: int):
 
 
 async def night_timeout_logic(bus: EventBus, game: Game, current_day: int):
-    await asyncio.sleep(NIGHT_TIME - REMINDER_OFFSET)
+    await sleep(NIGHT_TIME - REMINDER_OFFSET)
     if game.state == GameState.NIGHT and game.day_count == current_day:
         for uid in game.expected_night_actors.keys():
             response = ResponseBase(
@@ -176,7 +176,7 @@ async def night_timeout_logic(bus: EventBus, game: Game, current_day: int):
             )
             await bus.emit(response)
 
-        await asyncio.sleep(REMINDER_OFFSET)
+        await sleep(REMINDER_OFFSET)
 
         if game.state == GameState.NIGHT and game.day_count == current_day:
             response = ResponseBase(
