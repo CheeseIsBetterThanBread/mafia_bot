@@ -17,7 +17,7 @@ async def eliminate(bus: EventBus, game: Game, killed: int):
         )
         await bus.emit(response)
     else:
-        player.alive = False
+        player.is_alive = False
         response = ResponseBase(
             game.chat_id,
             f"💀 Игрок №{killed} покидает стол!",
