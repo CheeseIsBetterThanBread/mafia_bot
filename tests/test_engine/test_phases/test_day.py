@@ -1,5 +1,4 @@
 from collections import deque
-from random import choice
 
 import pytest
 from unittest.mock import AsyncMock, patch
@@ -303,8 +302,7 @@ class TestIntegrationDayPhases:
 
     @pytest.mark.asyncio
     async def test_speech_cycle_with_glued_players(self, mock_bus, game):
-        glued_player = choice([2, 3, 4])
-        game.players[glued_player].is_glued = True
+        game.players[2].is_glued = True
 
         await start_day(mock_bus, game)
 
