@@ -3,6 +3,7 @@ from connection.event_bus import EventBus
 
 from engine.game_state import Game, GameState
 from engine.models import Player
+from engine.services.victory import check_victory
 
 
 async def eliminate(bus: EventBus, game: Game, killed: int):
@@ -24,7 +25,6 @@ async def eliminate(bus: EventBus, game: Game, killed: int):
         )
         await bus.emit(response)
 
-        from engine.services.victory import check_victory
         if await check_victory(bus, game):
             return
 
@@ -156,7 +156,6 @@ async def resolve_balance(bus: EventBus, game: Game):
     )
     await bus.emit(response)
 
-    from engine.services.victory import check_victory
     if await check_victory(bus, game):
         return
 
