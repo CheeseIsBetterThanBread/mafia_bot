@@ -142,17 +142,17 @@ class TestQueueBuilding:
         return game
 
     def test_build_daily_queue_with_alive_players(self, game_with_players):
-        queue, starter = game_with_players.build_daily_queue()
+        queue = game_with_players.build_daily_queue()
 
         assert len(queue) == 5
         assert isinstance(queue, deque)
-        assert starter in range(1, 6)
+        assert game_with_players.day_starter_num in range(1, 6)
 
     def test_build_daily_queue_rotation(self, game_with_players):
-        queue1, starter1 = game_with_players.build_daily_queue()
+        queue1 = game_with_players.build_daily_queue()
 
-        game_with_players.day_starter_num = starter1 + 1
-        queue2, starter2 = game_with_players.build_daily_queue()
+        game_with_players.day_starter_num += 1
+        queue2 = game_with_players.build_daily_queue()
 
         assert queue1 != queue2
 
@@ -160,7 +160,7 @@ class TestQueueBuilding:
         for player in game_with_players.players.values():
             player.is_alive = False
 
-        queue, starter = game_with_players.build_daily_queue()
+        queue = game_with_players.build_daily_queue()
 
         assert queue == deque()
 
@@ -169,28 +169,28 @@ class TestQueueBuilding:
             player.is_alive = False
 
         game_with_players.day_starter_num = len(game_with_players.players.values()) + 1
-        queue, starter = game_with_players.build_daily_queue()
+        queue = game_with_players.build_daily_queue()
 
         assert len(queue) == 1
-        assert starter == 1
+        assert game_with_players.day_starter_num == 1
 
     def test_build_daily_queue_preserves_starter(self, game_with_players):
         initial_starter = game_with_players.day_starter_num
 
-        queue, starter = game_with_players.build_daily_queue()
+        _ = game_with_players.build_daily_queue()
 
-        assert starter == initial_starter
+        assert game_with_players.day_starter_num == initial_starter
 
     @patch('engine.game_state.rotate_queue')
     def test_build_daily_queue_calls_rotate(self, mock_rotate, game_with_players):
         mock_rotate.return_value = (deque([4, 5, 3]), 1)
 
-        queue, starter = game_with_players.build_daily_queue()
+        queue = game_with_players.build_daily_queue()
 
         mock_rotate.assert_called_once()
         assert mock_rotate.call_args[0][1] == game_with_players.day_starter_num
         assert queue == deque([4, 5, 3])
-        assert starter == 1
+        assert game_with_players.day_starter_num == 1
 
 
 class TestRolePreset:
@@ -412,10 +412,9 @@ class TestEdgeCases:
         game.add_player(1, "Player 1")
         game.players[1].is_alive = False
 
-        queue, starter = game.build_daily_queue()
+        queue = game.build_daily_queue()
 
         assert queue == deque()
-        assert starter == -1
 
     @patch('engine.game_state.ROOM_PRESETS', {5: ['preset1', 'preset2']})
     def test_set_preset_random_selection(self):
@@ -460,11 +459,10 @@ class TestIntegration:
         assert 3 not in [p.user_id for p in alive]
 
         game.day_starter_num = 3
-        queue, starter = game.build_daily_queue()
+        queue = game.build_daily_queue()
 
         assert len(queue) == 4
-        assert starter == game.day_starter_num
-        assert starter == 3 + 1
+        assert game.day_starter_num == 3 + 1
 
     def test_multiple_games_independent(self):
         game1 = Game(-100, 1)

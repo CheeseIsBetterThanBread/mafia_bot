@@ -77,10 +77,10 @@ class Game:
         alive = alive_sorted(self.get_alive_players())
 
         if not alive:
-            return deque(), -1
+            return deque()
 
         queue, self.day_starter_num = rotate_queue(alive, self.day_starter_num)
-        return queue, self.day_starter_num
+        return queue
 
     # --- ROLE PRESET PICK ---
 
