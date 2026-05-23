@@ -113,6 +113,7 @@ async def resolve_night(bus: EventBus, game: Game):
             putana_client = a["target"]
         elif a["code"] == "man_h":
             healed.add(a["target"].number)
+            a["target"].surikens = 0
 
     for a in actions:
         if a["code"] == "alibi" and not a["actor"].is_glued:
