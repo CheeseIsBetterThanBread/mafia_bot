@@ -169,9 +169,11 @@ async def resolve_night(bus: EventBus, game: Game):
 
     for p in game.get_alive_players():
         if p.role == "Тула" and p.number in killed_this_night:
-            if putana_client and putana_client.number != p.number:
-                if putana_client.role != "Бессмертный":
-                    killed_this_night.add(putana_client.number)
+            if not putana_client or putana_client.number == p.number:
+                continue
+            if putana_client.role == "Бессмертный" or putana_client.number in healed:
+                continue
+            killed_this_night.add(putana_client.number)
 
     announcement = "☀️ Город просыпается.\n\n"
     if killed_this_night:
