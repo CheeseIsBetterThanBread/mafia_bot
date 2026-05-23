@@ -106,7 +106,6 @@ async def resolve_night(bus: EventBus, game: Game):
             a["actor"].last_healed = a["target"].number
             a["target"].surikens = 0
         elif a["code"] == "tula":
-            healed.add(a["target"].number)
             a["target"].has_alibi = True
             a["actor"].last_healed = a["target"].number
             a["target"].surikens = 0
@@ -115,6 +114,13 @@ async def resolve_night(bus: EventBus, game: Game):
             healed.add(a["target"].number)
             a["target"].surikens = 0
 
+    def is_healed(number):
+        healed_by_others = number in healed
+        if healed_by_others:
+            return True
+
+        return putana_client is not None and number == putana_client.number
+
     for a in actions:
         if a["code"] == "alibi" and not a["actor"].is_glued:
             a["target"].has_alibi = True
@@ -122,7 +128,7 @@ async def resolve_night(bus: EventBus, game: Game):
 
     for a in actions:
         if a["code"] == "sur" and not a["actor"].is_glued:
-            if a["target"].number not in healed:
+            if not is_healed(a["target"].number):
                 a["target"].surikens += 1
 
     mafia_victim = None
@@ -150,15 +156,15 @@ async def resolve_night(bus: EventBus, game: Game):
             solo_victims.append(a["target"])
 
     if mafia_victim:
-        if mafia_victim.number not in healed and mafia_victim.role != "Бессмертный":
+        if not is_healed(mafia_victim.number) and mafia_victim.role != "Бессмертный":
             killed_this_night.add(mafia_victim.number)
 
     for victim in solo_victims:
-        if victim.number not in healed and victim.role != "Бессмертный":
+        if not is_healed(victim.number) and victim.role != "Бессмертный":
             killed_this_night.add(victim.number)
 
     for p in game.get_alive_players():
-        if p.surikens >= 2 and p.number not in healed:
+        if p.surikens >= 2 and not is_healed(p.number):
             if p.role == "Бессмертный":
                 p.surikens = 0
             else:
