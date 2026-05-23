@@ -1,8 +1,12 @@
 from contextlib import contextmanager
+from pathlib import Path
+from types import SimpleNamespace
+
 import io
 import logging
 import sys
-from pathlib import Path
+
+from unittest.mock import patch
 
 
 root_dir = Path(__file__).parent.parent
@@ -33,3 +37,20 @@ def capture_logger_output(log_level = logging.DEBUG):
             LOGGER.addHandler(handler)
         LOGGER.setLevel(original_level)
         log_stream.close()
+
+
+class MockOperations:
+    def __init__(self, target, **mock_config):
+        self.target = target
+        self.mock_config = mock_config
+        self.mocks = None
+
+    def __enter__(self):
+        kwargs = {name: mock_class() if callable(mock_class) else mock_class
+                  for name, mock_class in self.mock_config.items()}
+        self.patcher = patch.multiple(self.target, **kwargs)
+        self.mocks = self.patcher.__enter__()
+        return SimpleNamespace(**self.mocks)
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.patcher.__exit__(exc_type, exc_val, exc_tb)

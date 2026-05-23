@@ -3,6 +3,8 @@ from collections import deque
 import pytest
 from unittest.mock import patch, Mock
 
+from tests.conftest import MockOperations
+
 from engine.game_state import (
     Game,
     GameState,
@@ -240,6 +242,15 @@ class TestRolePreset:
 
 
 class TestSpeechTime:
+    @staticmethod
+    def patch_time(speech_time, minimal_time, maximal_time):
+        return MockOperations(
+            'engine.game_state',
+            SECONDS_PER_PLAYER = speech_time,
+            SPEECH_LOWER_BOUND = minimal_time,
+            SPEECH_UPPER_BOUND = maximal_time
+        )
+
     @pytest.fixture
     def game_with_players(self):
         game = Game(-100, 1)
@@ -248,81 +259,69 @@ class TestSpeechTime:
         return game
 
     def test_calculate_speech_time_normal(self, game_with_players):
-        with patch('engine.game_state.SECONDS_PER_PLAYER', 5):
-            with patch('engine.game_state.SPEECH_LOWER_BOUND', 10):
-                with patch('engine.game_state.SPEECH_UPPER_BOUND', 60):
-                    time = game_with_players.calculate_speech_time()
+        with self.patch_time(5, 10, 60):
+            time = game_with_players.calculate_speech_time()
 
-                    from engine.game_state import SECONDS_PER_PLAYER
-                    assert time == len(game_with_players.get_alive_players()) * SECONDS_PER_PLAYER
+            from engine.game_state import SECONDS_PER_PLAYER
+            assert time == len(game_with_players.get_alive_players()) * SECONDS_PER_PLAYER
 
     def test_calculate_speech_time_below_lower_bound(self, game_with_players):
-        with patch('engine.game_state.SECONDS_PER_PLAYER', 1):
-            with patch('engine.game_state.SPEECH_LOWER_BOUND', 10):
-                with patch('engine.game_state.SPEECH_UPPER_BOUND', 60):
-                    with patch.object(game_with_players, 'get_alive_players') as mock_alive:
-                        mock_alive.return_value = [Mock() for _ in range(5)]
+        with self.patch_time(1, 10, 60):
+            with patch.object(game_with_players, 'get_alive_players') as mock_alive:
+                mock_alive.return_value = [Mock() for _ in range(5)]
 
-                        time = game_with_players.calculate_speech_time()
+                time = game_with_players.calculate_speech_time()
 
-                        from engine.game_state import SPEECH_LOWER_BOUND
-                        assert time == SPEECH_LOWER_BOUND
+                from engine.game_state import SPEECH_LOWER_BOUND
+                assert time == SPEECH_LOWER_BOUND
 
     def test_calculate_speech_time_above_upper_bound(self, game_with_players):
-        with patch('engine.game_state.SECONDS_PER_PLAYER', 10):
-            with patch('engine.game_state.SPEECH_LOWER_BOUND', 10):
-                with patch('engine.game_state.SPEECH_UPPER_BOUND', 60):
-                    with patch.object(game_with_players, 'get_alive_players') as mock_alive:
-                        mock_alive.return_value = [Mock() for _ in range(20)]
+        with self.patch_time(10, 10, 60):
+            with patch.object(game_with_players, 'get_alive_players') as mock_alive:
+                mock_alive.return_value = [Mock() for _ in range(20)]
 
-                        time = game_with_players.calculate_speech_time()
+                time = game_with_players.calculate_speech_time()
 
-                        from engine.game_state import SPEECH_UPPER_BOUND
-                        assert time == SPEECH_UPPER_BOUND
+                from engine.game_state import SPEECH_UPPER_BOUND
+                assert time == SPEECH_UPPER_BOUND
 
     def test_calculate_speech_time_exactly_lower_bound(self, game_with_players):
-        with patch('engine.game_state.SECONDS_PER_PLAYER', 2):
-            with patch('engine.game_state.SPEECH_LOWER_BOUND', 10):
-                with patch('engine.game_state.SPEECH_UPPER_BOUND', 60):
-                    with patch.object(game_with_players, 'get_alive_players') as mock_alive:
-                        mock_alive.return_value = [Mock() for _ in range(5)]
+        with self.patch_time(2, 10, 60):
+            with patch.object(game_with_players, 'get_alive_players') as mock_alive:
+                mock_alive.return_value = [Mock() for _ in range(5)]
 
-                        time = game_with_players.calculate_speech_time()
+                time = game_with_players.calculate_speech_time()
 
-                        from engine.game_state import SPEECH_LOWER_BOUND
-                        assert time == SPEECH_LOWER_BOUND
+                from engine.game_state import SPEECH_LOWER_BOUND
+                assert time == SPEECH_LOWER_BOUND
 
     def test_calculate_speech_time_exactly_upper_bound(self, game_with_players):
-        with patch('engine.game_state.SECONDS_PER_PLAYER', 6):
-            with patch('engine.game_state.SPEECH_LOWER_BOUND', 10):
-                with patch('engine.game_state.SPEECH_UPPER_BOUND', 60):
-                    with patch.object(game_with_players, 'get_alive_players') as mock_alive:
-                        mock_alive.return_value = [Mock() for _ in range(10)]
+        with self.patch_time(6, 10, 60):
+            with patch.object(game_with_players, 'get_alive_players') as mock_alive:
+                mock_alive.return_value = [Mock() for _ in range(10)]
 
-                        time = game_with_players.calculate_speech_time()
+                time = game_with_players.calculate_speech_time()
 
-                        from engine.game_state import SPEECH_UPPER_BOUND
-                        assert time == SPEECH_UPPER_BOUND
+                from engine.game_state import SPEECH_UPPER_BOUND
+                assert time == SPEECH_UPPER_BOUND
 
     def test_calculate_speech_time_changes_with_alive_count(self, game_with_players):
-        with patch('engine.game_state.SECONDS_PER_PLAYER', 5):
-            with patch('engine.game_state.SPEECH_LOWER_BOUND', 10):
-                with patch('engine.game_state.SPEECH_UPPER_BOUND', 60):
-                    from engine.game_state import SECONDS_PER_PLAYER
+        with self.patch_time(5, 10, 60):
+            from engine.game_state import SECONDS_PER_PLAYER
 
-                    for player in list(game_with_players.players.values())[5:]:
-                        player.is_alive = False
-                    time1 = game_with_players.calculate_speech_time()
-                    expected1 = len(game_with_players.get_alive_players()) * SECONDS_PER_PLAYER
+            for player in list(game_with_players.players.values())[5:]:
+                player.is_alive = False
+            time1 = game_with_players.calculate_speech_time()
+            expected1 = len(game_with_players.get_alive_players()) * SECONDS_PER_PLAYER
 
-                    for player in list(game_with_players.players.values())[3:5]:
-                        player.is_alive = False
-                    time2 = game_with_players.calculate_speech_time()
-                    expected2 = len(game_with_players.get_alive_players()) * SECONDS_PER_PLAYER
+            for player in list(game_with_players.players.values())[3:5]:
+                player.is_alive = False
+            time2 = game_with_players.calculate_speech_time()
+            expected2 = len(game_with_players.get_alive_players()) * SECONDS_PER_PLAYER
 
-                    assert time1 == expected1
-                    assert time2 == expected2
-                    assert time1 > time2
+            assert time1 == expected1
+            assert time2 == expected2
+            assert time1 > time2
 
 
 class TestGameStateTransitions:
