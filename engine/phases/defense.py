@@ -23,7 +23,6 @@ async def start_defense(bus: EventBus, game: Game):
     game.defense_queue = deque([
         game.players_by_number[n]
         for n in game.nominated
-        if game.players_by_number[n].is_alive
     ])
 
     assert game.defense_queue
