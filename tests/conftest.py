@@ -43,14 +43,18 @@ class MockOperations:
     def __init__(self, target, **mock_config):
         self.target = target
         self.mock_config = mock_config
-        self.mocks = None
 
     def __enter__(self):
-        kwargs = {name: mock_class() if callable(mock_class) else mock_class
-                  for name, mock_class in self.mock_config.items()}
-        self.patcher = patch.multiple(self.target, **kwargs)
-        self.mocks = self.patcher.__enter__()
-        return SimpleNamespace(**self.mocks)
+        self.created_mocks = {
+            name: value() if isinstance(value, type) else value
+            for name, value in self.mock_config.items()
+        }
+        self.patcher = patch.multiple(
+            self.target,
+            **self.created_mocks
+        )
+        self.patcher.start()
+        return SimpleNamespace(**self.created_mocks)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.patcher.__exit__(exc_type, exc_val, exc_tb)
+        self.patcher.stop()
