@@ -120,13 +120,10 @@ async def resolve_night(bus: EventBus, game: Game):
             a["target"].has_alibi = True
             a["actor"].last_alibi = a["target"].number
 
-    shurikened_this_night = []
-
     for a in actions:
         if a["code"] == "sur" and not a["actor"].is_glued:
             if a["target"].number not in healed:
                 a["target"].surikens += 1
-                shurikened_this_night.append(a["target"].number)
 
     mafia_victim = None
     if not mafia_blocked:
