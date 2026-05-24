@@ -159,7 +159,7 @@ class EventDispatcher:
     # --- GAME ---
 
     async def _handle_start_game(self, query: StartGameQuery):
-        if self.__not_admin(query):
+        if await self.__not_admin(query):
             return
 
         if (query.chat_id in self.engine.games
@@ -210,7 +210,7 @@ class EventDispatcher:
         await self.__send_response(valid_response)
 
     async def _handle_run(self, query: RunQuery):
-        if self.__not_admin(query):
+        if await self.__not_admin(query):
             return
 
         game: Game = self.engine.get_game(query.chat_id)
@@ -274,7 +274,7 @@ class EventDispatcher:
     # --- NIGHT ENFORCEMENT ---
 
     async def _handle_start_night(self, query: StartNightQuery):
-        if self.__not_admin(query):
+        if await self.__not_admin(query):
             return
 
         game: Game = self.engine.get_game(query.chat_id)
@@ -293,7 +293,7 @@ class EventDispatcher:
         await start_night(self.bus, game)
 
     async def _handle_skip_night(self, query: SkipNightQuery):
-        if self.__not_admin(query):
+        if await self.__not_admin(query):
             return
 
         game: Game = self.engine.get_game(query.chat_id)
