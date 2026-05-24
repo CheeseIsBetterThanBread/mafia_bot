@@ -1,9 +1,15 @@
+from dotenv import load_dotenv
 from pathlib import Path
 
+import os
+
+
+load_dotenv()
+
 # --- telegram ---
-TELEGRAM_BOT_TOKEN = ""
-TELEGRAM_ADMIN_ID = 0
-TELEGRAM_ADMINS = [TELEGRAM_ADMIN_ID]
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
+TELEGRAM_ADMIN_ID = os.getenv("TELEGRAM_ADMIN_ID", 0)
+TELEGRAM_ADMINS = [int(admin_id) for admin_id in os.getenv("TELEGRAM_ADMINS", "").split(',') if admin_id]
 
 # --- day timers ---
 SECONDS_PER_PLAYER = 8
