@@ -24,8 +24,6 @@ async def start_night(bus: EventBus, game: Game):
     game.night_actions = {}
     game.expected_night_actors = {}
 
-    create_task(thief_timeout_logic(bus, game, game.day_count))
-
     for p in game.players.values():
         p.is_glued = False
         p.has_alibi = False
@@ -38,6 +36,8 @@ async def start_night(bus: EventBus, game: Game):
     if not thief_in_preset:
         await start_night_others(bus, game)
         return
+
+    create_task(thief_timeout_logic(bus, game, game.day_count))
 
     response = ResponseBase(
         game.chat_id,
