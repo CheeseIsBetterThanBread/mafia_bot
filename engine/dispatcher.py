@@ -133,6 +133,18 @@ class EventDispatcher:
 
         return True
 
+    async def __validate_game(self, query: InfoQuery):
+        game: Game = self.engine.get_game(query.chat_id)
+        if not game or game.state in [GameState.LOBBY, GameState.FINISHED]:
+            await self.__send_response_base(
+                query.chat_id,
+                "Игра сейчас не идет.",
+                valid=False
+            )
+            return None
+
+        return game
+
     async def __send_response(self, response):
         await self.bus.emit(response)
 
@@ -262,13 +274,8 @@ class EventDispatcher:
     # --- INFO ---
 
     async def _handle_alive(self, query: InfoQuery):
-        game: Game = self.engine.get_game(query.chat_id)
-        if not game or game.state in [GameState.LOBBY, GameState.FINISHED]:
-            await self.__send_response_base(
-                query.chat_id,
-                "Игра сейчас не идет.",
-                valid=False
-            )
+        game: Game = await self.__validate_game(query)
+        if game is None:
             return
 
         alive = alive_sorted(game.get_alive_players())
@@ -280,13 +287,8 @@ class EventDispatcher:
         )
 
     async def _handle_description(self, query: InfoQuery):
-        game: Game = self.engine.get_game(query.chat_id)
-        if not game or game.state in [GameState.LOBBY, GameState.FINISHED]:
-            await self.__send_response_base(
-                query.chat_id,
-                "Игра сейчас не идет.",
-                valid=False
-            )
+        game: Game = await self.__validate_game(query)
+        if game is None:
             return
 
         unique_roles = set(game.current_preset)
@@ -303,13 +305,8 @@ class EventDispatcher:
         )
 
     async def _handle_roles(self, query: InfoQuery):
-        game: Game = self.engine.get_game(query.chat_id)
-        if not game or game.state in [GameState.LOBBY, GameState.FINISHED]:
-            await self.__send_response_base(
-                query.chat_id,
-                "Игра сейчас не идет.",
-                valid=False
-            )
+        game: Game = await self.__validate_game(query)
+        if game is None:
             return
 
         await self.__send_response_base(
@@ -319,13 +316,8 @@ class EventDispatcher:
         )
 
     async def _handle_nominated(self, query: InfoQuery):
-        game: Game = self.engine.get_game(query.chat_id)
-        if not game or game.state in [GameState.LOBBY, GameState.FINISHED]:
-            await self.__send_response_base(
-                query.chat_id,
-                "Игра сейчас не идет.",
-                valid=False
-            )
+        game: Game = await self.__validate_game(query)
+        if game is None:
             return
 
         if game and game.nominated:
@@ -385,13 +377,8 @@ class EventDispatcher:
         )
 
     async def _handle_status(self, query: InfoQuery):
-        game: Game = self.engine.get_game(query.chat_id)
-        if not game or game.state in [GameState.LOBBY, GameState.FINISHED]:
-            await self.__send_response_base(
-                query.chat_id,
-                "Игра сейчас не идет.",
-                valid=False
-            )
+        game: Game = await self.__validate_game(query)
+        if game is None:
             return
 
         alive = alive_sorted(game.get_alive_players())
