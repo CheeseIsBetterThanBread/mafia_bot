@@ -189,5 +189,4 @@ async def night_timeout_logic(bus: EventBus, game: Game, current_day: int):
 
             game.expected_night_actors.clear()
 
-            from engine.services.night_resolution import resolve_night
             await resolve_night(bus, game)
