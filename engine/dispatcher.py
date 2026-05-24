@@ -127,7 +127,8 @@ class EventDispatcher:
         if query.user_id not in query.admin_ids:
             response = ResponseBase(
                 query.chat_id,
-                "⛔️ Эта команда доступна только создателю игры!"
+                "⛔️ Эта команда доступна только создателю игры!",
+                valid=False
             )
             await self.bus.emit(response)
             return
@@ -136,7 +137,8 @@ class EventDispatcher:
             and self.engine.games[query.chat_id].state != GameState.FINISHED):
             response = ResponseBase(
                 query.chat_id,
-                "Игра в этом чате уже запущена!"
+                "Игра в этом чате уже запущена!",
+                valid=False
             )
             await self.bus.emit(response)
             return
@@ -146,7 +148,8 @@ class EventDispatcher:
         response = ResponseWithOptions(
             options,
             query.chat_id,
-            "Регистрация на Мафию открыта! Нажмите кнопку ниже."
+            "Регистрация на Мафию открыта! Нажмите кнопку ниже.",
+            valid=True
         )
         await self.bus.emit(response)
 
@@ -185,7 +188,8 @@ class EventDispatcher:
         if query.user_id not in query.admin_ids:
             response = ResponseBase(
                 query.chat_id,
-                "⛔️ Эта команда доступна только создателю игры!"
+                "⛔️ Эта команда доступна только создателю игры!",
+                valid=False
             )
             await self.bus.emit(response)
             return
@@ -198,7 +202,8 @@ class EventDispatcher:
         if player_count not in ROOM_PRESETS:
             response = ResponseBase(
                 query.chat_id,
-                f"Для старта нужно другое количество игроков (сейчас {player_count})."
+                f"Для старта нужно другое количество игроков (сейчас {player_count}).",
+                valid=False
             )
             await self.bus.emit(response)
             return
@@ -222,14 +227,16 @@ class EventDispatcher:
             response = ResponseBase(
                 player.user_id,
                 msg,
-                parse_mode="HTML"
+                parse_mode="HTML",
+                valid=True
             )
             await self.bus.emit(response)
 
 
         response = ResponseBase(
             query.chat_id,
-            f"🎲 Игра началась!\nНабор ролей: {', '.join(game.current_preset)}"
+            f"🎲 Игра началась!\nНабор ролей: {', '.join(game.current_preset)}",
+            valid=True
         )
         await self.bus.emit(response)
 
@@ -242,7 +249,8 @@ class EventDispatcher:
         response = ResponseBase(
             query.chat_id,
             desc_text,
-            parse_mode="HTML"
+            parse_mode="HTML",
+            valid=True
         )
         await self.bus.emit(response)
 
@@ -255,7 +263,8 @@ class EventDispatcher:
         if not game or game.state in [GameState.LOBBY, GameState.FINISHED]:
             response = ResponseBase(
                 query.chat_id,
-                "Игра сейчас не идет."
+                "Игра сейчас не идет.",
+                valid=False
             )
             await self.bus.emit(response)
             return
@@ -264,7 +273,8 @@ class EventDispatcher:
         text = "👤 Живые игроки за столом:\n" + "\n".join([f"№{p.number} — {p.name}" for p in alive])
         response = ResponseBase(
             query.chat_id,
-            text
+            text,
+            valid=True
         )
         await self.bus.emit(response)
 
@@ -274,7 +284,8 @@ class EventDispatcher:
         if not game or game.state in [GameState.LOBBY, GameState.FINISHED]:
             response = ResponseBase(
                 query.chat_id,
-                "Игра сейчас не идет."
+                "Игра сейчас не идет.",
+                valid=False
             )
             await self.bus.emit(response)
             return
@@ -288,7 +299,8 @@ class EventDispatcher:
         response = ResponseBase(
             query.chat_id,
             desc_text,
-            parse_mode="HTML"
+            parse_mode="HTML",
+            valid=True
         )
         await self.bus.emit(response)
 
@@ -298,31 +310,44 @@ class EventDispatcher:
         if not game or game.state in [GameState.LOBBY, GameState.FINISHED]:
             response = ResponseBase(
                 query.chat_id,
-                "Игра сейчас не идет."
+                "Игра сейчас не идет.",
+                valid=False
             )
             await self.bus.emit(response)
             return
 
         response = ResponseBase(
             query.chat_id,
-            f"📜 Набор ролей в этой игре:\n{', '.join(game.current_preset)}"
+            f"📜 Набор ролей в этой игре:\n{', '.join(game.current_preset)}",
+            valid=True
         )
         await self.bus.emit(response)
 
 
     async def _handle_nominated(self, query: InfoQuery):
         game: Game = self.engine.get_game(query.chat_id)
+        if not game or game.state in [GameState.LOBBY, GameState.FINISHED]:
+            response = ResponseBase(
+                query.chat_id,
+                "Игра сейчас не идет.",
+                valid=False
+            )
+            await self.bus.emit(response)
+            return
+
         if game and game.nominated:
             response = ResponseBase(
                 query.chat_id,
-                "Выставлены: " + ", ".join(map(str, game.nominated))
+                "Выставлены: " + ", ".join(map(str, game.nominated)),
+                valid=True
             )
             await self.bus.emit(response)
             return
 
         response = ResponseBase(
             query.chat_id,
-            "Пока никто не выставлен."
+            "Пока никто не выставлен.",
+            valid=True
         )
         await self.bus.emit(response)
 
@@ -332,7 +357,8 @@ class EventDispatcher:
         if not game or game.state not in [GameState.VOTING, GameState.REVOTE, GameState.BALANCE]:
             response = ResponseBase(
                 query.chat_id,
-                "Сейчас не идет голосование."
+                "Сейчас не идет голосование.",
+                valid=False
             )
             await self.bus.emit(response)
             return
@@ -340,7 +366,8 @@ class EventDispatcher:
         if not getattr(game, "vote_history", None):
             response = ResponseBase(
                 query.chat_id,
-                "Пока никто не выставлен."
+                "Пока никто не проголосовал.",
+                valid=True
             )
             await self.bus.emit(response)
             return
@@ -365,7 +392,8 @@ class EventDispatcher:
         response = ResponseBase(
             query.chat_id,
             text,
-            parse_mode="HTML"
+            parse_mode="HTML",
+            valid=True
         )
         await self.bus.emit(response)
 
@@ -375,7 +403,8 @@ class EventDispatcher:
         if not game or game.state in [GameState.LOBBY, GameState.FINISHED]:
             response = ResponseBase(
                 query.chat_id,
-                "Игра сейчас не идет."
+                "Игра сейчас не идет.",
+                valid=False
             )
             await self.bus.emit(response)
             return
@@ -385,7 +414,8 @@ class EventDispatcher:
                 "\n".join([f"№{p.number} — {p.name} - {p.surikens}" for p in alive]))
         response = ResponseBase(
             query.chat_id,
-            text
+            text,
+            valid=True
         )
         await self.bus.emit(response)
 
@@ -408,7 +438,8 @@ class EventDispatcher:
             if not game.speech_queue or player.user_id != game.speech_queue[0].user_id:
                 response = ResponseBase(
                     query.chat_id,
-                    "Сейчас не ваша очередь говорить!"
+                    "Сейчас не ваша очередь говорить!",
+                    valid=False
                 )
                 await self.bus.emit(response)
                 return
@@ -417,7 +448,8 @@ class EventDispatcher:
             if not game.defense_queue or player.user_id != game.defense_queue[0].user_id:
                 response = ResponseBase(
                     query.chat_id,
-                    "Сейчас не ваша очередь оправдываться!"
+                    "Сейчас не ваша очередь оправдываться!",
+                    valid=False
                 )
                 await self.bus.emit(response)
                 return
@@ -426,7 +458,8 @@ class EventDispatcher:
         if game.current_speech_task and not game.current_speech_task.done():
             response = ResponseBase(
                 query.chat_id,
-                "Вы уже выступаете!"
+                "Вы уже выступаете!",
+                valid=False
             )
             await self.bus.emit(response)
             return
@@ -436,13 +469,15 @@ class EventDispatcher:
         if is_defense:
             response = ResponseBase(
                 query.chat_id,
-                f"⏱ Игрок №{player.number}, ваши {speech_time} секунд на оправдание пошли!\nЧтобы закончить речь досрочно: /end_speech"
+                f"⏱ Игрок №{player.number}, ваши {speech_time} секунд на оправдание пошли!\nЧтобы закончить речь досрочно: /end_speech",
+                valid=True
             )
             await self.bus.emit(response)
         else:
             response = ResponseBase(
                 query.chat_id,
-                f"⏱ Игрок №{player.number}, ваши {speech_time} секунд пошли!\nВы можете выставлять кандидатов: /nominate \nЧтобы закончить речь досрочно: /end_speech"
+                f"⏱ Игрок №{player.number}, ваши {speech_time} секунд пошли!\nВы можете выставлять кандидатов: /nominate \nЧтобы закончить речь досрочно: /end_speech",
+                valid=True
             )
             await self.bus.emit(response)
 
@@ -454,7 +489,8 @@ class EventDispatcher:
 
                 local_response = ResponseBase(
                     query.chat_id,
-                    f"⚠️ Игрок №{player.number}, осталось {WARNING_OFFSET} секунд!"
+                    f"⚠️ Игрок №{player.number}, осталось {WARNING_OFFSET} секунд!",
+                    valid=True
                 )
                 await self.bus.emit(local_response)
 
@@ -464,7 +500,8 @@ class EventDispatcher:
 
                 local_response = ResponseBase(
                     query.chat_id,
-                    f"🛑 Игрок №{player.number}, время вышло!"
+                    f"🛑 Игрок №{player.number}, время вышло!",
+                    valid=True
                 )
                 await self.bus.emit(local_response)
 
@@ -497,7 +534,8 @@ class EventDispatcher:
 
             response = ResponseBase(
                 query.chat_id,
-                f"✅ Игрок №{player.number} завершил свою речь."
+                f"✅ Игрок №{player.number} завершил свою речь.",
+                valid=True
             )
             await self.bus.emit(response)
             await next_speaker(self.bus, game)
@@ -509,7 +547,8 @@ class EventDispatcher:
 
             response = ResponseBase(
                 query.chat_id,
-                f"✅ Игрок №{player.number} завершил свою оправдательную речь."
+                f"✅ Игрок №{player.number} завершил свою оправдательную речь.",
+                valid=True
             )
             await self.bus.emit(response)
             await next_defense_speaker(self.bus, game)
@@ -524,7 +563,8 @@ class EventDispatcher:
         if getattr(game, 'day_count', 1) == 1:
             response = ResponseBase(
                 query.chat_id,
-                "⚠️ Сегодня первый день (день знакомств). Выставлять кандидатов на голосование запрещено!"
+                "⚠️ Сегодня первый день (день знакомств). Выставлять кандидатов на голосование запрещено!",
+                valid=False
             )
             await self.bus.emit(response)
             return
@@ -533,7 +573,8 @@ class EventDispatcher:
         if not player or player.user_id != game.speech_queue[0].user_id:
             response = ResponseBase(
                 query.chat_id,
-                "Сейчас не ваша очередь говорить!"
+                "Сейчас не ваша очередь говорить!",
+                valid=False
             )
             await self.bus.emit(response)
             return
@@ -541,7 +582,8 @@ class EventDispatcher:
         if player.has_nominated:
             response = ResponseBase(
                 query.chat_id,
-                "⚠️ Вы уже выставили одного кандидата на этом кругу!"
+                "⚠️ Вы уже выставили одного кандидата на этом кругу!",
+                valid=False
             )
             await self.bus.emit(response)
             return
@@ -552,7 +594,8 @@ class EventDispatcher:
         response = ResponseWithOptions(
             nominate_options,
             query.chat_id,
-            "Кого вы хотите выставить на голосование?"
+            "Кого вы хотите выставить на голосование?",
+            valid=True
         )
         await self.bus.emit(response)
 
@@ -621,7 +664,8 @@ class EventDispatcher:
         if not player or not game.voting_queue or player.user_id != game.voting_queue[0].user_id:
             response = ResponseBase(
                 query.chat_id,
-                "Сейчас не ваша очередь голосовать!"
+                "Сейчас не ваша очередь голосовать!",
+                valid=False
             )
             await self.bus.emit(response)
             return
@@ -631,7 +675,8 @@ class EventDispatcher:
         response = ResponseWithOptions(
             vote_options,
             query.chat_id,
-            "Против кого вы голосуете?"
+            "Против кого вы голосуете?",
+            valid=True
         )
         await self.bus.emit(response)
 
@@ -681,7 +726,8 @@ class EventDispatcher:
 
         response = ResponseBase(
             query.chat_id,
-            f"Следующий голосует Игрок №{game.voting_queue[0].number}. Напишите /vote"
+            f"Следующий голосует Игрок №{game.voting_queue[0].number}. Напишите /vote",
+            valid=True
         )
         await self.bus.emit(response)
 
@@ -696,7 +742,8 @@ class EventDispatcher:
         if not player or not game.voting_queue or player.user_id != game.voting_queue[0].user_id:
             response = ResponseBase(
                 query.chat_id,
-                "Сейчас не ваша очередь!"
+                "Сейчас не ваша очередь!",
+                valid=False
             )
             await self.bus.emit(response)
             return
@@ -709,7 +756,8 @@ class EventDispatcher:
         response = ResponseWithOptions(
             balance_options,
             query.chat_id,
-            "Ваш выбор на балансе?"
+            "Ваш выбор на балансе?",
+            valid=True
         )
         await self.bus.emit(response)
 
@@ -756,7 +804,8 @@ class EventDispatcher:
 
         response = ResponseBase(
             query.chat_id,
-            f"Следующий голосует Игрок №{game.voting_queue[0].number}. Напишите /balance"
+            f"Следующий голосует Игрок №{game.voting_queue[0].number}. Напишите /balance",
+            valid=True
         )
         await self.bus.emit(response)
 
@@ -766,7 +815,8 @@ class EventDispatcher:
         if query.user_id not in query.admin_ids:
             response = ResponseBase(
                 query.chat_id,
-                "⛔️ Эта команда доступна только создателю игры!"
+                "⛔️ Эта команда доступна только создателю игры!",
+                valid=False
             )
             await self.bus.emit(response)
             return
@@ -780,7 +830,8 @@ class EventDispatcher:
 
         response = ResponseBase(
             query.chat_id,
-            "🌙 Принудительно наступает Ночь! Город засыпает..."
+            "🌙 Принудительно наступает Ночь! Город засыпает...",
+            valid=True
         )
         await self.bus.emit(response)
 
@@ -791,7 +842,8 @@ class EventDispatcher:
         if query.user_id not in query.admin_ids:
             response = ResponseBase(
                 query.chat_id,
-                "⛔️ Эта команда доступна только создателю игры!"
+                "⛔️ Эта команда доступна только создателю игры!",
+                valid=False
             )
             await self.bus.emit(response)
             return
@@ -806,7 +858,8 @@ class EventDispatcher:
 
         response = ResponseBase(
             query.chat_id,
-            "🤐 Вор никого не заклеил."
+            "🤐 Вор никого не заклеил.",
+            valid=True
         )
         await self.bus.emit(response)
 
@@ -836,7 +889,8 @@ class EventDispatcher:
         if player.is_glued:
             response = ResponseBase(
                 query.chat_id,
-                "🤐 Вы заклеены Вором! Вы не можете говорить в чате мафии этой ночью."
+                "🤐 Вы заклеены Вором! Вы не можете говорить в чате мафии этой ночью.",
+                valid=False
             )
             await self.bus.emit(response)
             return
@@ -846,7 +900,8 @@ class EventDispatcher:
             if other_p.role in active_game.mafia_team and other_p.user_id != user_id:
                 response = ResponseBase(
                     other_p.user_id,
-                    f"🥷 [Чат мафии] Игрок №{player.number}: {query.text}"
+                    f"🥷 [Чат мафии] Игрок №{player.number}: {query.text}",
+                    valid=True
                 )
                 await self.bus.emit(response)
                 sent_count += 1
@@ -854,7 +909,8 @@ class EventDispatcher:
         if sent_count == 0:
             response = ResponseBase(
                 query.chat_id,
-                "🥷 Вы остались единственным живым мафиози. Вас некому читать."
+                "🥷 Вы остались единственным живым мафиози. Вас некому читать.",
+                valid=False
             )
             await self.bus.emit(response)
 
@@ -945,7 +1001,8 @@ class EventDispatcher:
 
             response = ResponseBase(
                 user_id,
-                ans
+                ans,
+                valid=True
             )
             await self.bus.emit(response)
 
@@ -962,7 +1019,8 @@ class EventDispatcher:
 
             response = ResponseBase(
                 user_id,
-                ans
+                ans,
+                valid=True
             )
             await self.bus.emit(response)
 
@@ -976,20 +1034,23 @@ class EventDispatcher:
 
                 response = ResponseBase(
                     user_id,
-                    f"🎯 Вы нашли Мафию! Состав: {maf_list}. Со следующей ночи вы убиваете сами."
+                    f"🎯 Вы нашли Мафию! Состав: {maf_list}. Со следующей ночи вы убиваете сами.",
+                    valid=True
                 )
                 await self.bus.emit(response)
                 for maf in game.get_alive_players():
                     mafia_response = ResponseBase(
                         maf.user_id,
-                        f"🎭 Двуликий нашел нас! Это Игрок №{player.number}."
+                        f"🎭 Двуликий нашел нас! Это Игрок №{player.number}.",
+                        valid=True
                     )
                     if maf.role in game.mafia_team:
                         await self.bus.emit(mafia_response)
             else:
                 response = ResponseBase(
                     user_id,
-                    f"❌ Игрок №{target_num} не состоит в Мафии."
+                    f"❌ Игрок №{target_num} не состоит в Мафии.",
+                    valid=True
                 )
                 await self.bus.emit(response)
 
