@@ -47,6 +47,14 @@ class EventDispatcher:
             await self._handle_run(query)
             return
 
+        if query.cmd == QueryType.START_NIGHT:
+            await self._handle_start_night(query)
+            return
+
+        if query.cmd == QueryType.SKIP_NIGHT:
+            await self._handle_skip_night(query)
+            return
+
         if query.cmd == QueryType.ALIVE:
             await self._handle_alive(query)
             return
@@ -79,6 +87,10 @@ class EventDispatcher:
             await self._handle_end_speech(query)
             return
 
+        if query.cmd == QueryType.MAFIA_CHAT:
+            await self._handle_mafia_chat(query)
+            return
+
         if query.cmd == QueryType.PRE_NOMINATE:
             await self._handle_pre_nominate(query)
             return
@@ -101,18 +113,6 @@ class EventDispatcher:
 
         if query.cmd == QueryType.BALANCE:
             await self._handle_balance(query)
-            return
-
-        if query.cmd == QueryType.START_NIGHT:
-            await self._handle_start_night(query)
-            return
-
-        if query.cmd == QueryType.SKIP_NIGHT:
-            await self._handle_skip_night(query)
-            return
-
-        if query.cmd == QueryType.MAFIA_CHAT:
-            await self._handle_mafia_chat(query)
             return
 
         if query.cmd == QueryType.NIGHT_ACTION:
