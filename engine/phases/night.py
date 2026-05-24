@@ -17,6 +17,7 @@ from connection.event_bus import EventBus
 from utils.logger import LOGGER
 
 from engine.game_state import Game, GameState
+from engine.services.night_resolution import resolve_night
 
 
 async def start_night(bus: EventBus, game: Game):
@@ -143,7 +144,6 @@ async def start_night_others(bus: EventBus, game: Game):
                 await bus.emit(response)
 
     if not game.expected_night_actors:
-        from engine.services.night_resolution import resolve_night
         await resolve_night(bus, game)
 
 
