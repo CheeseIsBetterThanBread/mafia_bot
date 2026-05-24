@@ -558,6 +558,49 @@ class EventDispatcher:
             )
             await next_defense_speaker(self.bus, game)
 
+    # --- MAFIA CHAT ---
+
+    async def _handle_mafia_chat(self, query: MafiaChatQuery):
+        user_id = query.user_id
+
+        active_game = None
+        player = None
+        for game in self.engine.games.values():
+            if user_id in game.players and game.state in [GameState.NIGHT_THIEF, GameState.NIGHT]:
+                active_game = game
+                player = game.players[user_id]
+                break
+
+        if not active_game or not player or not player.is_alive:
+            return
+        if player.role not in active_game.mafia_team:
+            return
+
+        if player.is_glued:
+            await self.__send_response_base(
+                query.chat_id,
+                "🤐 Вы заклеены Вором! Вы не можете говорить в чате мафии этой ночью.",
+                valid=False
+            )
+            return
+
+        sent_count = 0
+        for other_p in active_game.get_alive_players():
+            if other_p.role in active_game.mafia_team and other_p.user_id != user_id:
+                await self.__send_response_base(
+                    other_p.user_id,
+                    f"🥷 [Чат мафии] Игрок №{player.number}: {query.text}",
+                    valid=True
+                )
+                sent_count += 1
+
+        if sent_count == 0:
+            await self.__send_response_base(
+                query.chat_id,
+                "🥷 Вы остались единственным живым мафиози. Вас некому читать.",
+                valid=False
+            )
+
     # --- NOMINATE ---
 
     async def _handle_pre_nominate(self, query: PreNominateQuery):
@@ -800,49 +843,6 @@ class EventDispatcher:
             f"Следующий голосует Игрок №{game.voting_queue[0].number}. Напишите /balance",
             valid=True
         )
-
-    # --- MAFIA CHAT ---
-
-    async def _handle_mafia_chat(self, query: MafiaChatQuery):
-        user_id = query.user_id
-
-        active_game = None
-        player = None
-        for game in self.engine.games.values():
-            if user_id in game.players and game.state in [GameState.NIGHT_THIEF, GameState.NIGHT]:
-                active_game = game
-                player = game.players[user_id]
-                break
-
-        if not active_game or not player or not player.is_alive:
-            return
-        if player.role not in active_game.mafia_team:
-            return
-
-        if player.is_glued:
-            await self.__send_response_base(
-                query.chat_id,
-                "🤐 Вы заклеены Вором! Вы не можете говорить в чате мафии этой ночью.",
-                valid=False
-            )
-            return
-
-        sent_count = 0
-        for other_p in active_game.get_alive_players():
-            if other_p.role in active_game.mafia_team and other_p.user_id != user_id:
-                await self.__send_response_base(
-                    other_p.user_id,
-                    f"🥷 [Чат мафии] Игрок №{player.number}: {query.text}",
-                    valid=True
-                )
-                sent_count += 1
-
-        if sent_count == 0:
-            await self.__send_response_base(
-                query.chat_id,
-                "🥷 Вы остались единственным живым мафиози. Вас некому читать.",
-                valid=False
-            )
 
     # --- NIGHT ACTION ---
 
