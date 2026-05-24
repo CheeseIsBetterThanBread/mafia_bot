@@ -64,6 +64,38 @@ class TestSpeechHandlers:
             assert "/nominate" not in response.text
 
     @pytest.mark.asyncio
+    @pytest.mark.parametrize("state", [
+        GameState.LOBBY,
+        GameState.VOTING,
+        GameState.BALANCE,
+        GameState.REVOTE,
+        GameState.NIGHT_THIEF,
+        GameState.NIGHT,
+        GameState.FINISHED
+    ])
+    async def test_handle_speech_invalid_state(self, dispatcher, mock_engine, game, state):
+        game.state = state
+
+        query = SpeechRelatedQuery(QueryType.SPEECH, [1], -100, 12039)
+        mock_engine.get_game.return_value = game
+
+        await dispatcher._handle_speech(query)
+
+        dispatcher.bus.emit.assert_not_called()
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("state", [GameState.DAY, GameState.DEFENSE])
+    async def test_handle_speech_no_player(self, dispatcher, mock_engine, game, state):
+        game.state = state
+
+        query = SpeechRelatedQuery(QueryType.SPEECH, [1], -100, 12039)
+        mock_engine.get_game.return_value = game
+
+        await dispatcher._handle_speech(query)
+
+        dispatcher.bus.emit.assert_not_called()
+
+    @pytest.mark.asyncio
     async def test_handle_speech_wrong_turn_day(self, dispatcher, mock_engine, game):
         game.state = GameState.DAY
         game.speech_queue = [game.players[2], game.players[3]]
@@ -171,6 +203,27 @@ class TestSpeechHandlers:
             response = dispatcher.bus.emit.call_args_list[0][0][0]
             assert "завершил свою оправдательную речь" in response.text
             mock_next.assert_called_once_with(dispatcher.bus, game)
+
+    @pytest.mark.asyncio
+    async def test_handle_end_speech_no_game(self, dispatcher, mock_engine):
+        query = SpeechRelatedQuery(QueryType.END_SPEECH, [1], -100, 12039)
+        mock_engine.get_game.return_value = None
+
+        await dispatcher._handle_end_speech(query)
+
+        dispatcher.bus.emit.assert_not_called()
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("state", [GameState.DAY, GameState.DEFENSE])
+    async def test_handle_end_speech_no_player(self, dispatcher, mock_engine, game, state):
+        game.state = state
+
+        query = SpeechRelatedQuery(QueryType.END_SPEECH, [1], -100, 12039)
+        mock_engine.get_game.return_value = game
+
+        await dispatcher._handle_end_speech(query)
+
+        dispatcher.bus.emit.assert_not_called()
 
     @pytest.mark.asyncio
     async def test_handle_end_speech_not_speaking(self, dispatcher, mock_engine, game):
