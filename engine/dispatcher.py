@@ -121,7 +121,6 @@ class EventDispatcher:
 
         raise ValueError(f"Unknown query type: {query.cmd}")
 
-
     async def __not_admin(self, query):
         if query.user_id in query.admin_ids:
             return False
@@ -134,15 +133,12 @@ class EventDispatcher:
 
         return True
 
-
     async def __send_response(self, response):
         await self.bus.emit(response)
-
 
     async def __send_response_base(self, chat_id: int, text: str, parse_mode=None, valid=False):
         response = ResponseBase(chat_id, text, parse_mode, valid)
         await self.__send_response(response)
-
 
     async def __send_response_with_options(self, candidates, chat_id: int, text: str, parse_mode=None, valid=False):
         response = ResponseWithOptions(candidates, chat_id, text, parse_mode, valid)
@@ -172,7 +168,6 @@ class EventDispatcher:
             valid=True
         )
 
-
     async def _handle_join_game(self, query: JoinQuery):
         invalid_response = ResponseWithAlert(
             query.callback,
@@ -201,7 +196,6 @@ class EventDispatcher:
 
         valid_response.text = f"Зарегистрировано: {len(game.players)} чел.\n" + "\n".join([f"{p.number}. {p.name}" for p in game.players.values()])
         await self.__send_response(valid_response)
-
 
     async def _handle_run(self, query: RunQuery):
         if self.__not_admin(query):
@@ -285,7 +279,6 @@ class EventDispatcher:
             valid=True
         )
 
-
     async def _handle_description(self, query: InfoQuery):
         game: Game = self.engine.get_game(query.chat_id)
         if not game or game.state in [GameState.LOBBY, GameState.FINISHED]:
@@ -309,7 +302,6 @@ class EventDispatcher:
             valid=True
         )
 
-
     async def _handle_roles(self, query: InfoQuery):
         game: Game = self.engine.get_game(query.chat_id)
         if not game or game.state in [GameState.LOBBY, GameState.FINISHED]:
@@ -325,7 +317,6 @@ class EventDispatcher:
             f"📜 Набор ролей в этой игре:\n{', '.join(game.current_preset)}",
             valid=True
         )
-
 
     async def _handle_nominated(self, query: InfoQuery):
         game: Game = self.engine.get_game(query.chat_id)
@@ -350,7 +341,6 @@ class EventDispatcher:
             "Пока никто не выставлен.",
             valid=True
         )
-
 
     async def _handle_voted(self, query: InfoQuery):
         game: Game = self.engine.get_game(query.chat_id)
@@ -393,7 +383,6 @@ class EventDispatcher:
             parse_mode="HTML",
             valid=True
         )
-
 
     async def _handle_status(self, query: InfoQuery):
         game: Game = self.engine.get_game(query.chat_id)
@@ -506,7 +495,6 @@ class EventDispatcher:
 
         game.current_speech_task = asyncio.create_task(timer_task())
 
-
     async def _handle_end_speech(self, query: SpeechRelatedQuery):
         game: Game = self.engine.get_game(query.chat_id)
         if not game:
@@ -580,7 +568,6 @@ class EventDispatcher:
             "Кого вы хотите выставить на голосование?",
             valid=True
         )
-
 
     async def _handle_nominate(self, query: NominateQuery):
         invalid_response = ResponseWithAlert(
@@ -660,7 +647,6 @@ class EventDispatcher:
             valid=True
         )
 
-
     async def _handle_vote(self, query: VoteQuery):
         invalid_response = ResponseWithAlert(
             query.callback,
@@ -738,7 +724,6 @@ class EventDispatcher:
             valid=True
         )
 
-
     async def _handle_balance(self, query: BalanceQuery):
         invalid_response = ResponseWithAlert(
             query.callback,
@@ -805,7 +790,6 @@ class EventDispatcher:
         )
 
         await start_night(self.bus, game)
-
 
     async def _handle_skip_night(self, query: SkipNightQuery):
         if self.__not_admin(query):
