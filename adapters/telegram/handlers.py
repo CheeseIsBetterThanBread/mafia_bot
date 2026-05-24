@@ -36,6 +36,7 @@ from connection.queries import QueryType
 
 from engine.help import HELP_TEXT
 
+from utils.logger import LOGGER
 from utils.parser import TemplateParser
 
 
@@ -62,6 +63,7 @@ fallback_bus = FallBack()
 @router.message(Command("start"))
 async def cmd_start(message: Message):
     if message.chat.type == "private":
+        LOGGER.info(f" {message.from_user.id} - {message.from_user.username} ")
         await message.answer(
             "Привет! Я бот для Мафии.\nДобавь меня в группу и напиши /start_game"
         )

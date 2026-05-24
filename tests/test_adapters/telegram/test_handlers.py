@@ -1,6 +1,8 @@
 import pytest
 from unittest.mock import Mock, AsyncMock, patch
 
+from tests.conftest import capture_logger_output
+
 from adapters.telegram.handlers import *
 
 
@@ -65,7 +67,9 @@ class TestTelegramHandlers:
     async def test_cmd_start_private_chat(self, mock_message):
         mock_message.chat.type = "private"
 
-        await cmd_start(mock_message)
+        with capture_logger_output() as log_output:
+            await cmd_start(mock_message)
+            assert f" {mock_message.from_user.id} - {mock_message.from_user.username} " in log_output.getvalue()
 
         mock_message.answer.assert_called()
         assert mock_message.answer.call_count == 2
@@ -74,7 +78,9 @@ class TestTelegramHandlers:
     async def test_cmd_start_group_chat(self, mock_message):
         mock_message.chat.type = "group"
 
-        await cmd_start(mock_message)
+        with capture_logger_output() as log_output:
+            await cmd_start(mock_message)
+            assert log_output.getvalue() == ""
 
         assert mock_message.answer.call_count == 0
 
