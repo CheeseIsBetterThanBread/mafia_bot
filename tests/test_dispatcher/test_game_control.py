@@ -232,6 +232,36 @@ class TestGameHandlers:
             assert "нужно другое количество игроков" in response.text
 
     @pytest.mark.asyncio
+    async def test_run_no_game(self, dispatcher, mock_engine):
+        query = RunQuery(QueryType.RUN, [1, 2], -100, 1)
+        mock_engine.get_game.return_value = None
+
+        await dispatcher._handle_run(query)
+
+        dispatcher.bus.emit.assert_not_called()
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("state", [
+        GameState.DAY,
+        GameState.DEFENSE,
+        GameState.VOTING,
+        GameState.BALANCE,
+        GameState.REVOTE,
+        GameState.NIGHT_THIEF,
+        GameState.NIGHT,
+        GameState.FINISHED
+    ])
+    async def test_run_no_game(self, dispatcher, mock_engine, game, state):
+        game.state = state
+
+        query = RunQuery(QueryType.RUN, [1, 2], -100, 1)
+        mock_engine.get_game.return_value = game
+
+        await dispatcher._handle_run(query)
+
+        dispatcher.bus.emit.assert_not_called()
+
+    @pytest.mark.asyncio
     async def test_run_sends_mafia_team_info(self, dispatcher, mock_engine, game):
         game.state = GameState.LOBBY
         game.game_number = 1
