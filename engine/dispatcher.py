@@ -271,6 +271,50 @@ class EventDispatcher:
 
         await start_day(self.bus, game)
 
+    # --- NIGHT ENFORCEMENT ---
+
+    async def _handle_start_night(self, query: StartNightQuery):
+        if self.__not_admin(query):
+            return
+
+        game: Game = self.engine.get_game(query.chat_id)
+        if not game or game.state in [GameState.LOBBY, GameState.FINISHED, GameState.NIGHT_THIEF, GameState.NIGHT]:
+            return
+
+        if game.current_speech_task and not game.current_speech_task.done():
+            game.current_speech_task.cancel()
+
+        await self.__send_response_base(
+            query.chat_id,
+            "🌙 Принудительно наступает Ночь! Город засыпает...",
+            valid=True
+        )
+
+        await start_night(self.bus, game)
+
+    async def _handle_skip_night(self, query: SkipNightQuery):
+        if self.__not_admin(query):
+            return
+
+        game: Game = self.engine.get_game(query.chat_id)
+        if not game or game.state not in [GameState.NIGHT_THIEF, GameState.NIGHT]:
+            return
+
+        if game.state == GameState.NIGHT:
+            await resolve_night(self.bus, game)
+            return
+
+        await self.__send_response_base(
+            query.chat_id,
+            "🤐 Вор никого не заклеил.",
+            valid=True
+        )
+
+        thief = next((p for p in game.get_alive_players() if p.role == "Вор"), None)
+        if thief:
+            thief.last_rek = None
+        await start_night_others(self.bus, game)
+
     # --- INFO ---
 
     async def _handle_alive(self, query: InfoQuery):
@@ -756,50 +800,6 @@ class EventDispatcher:
             f"Следующий голосует Игрок №{game.voting_queue[0].number}. Напишите /balance",
             valid=True
         )
-
-    # --- NIGHT ENFORCEMENT ---
-
-    async def _handle_start_night(self, query: StartNightQuery):
-        if self.__not_admin(query):
-            return
-
-        game: Game = self.engine.get_game(query.chat_id)
-        if not game or game.state in [GameState.LOBBY, GameState.FINISHED, GameState.NIGHT_THIEF, GameState.NIGHT]:
-            return
-
-        if game.current_speech_task and not game.current_speech_task.done():
-            game.current_speech_task.cancel()
-
-        await self.__send_response_base(
-            query.chat_id,
-            "🌙 Принудительно наступает Ночь! Город засыпает...",
-            valid=True
-        )
-
-        await start_night(self.bus, game)
-
-    async def _handle_skip_night(self, query: SkipNightQuery):
-        if self.__not_admin(query):
-            return
-
-        game: Game = self.engine.get_game(query.chat_id)
-        if not game or game.state not in [GameState.NIGHT_THIEF, GameState.NIGHT]:
-            return
-
-        if game.state == GameState.NIGHT:
-            await resolve_night(self.bus, game)
-            return
-
-        await self.__send_response_base(
-            query.chat_id,
-            "🤐 Вор никого не заклеил.",
-            valid=True
-        )
-
-        thief = next((p for p in game.get_alive_players() if p.role == "Вор"), None)
-        if thief:
-            thief.last_rek = None
-        await start_night_others(self.bus, game)
 
     # --- MAFIA CHAT ---
 
