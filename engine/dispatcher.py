@@ -121,16 +121,24 @@ class EventDispatcher:
 
         raise ValueError(f"Unknown query type: {query.cmd}")
 
+
+    async def __not_admin(self, query):
+        if query.user_id in query.admin_ids:
+            return False
+
+        response = ResponseBase(
+            query.chat_id,
+            "⛔️ Эта команда доступна только создателю игры!",
+            valid=False
+        )
+        await self.bus.emit(response)
+
+        return True
+
     # --- GAME ---
 
     async def _handle_start_game(self, query: StartGameQuery):
-        if query.user_id not in query.admin_ids:
-            response = ResponseBase(
-                query.chat_id,
-                "⛔️ Эта команда доступна только создателю игры!",
-                valid=False
-            )
-            await self.bus.emit(response)
+        if self.__not_admin(query):
             return
 
         if (query.chat_id in self.engine.games
@@ -185,13 +193,7 @@ class EventDispatcher:
 
 
     async def _handle_run(self, query: RunQuery):
-        if query.user_id not in query.admin_ids:
-            response = ResponseBase(
-                query.chat_id,
-                "⛔️ Эта команда доступна только создателю игры!",
-                valid=False
-            )
-            await self.bus.emit(response)
+        if self.__not_admin(query):
             return
 
         game: Game = self.engine.get_game(query.chat_id)
@@ -812,13 +814,7 @@ class EventDispatcher:
     # --- NIGHT ENFORCEMENT ---
 
     async def _handle_start_night(self, query: StartNightQuery):
-        if query.user_id not in query.admin_ids:
-            response = ResponseBase(
-                query.chat_id,
-                "⛔️ Эта команда доступна только создателю игры!",
-                valid=False
-            )
-            await self.bus.emit(response)
+        if self.__not_admin(query):
             return
 
         game: Game = self.engine.get_game(query.chat_id)
@@ -839,13 +835,7 @@ class EventDispatcher:
 
 
     async def _handle_skip_night(self, query: SkipNightQuery):
-        if query.user_id not in query.admin_ids:
-            response = ResponseBase(
-                query.chat_id,
-                "⛔️ Эта команда доступна только создателю игры!",
-                valid=False
-            )
-            await self.bus.emit(response)
+        if self.__not_admin(query):
             return
 
         game: Game = self.engine.get_game(query.chat_id)
