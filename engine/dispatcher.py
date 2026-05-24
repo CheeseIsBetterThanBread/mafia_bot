@@ -126,14 +126,27 @@ class EventDispatcher:
         if query.user_id in query.admin_ids:
             return False
 
-        response = ResponseBase(
+        await self.__send_response_base(
             query.chat_id,
             "⛔️ Эта команда доступна только создателю игры!",
             valid=False
         )
-        await self.bus.emit(response)
 
         return True
+
+
+    async def __send_response(self, response):
+        await self.bus.emit(response)
+
+
+    async def __send_response_base(self, chat_id: int, text: str, parse_mode=None, valid=False):
+        response = ResponseBase(chat_id, text, parse_mode, valid)
+        await self.__send_response(response)
+
+
+    async def __send_response_with_options(self, candidates, chat_id: int, text: str, parse_mode=None, valid=False):
+        response = ResponseWithOptions(candidates, chat_id, text, parse_mode, valid)
+        await self.__send_response(response)
 
     # --- GAME ---
 
@@ -143,23 +156,21 @@ class EventDispatcher:
 
         if (query.chat_id in self.engine.games
             and self.engine.games[query.chat_id].state != GameState.FINISHED):
-            response = ResponseBase(
+            await self.__send_response_base(
                 query.chat_id,
                 "Игра в этом чате уже запущена!",
                 valid=False
             )
-            await self.bus.emit(response)
             return
 
         self.engine.create_game(query.chat_id)
         options = [("✋ Присоединиться", "join_game")]
-        response = ResponseWithOptions(
+        await self.__send_response_with_options(
             options,
             query.chat_id,
             "Регистрация на Мафию открыта! Нажмите кнопку ниже.",
             valid=True
         )
-        await self.bus.emit(response)
 
 
     async def _handle_join_game(self, query: JoinQuery):
@@ -179,17 +190,17 @@ class EventDispatcher:
         game: Game = self.engine.get_game(query.chat_id)
         if not game or game.state != GameState.LOBBY:
             invalid_response.text = "Нет открытого лобби."
-            await self.bus.emit(invalid_response)
+            await self.__send_response(invalid_response)
             return
 
         added = game.add_player(query.user_id, query.username)
         if not added:
             invalid_response.text = "Ты уже зарегистрирован!"
-            await self.bus.emit(invalid_response)
+            await self.__send_response(invalid_response)
             return
 
         valid_response.text = f"Зарегистрировано: {len(game.players)} чел.\n" + "\n".join([f"{p.number}. {p.name}" for p in game.players.values()])
-        await self.bus.emit(valid_response)
+        await self.__send_response(valid_response)
 
 
     async def _handle_run(self, query: RunQuery):
@@ -202,12 +213,11 @@ class EventDispatcher:
 
         player_count = len(game.players)
         if player_count not in ROOM_PRESETS:
-            response = ResponseBase(
+            await self.__send_response_base(
                 query.chat_id,
                 f"Для старта нужно другое количество игроков (сейчас {player_count}).",
                 valid=False
             )
-            await self.bus.emit(response)
             return
 
         roles = game.set_preset(player_count)
@@ -226,21 +236,19 @@ class EventDispatcher:
             if player.role in game.mafia_team:
                 msg += f"\n\n🕴 Твоя команда:\n{mafia_text}\n\n*Ночью вы можете общаться с командой прямо здесь, отправляя сообщения боту!*"
 
-            response = ResponseBase(
+            await self.__send_response_base(
                 player.user_id,
                 msg,
                 parse_mode="HTML",
                 valid=True
             )
-            await self.bus.emit(response)
 
 
-        response = ResponseBase(
+        await self.__send_response_base(
             query.chat_id,
             f"🎲 Игра началась!\nНабор ролей: {', '.join(game.current_preset)}",
             valid=True
         )
-        await self.bus.emit(response)
 
         unique_roles = set(game.current_preset)
         desc_text = "📖 <b>Справка по ролям на эту игру:</b>\n\n"
@@ -248,13 +256,12 @@ class EventDispatcher:
             desc = ROLE_DESCRIPTIONS.get(r, "Описание отсутствует.")
             desc_text += f"🔹 <b>{r}</b>: {desc}\n\n"
 
-        response = ResponseBase(
+        await self.__send_response_base(
             query.chat_id,
             desc_text,
             parse_mode="HTML",
             valid=True
         )
-        await self.bus.emit(response)
 
         await start_day(self.bus, game)
 
@@ -263,33 +270,30 @@ class EventDispatcher:
     async def _handle_alive(self, query: InfoQuery):
         game: Game = self.engine.get_game(query.chat_id)
         if not game or game.state in [GameState.LOBBY, GameState.FINISHED]:
-            response = ResponseBase(
+            await self.__send_response_base(
                 query.chat_id,
                 "Игра сейчас не идет.",
                 valid=False
             )
-            await self.bus.emit(response)
             return
 
         alive = alive_sorted(game.get_alive_players())
         text = "👤 Живые игроки за столом:\n" + "\n".join([f"№{p.number} — {p.name}" for p in alive])
-        response = ResponseBase(
+        await self.__send_response_base(
             query.chat_id,
             text,
             valid=True
         )
-        await self.bus.emit(response)
 
 
     async def _handle_description(self, query: InfoQuery):
         game: Game = self.engine.get_game(query.chat_id)
         if not game or game.state in [GameState.LOBBY, GameState.FINISHED]:
-            response = ResponseBase(
+            await self.__send_response_base(
                 query.chat_id,
                 "Игра сейчас не идет.",
                 valid=False
             )
-            await self.bus.emit(response)
             return
 
         unique_roles = set(game.current_preset)
@@ -298,80 +302,72 @@ class EventDispatcher:
             desc = ROLE_DESCRIPTIONS.get(r, "Описание отсутствует.")
             desc_text += f"🔹 <b>{r}</b>: {desc}\n\n"
 
-        response = ResponseBase(
+        await self.__send_response_base(
             query.chat_id,
             desc_text,
             parse_mode="HTML",
             valid=True
         )
-        await self.bus.emit(response)
 
 
     async def _handle_roles(self, query: InfoQuery):
         game: Game = self.engine.get_game(query.chat_id)
         if not game or game.state in [GameState.LOBBY, GameState.FINISHED]:
-            response = ResponseBase(
+            await self.__send_response_base(
                 query.chat_id,
                 "Игра сейчас не идет.",
                 valid=False
             )
-            await self.bus.emit(response)
             return
 
-        response = ResponseBase(
+        await self.__send_response_base(
             query.chat_id,
             f"📜 Набор ролей в этой игре:\n{', '.join(game.current_preset)}",
             valid=True
         )
-        await self.bus.emit(response)
 
 
     async def _handle_nominated(self, query: InfoQuery):
         game: Game = self.engine.get_game(query.chat_id)
         if not game or game.state in [GameState.LOBBY, GameState.FINISHED]:
-            response = ResponseBase(
+            await self.__send_response_base(
                 query.chat_id,
                 "Игра сейчас не идет.",
                 valid=False
             )
-            await self.bus.emit(response)
             return
 
         if game and game.nominated:
-            response = ResponseBase(
+            await self.__send_response_base(
                 query.chat_id,
                 "Выставлены: " + ", ".join(map(str, game.nominated)),
                 valid=True
             )
-            await self.bus.emit(response)
             return
 
-        response = ResponseBase(
+        await self.__send_response_base(
             query.chat_id,
             "Пока никто не выставлен.",
             valid=True
         )
-        await self.bus.emit(response)
 
 
     async def _handle_voted(self, query: InfoQuery):
         game: Game = self.engine.get_game(query.chat_id)
         if not game or game.state not in [GameState.VOTING, GameState.REVOTE, GameState.BALANCE]:
-            response = ResponseBase(
+            await self.__send_response_base(
                 query.chat_id,
                 "Сейчас не идет голосование.",
                 valid=False
             )
-            await self.bus.emit(response)
             return
 
         if not getattr(game, "vote_history", None):
-            response = ResponseBase(
+            await self.__send_response_base(
                 query.chat_id,
                 "Пока никто не проголосовал.",
                 valid=True
             )
-            await self.bus.emit(response)
             return
 
         text = "📊 <b>Текущие результаты:</b>\n\n"
@@ -391,35 +387,32 @@ class EventDispatcher:
             else:
                 text += f"Игрок №{p_num} ➡️ {v_target}\n"
 
-        response = ResponseBase(
+        await self.__send_response_base(
             query.chat_id,
             text,
             parse_mode="HTML",
             valid=True
         )
-        await self.bus.emit(response)
 
 
     async def _handle_status(self, query: InfoQuery):
         game: Game = self.engine.get_game(query.chat_id)
         if not game or game.state in [GameState.LOBBY, GameState.FINISHED]:
-            response = ResponseBase(
+            await self.__send_response_base(
                 query.chat_id,
                 "Игра сейчас не идет.",
                 valid=False
             )
-            await self.bus.emit(response)
             return
 
         alive = alive_sorted(game.get_alive_players())
         text = ("👤 Живые игроки за столом:\nФормат: номер - имя - число сюрикенов\n" 
                 "\n".join([f"№{p.number} — {p.name} - {p.surikens}" for p in alive]))
-        response = ResponseBase(
+        await self.__send_response_base(
             query.chat_id,
             text,
             valid=True
         )
-        await self.bus.emit(response)
 
     # --- DAY / SPEECH ---
 
@@ -438,50 +431,45 @@ class EventDispatcher:
         is_defense = False
         if game.state == GameState.DAY:
             if not game.speech_queue or player.user_id != game.speech_queue[0].user_id:
-                response = ResponseBase(
+                await self.__send_response_base(
                     query.chat_id,
                     "Сейчас не ваша очередь говорить!",
                     valid=False
                 )
-                await self.bus.emit(response)
                 return
             is_defense = False
         elif game.state == GameState.DEFENSE:
             if not game.defense_queue or player.user_id != game.defense_queue[0].user_id:
-                response = ResponseBase(
+                await self.__send_response_base(
                     query.chat_id,
                     "Сейчас не ваша очередь оправдываться!",
                     valid=False
                 )
-                await self.bus.emit(response)
                 return
             is_defense = True
 
         if game.current_speech_task and not game.current_speech_task.done():
-            response = ResponseBase(
+            await self.__send_response_base(
                 query.chat_id,
                 "Вы уже выступаете!",
                 valid=False
             )
-            await self.bus.emit(response)
             return
 
         speech_time = game.calculate_speech_time()
 
         if is_defense:
-            response = ResponseBase(
+            await self.__send_response_base(
                 query.chat_id,
                 f"⏱ Игрок №{player.number}, ваши {speech_time} секунд на оправдание пошли!\nЧтобы закончить речь досрочно: /end_speech",
                 valid=True
             )
-            await self.bus.emit(response)
         else:
-            response = ResponseBase(
+            await self.__send_response_base(
                 query.chat_id,
                 f"⏱ Игрок №{player.number}, ваши {speech_time} секунд пошли!\nВы можете выставлять кандидатов: /nominate \nЧтобы закончить речь досрочно: /end_speech",
                 valid=True
             )
-            await self.bus.emit(response)
 
         async def timer_task():
             try:
@@ -489,23 +477,21 @@ class EventDispatcher:
                 if not (player.is_alive and game.state in [GameState.DAY, GameState.DEFENSE]):
                     return
 
-                local_response = ResponseBase(
+                await self.__send_response_base(
                     query.chat_id,
                     f"⚠️ Игрок №{player.number}, осталось {WARNING_OFFSET} секунд!",
                     valid=True
                 )
-                await self.bus.emit(local_response)
 
                 await asyncio.sleep(WARNING_OFFSET)
                 if not (player.is_alive and game.state in [GameState.DAY, GameState.DEFENSE]):
                     return
 
-                local_response = ResponseBase(
+                await self.__send_response_base(
                     query.chat_id,
                     f"🛑 Игрок №{player.number}, время вышло!",
                     valid=True
                 )
-                await self.bus.emit(local_response)
 
                 if is_defense:
                     await next_defense_speaker(self.bus, game)
@@ -534,12 +520,11 @@ class EventDispatcher:
             if game.current_speech_task and not game.current_speech_task.done():
                 game.current_speech_task.cancel()
 
-            response = ResponseBase(
+            await self.__send_response_base(
                 query.chat_id,
                 f"✅ Игрок №{player.number} завершил свою речь.",
                 valid=True
             )
-            await self.bus.emit(response)
             await next_speaker(self.bus, game)
             return
 
@@ -547,12 +532,11 @@ class EventDispatcher:
             if game.current_speech_task and not game.current_speech_task.done():
                 game.current_speech_task.cancel()
 
-            response = ResponseBase(
+            await self.__send_response_base(
                 query.chat_id,
                 f"✅ Игрок №{player.number} завершил свою оправдательную речь.",
                 valid=True
             )
-            await self.bus.emit(response)
             await next_defense_speaker(self.bus, game)
 
     # --- NOMINATE ---
@@ -563,43 +547,39 @@ class EventDispatcher:
             return
 
         if getattr(game, 'day_count', 1) == 1:
-            response = ResponseBase(
+            await self.__send_response_base(
                 query.chat_id,
                 "⚠️ Сегодня первый день (день знакомств). Выставлять кандидатов на голосование запрещено!",
                 valid=False
             )
-            await self.bus.emit(response)
             return
 
         player = game.players.get(query.user_id)
         if not player or player.user_id != game.speech_queue[0].user_id:
-            response = ResponseBase(
+            await self.__send_response_base(
                 query.chat_id,
                 "Сейчас не ваша очередь говорить!",
                 valid=False
             )
-            await self.bus.emit(response)
             return
 
         if player.has_nominated:
-            response = ResponseBase(
+            await self.__send_response_base(
                 query.chat_id,
                 "⚠️ Вы уже выставили одного кандидата на этом кругу!",
                 valid=False
             )
-            await self.bus.emit(response)
             return
 
         alive_players = game.get_alive_players()
         nominate_options = [(f"№{t.number} ({t.name})", NOMINATE_CALLBACK_TEMPLATE.format(chat_id=query.chat_id, player_number=t.number)) for t in alive_players]
         nominate_options.append(("❌ Отмена", NOMINATE_CALLBACK_TEMPLATE.format(chat_id=query.chat_id, player_number=NULL_OPTION)))
-        response = ResponseWithOptions(
+        await self.__send_response_with_options(
             nominate_options,
             query.chat_id,
             "Кого вы хотите выставить на голосование?",
             valid=True
         )
-        await self.bus.emit(response)
 
 
     async def _handle_nominate(self, query: NominateQuery):
@@ -619,41 +599,41 @@ class EventDispatcher:
         game: Game = self.engine.get_game(query.chat_id)
         if not game or game.state != GameState.DAY or not game.speech_queue:
             invalid_response.text = "Действие недоступно."
-            await self.bus.emit(invalid_response)
+            await self.__send_response(invalid_response)
             return
 
         player = game.players.get(query.user_id)
 
         if not player or player.user_id != game.speech_queue[0].user_id:
             invalid_response.text = "Не лезь, сейчас не твоя очередь!"
-            await self.bus.emit(invalid_response)
+            await self.__send_response(invalid_response)
             return
 
         if player.has_nominated:
             invalid_response.text = "Вы уже выставили кандидата!"
-            await self.bus.emit(invalid_response)
+            await self.__send_response(invalid_response)
             return
 
         if query.target_id == 0:
             valid_response.text = "❌ Вы отменили выставление. Вы можете продолжить свою речь."
-            await self.bus.emit(valid_response)
+            await self.__send_response(valid_response)
             return
 
         if query.target_id not in game.players_by_number or not game.players_by_number[query.target_id].is_alive:
             invalid_response.text = "Этот игрок уже покинул стол!"
-            await self.bus.emit(invalid_response)
+            await self.__send_response(invalid_response)
             return
 
         if query.target_id in game.nominated:
             invalid_response.text = "Этот игрок уже выставлен на голосование!"
-            await self.bus.emit(invalid_response)
+            await self.__send_response(invalid_response)
             return
 
         game.nominated.append(query.target_id)
         player.has_nominated = True
 
         valid_response.text = f"👉 Игрок №{player.number} выставил Игрока №{query.target_id} на голосование."
-        await self.bus.emit(valid_response)
+        await self.__send_response(valid_response)
 
     # --- VOTE ---
 
@@ -664,23 +644,21 @@ class EventDispatcher:
 
         player = game.players.get(query.user_id)
         if not player or not game.voting_queue or player.user_id != game.voting_queue[0].user_id:
-            response = ResponseBase(
+            await self.__send_response_base(
                 query.chat_id,
                 "Сейчас не ваша очередь голосовать!",
                 valid=False
             )
-            await self.bus.emit(response)
             return
 
         allowed = game.balance_players if game.state == GameState.REVOTE else game.nominated
         vote_options = [(f"№{num} ({game.players_by_number[num].name})", VOTE_CALLBACK_TEMPLATE.format(chat_id=query.chat_id, player_number=num)) for num in allowed]
-        response = ResponseWithOptions(
+        await self.__send_response_with_options(
             vote_options,
             query.chat_id,
             "Против кого вы голосуете?",
             valid=True
         )
-        await self.bus.emit(response)
 
 
     async def _handle_vote(self, query: VoteQuery):
@@ -700,19 +678,19 @@ class EventDispatcher:
         game: Game = self.engine.get_game(query.chat_id)
         if not game or game.state not in [GameState.VOTING, GameState.REVOTE]:
             invalid_response.text = "Голосование сейчас не идет."
-            await self.bus.emit(invalid_response)
+            await self.__send_response(invalid_response)
             return
 
         player = game.players.get(query.user_id)
         if not player or not game.voting_queue or player.user_id != game.voting_queue[0].user_id:
             invalid_response.text = "Сейчас не ваша очередь!"
-            await self.bus.emit(invalid_response)
+            await self.__send_response(invalid_response)
             return
 
         allowed = game.balance_players if game.state == GameState.REVOTE else game.nominated
         if query.target_id not in allowed:
             invalid_response.text = "За этого игрока нельзя голосовать!"
-            await self.bus.emit(invalid_response)
+            await self.__send_response(invalid_response)
             return
 
         game.current_votes[query.target_id] += 1
@@ -720,18 +698,17 @@ class EventDispatcher:
         game.voting_queue.popleft()
 
         valid_response.text = f"🗣 Игрок №{player.number} проголосовал против Игрока №{query.target_id}!"
-        await self.bus.emit(valid_response)
+        await self.__send_response(valid_response)
 
         if not game.voting_queue:
             await finish_voting(self.bus, game)
             return
 
-        response = ResponseBase(
+        await self.__send_response_base(
             query.chat_id,
             f"Следующий голосует Игрок №{game.voting_queue[0].number}. Напишите /vote",
             valid=True
         )
-        await self.bus.emit(response)
 
     # --- BALANCE ---
 
@@ -742,12 +719,11 @@ class EventDispatcher:
 
         player = game.players.get(query.user_id)
         if not player or not game.voting_queue or player.user_id != game.voting_queue[0].user_id:
-            response = ResponseBase(
+            await self.__send_response_base(
                 query.chat_id,
                 "Сейчас не ваша очередь!",
                 valid=False
             )
-            await self.bus.emit(response)
             return
 
         balance_options = []
@@ -755,13 +731,12 @@ class EventDispatcher:
         balance_options.append(("💀 Убить всех", BALANCE_CALLBACK_TEMPLATE.format(chat_id=query.chat_id, number=2)))
         balance_options.append(("🔄 Переголосовать", BALANCE_CALLBACK_TEMPLATE.format(chat_id=query.chat_id, number=3)))
 
-        response = ResponseWithOptions(
+        await self.__send_response_with_options(
             balance_options,
             query.chat_id,
             "Ваш выбор на балансе?",
             valid=True
         )
-        await self.bus.emit(response)
 
 
     async def _handle_balance(self, query: BalanceQuery):
@@ -781,13 +756,13 @@ class EventDispatcher:
         game: Game = self.engine.get_game(query.chat_id)
         if not game or game.state != GameState.BALANCE:
             invalid_response.text = "Баланс не идет."
-            await self.bus.emit(invalid_response)
+            await self.__send_response(invalid_response)
             return
 
         player = game.players.get(query.user_id)
         if not player or not game.voting_queue or player.user_id != game.voting_queue[0].user_id:
             invalid_response.text = "Сейчас не ваша очередь!"
-            await self.bus.emit(invalid_response)
+            await self.__send_response(invalid_response)
             return
 
         options = {1: "acquit", 2: "kill", 3: "revote"}
@@ -798,18 +773,17 @@ class EventDispatcher:
         game.voting_queue.popleft()
 
         valid_response.text = f"🗣 Игрок №{player.number} выбрал: {names[query.target_id]}!"
-        await self.bus.emit(valid_response)
+        await self.__send_response(valid_response)
 
         if not game.voting_queue:
             await resolve_balance(self.bus, game)
             return
 
-        response = ResponseBase(
+        await self.__send_response_base(
             query.chat_id,
             f"Следующий голосует Игрок №{game.voting_queue[0].number}. Напишите /balance",
             valid=True
         )
-        await self.bus.emit(response)
 
     # --- NIGHT ENFORCEMENT ---
 
@@ -824,12 +798,11 @@ class EventDispatcher:
         if game.current_speech_task and not game.current_speech_task.done():
             game.current_speech_task.cancel()
 
-        response = ResponseBase(
+        await self.__send_response_base(
             query.chat_id,
             "🌙 Принудительно наступает Ночь! Город засыпает...",
             valid=True
         )
-        await self.bus.emit(response)
 
         await start_night(self.bus, game)
 
@@ -846,12 +819,11 @@ class EventDispatcher:
             await resolve_night(self.bus, game)
             return
 
-        response = ResponseBase(
+        await self.__send_response_base(
             query.chat_id,
             "🤐 Вор никого не заклеил.",
             valid=True
         )
-        await self.bus.emit(response)
 
         thief = next((p for p in game.get_alive_players() if p.role == "Вор"), None)
         if thief:
@@ -877,32 +849,29 @@ class EventDispatcher:
             return
 
         if player.is_glued:
-            response = ResponseBase(
+            await self.__send_response_base(
                 query.chat_id,
                 "🤐 Вы заклеены Вором! Вы не можете говорить в чате мафии этой ночью.",
                 valid=False
             )
-            await self.bus.emit(response)
             return
 
         sent_count = 0
         for other_p in active_game.get_alive_players():
             if other_p.role in active_game.mafia_team and other_p.user_id != user_id:
-                response = ResponseBase(
+                await self.__send_response_base(
                     other_p.user_id,
                     f"🥷 [Чат мафии] Игрок №{player.number}: {query.text}",
                     valid=True
                 )
-                await self.bus.emit(response)
                 sent_count += 1
 
         if sent_count == 0:
-            response = ResponseBase(
+            await self.__send_response_base(
                 query.chat_id,
                 "🥷 Вы остались единственным живым мафиози. Вас некому читать.",
                 valid=False
             )
-            await self.bus.emit(response)
 
     # --- NIGHT ACTION ---
 
@@ -926,7 +895,7 @@ class EventDispatcher:
         game: Game = self.engine.get_game(query.chat_id)
         if not game or game.state not in [GameState.NIGHT_THIEF, GameState.NIGHT]:
             invalid_response.text = "Ночь уже прошла!"
-            await self.bus.emit(invalid_response)
+            await self.__send_response(invalid_response)
             return
 
         user_id = query.user_id
@@ -934,53 +903,53 @@ class EventDispatcher:
 
         if not player or user_id not in game.expected_night_actors or act_code not in game.expected_night_actors[user_id]:
             invalid_response.text = "Это действие вам сейчас недоступно."
-            await self.bus.emit(invalid_response)
+            await self.__send_response(invalid_response)
             return
 
         if game.state == GameState.NIGHT_THIEF and act_code == "rek":
             if target_num != 0 and getattr(player, 'last_rek', None) == target_num:
                 invalid_response.text = "Нельзя клеить одного и того же игрока две ночи подряд!"
-                await self.bus.emit(invalid_response)
+                await self.__send_response(invalid_response)
                 return
 
             game.expected_night_actors[user_id].remove("rek")
             if target_num == 0:
                 valid_response.text = "✅ Вы решили никого не клеить."
-                await self.bus.emit(valid_response)
+                await self.__send_response(valid_response)
 
-                response = ResponseBase(
+                await self.__send_response_base(
                     query.chat_id,
-                    "🤐 Вор никого не заклеил."
+                    "🤐 Вор никого не заклеил.",
+                    valid=True
                 )
-                await self.bus.emit(response)
                 player.last_rek = 0
             else:
                 target = game.players_by_number[target_num]
                 target.is_glued = True
                 player.last_rek = target_num
                 valid_response.text = f"✅ Вы заклеили Игрока №{target_num}."
-                await self.bus.emit(valid_response)
+                await self.__send_response(valid_response)
 
-                response = ResponseBase(
+                await self.__send_response_base(
                     query.chat_id,
-                    f"🤐 Вор заклеил Игрока №{target_num}! Он пропускает день."
+                    f"🤐 Вор заклеил Игрока №{target_num}! Он пропускает день.",
+                    valid=True
                 )
-                await self.bus.emit(response)
 
             await start_night_others(self.bus, game)
             return
 
         if act_code in ["heal", "tula"] and player.last_healed == target_num:
             invalid_response.text = "Нельзя лечить этого игрока две ночи подряд!"
-            await self.bus.emit(invalid_response)
+            await self.__send_response(invalid_response)
             return
         if act_code == "alibi" and player.last_alibi == target_num:
             invalid_response.text = "Нельзя давать алиби этому игроку две ночи подряд!"
-            await self.bus.emit(invalid_response)
+            await self.__send_response(invalid_response)
             return
         if act_code == "man_h" and getattr(player, 'last_man_heal', False):
             invalid_response.text = "Нельзя лечить себя 2 дня подряд!"
-            await self.bus.emit(invalid_response)
+            await self.__send_response(invalid_response)
             return
 
         game.night_actions[user_id][act_code] = target_num
@@ -989,12 +958,11 @@ class EventDispatcher:
             t_player = game.players_by_number[target_num]
             ans = f"✅ Игрок №{target_num} — ШЕРИФ!" if t_player.role == "Шериф" else f"❌ Игрок №{target_num} — НЕ ШЕРИФ."
 
-            response = ResponseBase(
+            await self.__send_response_base(
                 user_id,
                 ans,
                 valid=True
             )
-            await self.bus.emit(response)
 
         elif act_code == "check_s":
             t_player = game.players_by_number[target_num]
@@ -1007,12 +975,11 @@ class EventDispatcher:
             else:
                 ans = f"❌ Игрок №{target_num} — НЕ МАФИЯ."
 
-            response = ResponseBase(
+            await self.__send_response_base(
                 user_id,
                 ans,
                 valid=True
             )
-            await self.bus.emit(response)
 
         elif act_code == "dvul_j":
             t_player = game.players_by_number[target_num]
@@ -1022,27 +989,26 @@ class EventDispatcher:
                 maf_list = ", ".join(
                     [f"№{p.number} ({p.role})" for p in game.get_alive_players() if p.role in game.mafia_team])
 
-                response = ResponseBase(
+                await self.__send_response_base(
                     user_id,
                     f"🎯 Вы нашли Мафию! Состав: {maf_list}. Со следующей ночи вы убиваете сами.",
                     valid=True
                 )
-                await self.bus.emit(response)
                 for maf in game.get_alive_players():
-                    mafia_response = ResponseBase(
+                    if maf.role not in game.mafia_team:
+                        continue
+
+                    await self.__send_response_base(
                         maf.user_id,
                         f"🎭 Двуликий нашел нас! Это Игрок №{player.number}.",
                         valid=True
                     )
-                    if maf.role in game.mafia_team:
-                        await self.bus.emit(mafia_response)
             else:
-                response = ResponseBase(
+                await self.__send_response_base(
                     user_id,
                     f"❌ Игрок №{target_num} не состоит в Мафии.",
                     valid=True
                 )
-                await self.bus.emit(response)
 
         if act_code == "man_k" and "man_h" in game.expected_night_actors[user_id]:
             game.expected_night_actors[user_id].remove("man_h")
@@ -1054,7 +1020,7 @@ class EventDispatcher:
         game.expected_night_actors[user_id].remove(act_code)
 
         valid_response.text = f"✅ Выбор принят: Игрок №{target_num}"
-        await self.bus.emit(valid_response)
+        await self.__send_response(valid_response)
 
         all_done = all(len(acts) == 0 for acts in game.expected_night_actors.values())
         if all_done:
