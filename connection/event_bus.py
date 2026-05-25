@@ -37,7 +37,7 @@ class EventBus:
         handlers = []
 
         for subscribed_type, subs in self.subscribers.items():
-            if issubclass(type(event), subscribed_type):
+            if type(event) is subscribed_type:
                 handlers.extend(subs)
 
         async def call_handlers(evt):
