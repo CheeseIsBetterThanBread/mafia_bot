@@ -124,11 +124,20 @@ class TestNightActionHandlers:
         player = Player(1, "", 4)
         setattr(player, attribute, value)
 
-        await dispatcher._EventDispatcher__repeated_guard(query, player)
+        assert await dispatcher._EventDispatcher__repeated_guard(query, player)
 
         response = dispatcher.bus.emit.call_args[0][0]
         assert "Нельзя делать это две ночи подряд" in response.text
         assert response.chat_id == 1
+
+    async def test_repeated_guard_allows_other_actions(self, dispatcher):
+        query = NightActionQuery(
+            QueryType.NIGHT_ACTION, [1], -100, 1, Mock(),
+            "action", 2
+        )
+        player = Player(1, "", 4)
+
+        assert not await dispatcher._EventDispatcher__repeated_guard(query, player)
 
     @pytest.mark.asyncio
     async def test_thief_action_success(self, dispatcher, game):
