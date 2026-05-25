@@ -145,7 +145,9 @@ class TestNightActionHandlers:
         ("rek", "engine.dispatcher.EventDispatcher._EventDispatcher__handle_thief"),
         ("check_d", "engine.dispatcher.EventDispatcher._EventDispatcher__handle_don_check"),
         ("check_s", "engine.dispatcher.EventDispatcher._EventDispatcher__handle_sheriff_check"),
-        ("dvul_j", "engine.dispatcher.EventDispatcher._EventDispatcher__handle_two_face_check")
+        ("dvul_j", "engine.dispatcher.EventDispatcher._EventDispatcher__handle_two_face_check"),
+        ("man_k", "engine.dispatcher.EventDispatcher._EventDispatcher__handle_maniac"),
+        ("man_h", "engine.dispatcher.EventDispatcher._EventDispatcher__handle_maniac")
     ])
     async def test_routing(self, dispatcher, mock_engine, game, action, handler):
         game.expected_night_actors[1] = [action]
