@@ -676,7 +676,7 @@ class EventDispatcher:
             await self.__send_response(invalid_response)
             return
 
-        if query.target_id == 0:
+        if query.target_id == NULL_OPTION:
             valid_response.text = "❌ Вы отменили выставление. Вы можете продолжить свою речь."
             await self.__send_response(valid_response)
             return
