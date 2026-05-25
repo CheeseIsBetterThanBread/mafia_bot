@@ -937,7 +937,7 @@ class EventDispatcher:
 
         elif act_code == "check_s":
             t_player = game.players_by_number[target_num]
-            can_be_discovered = t_player.found_mafia and t_player.found_mafia_day - 1 < game.day_count
+            can_be_discovered = t_player.found_mafia and t_player.found_mafia_day < game.day_count
             is_bad_dvul = t_player.role == "Двуликий" and can_be_discovered
 
             if t_player.role in game.mafia_team or is_bad_dvul:
