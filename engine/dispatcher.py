@@ -428,7 +428,7 @@ class EventDispatcher:
 
         alive = alive_sorted(game.get_alive_players())
         text = ("👤 Живые игроки за столом:\nФормат: номер - имя - число сюрикенов\n" 
-                "\n".join([f"№{p.number} — {p.name} - {p.surikens}" for p in alive]))
+                "\n".join([f"№{p.number} — {p.name} - {p.shurikens}" for p in alive]))
         await self.__send_response_base(
             query.chat_id,
             text,

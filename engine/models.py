@@ -12,7 +12,7 @@ class Player:
         self.has_nominated = False
 
         # ночные механики
-        self.surikens = 0
+        self.shurikens = 0
         self.last_healed = None
         self.last_alibi = None
         self.last_man_heal = False

@@ -31,7 +31,7 @@ class TestInfoHandlers:
         for i in range(1, 6):
             game.add_player(i, f"Player {i}")
             game.players[i].is_alive = True
-            game.players[i].surikens = i % 3
+            game.players[i].shurikens = i % 3
         game.current_preset = ["Мафия", "Доктор", "Мирный житель", "Мирный житель", "Мирный житель"]
         return game
 
@@ -340,11 +340,11 @@ class TestInfoHandlers:
     @pytest.mark.parametrize("state", RUNNING_STATES)
     async def test_handle_status_success(self, dispatcher, mock_engine, game, state):
         game.state = state
-        game.players[1].surikens = 0
-        game.players[2].surikens = 1
-        game.players[3].surikens = 2
+        game.players[1].shurikens = 0
+        game.players[2].shurikens = 1
+        game.players[3].shurikens = 2
         game.players[4].is_alive = False
-        game.players[5].surikens = 0
+        game.players[5].shurikens = 0
 
         query = InfoQuery(QueryType.STATUS, [1], -100, 10)
         mock_engine.get_game.return_value = game
@@ -364,11 +364,11 @@ class TestInfoHandlers:
     @pytest.mark.parametrize("state", [GameState.LOBBY, GameState.FINISHED])
     async def test_handle_status_invalid_state(self, dispatcher, mock_engine, game, state):
         game.state = state
-        game.players[1].surikens = 0
-        game.players[2].surikens = 1
-        game.players[3].surikens = 2
+        game.players[1].shurikens = 0
+        game.players[2].shurikens = 1
+        game.players[3].shurikens = 2
         game.players[4].is_alive = False
-        game.players[5].surikens = 0
+        game.players[5].shurikens = 0
 
         query = InfoQuery(QueryType.STATUS, [1], -100, 10)
         mock_engine.get_game.return_value = game

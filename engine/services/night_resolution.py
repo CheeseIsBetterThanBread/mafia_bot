@@ -90,7 +90,7 @@ async def resolve_night(bus: EventBus, game: Game):
     killed_this_night = set()
     putana_client = None
 
-    shurikens_before = {p.number for p in game.get_alive_players() if p.surikens > 0}
+    shurikens_before = {p.number for p in game.get_alive_players() if p.shurikens > 0}
     mafia_dead = not any(p.is_alive for p in game.get_alive_players() if p.role in game.mafia_team)
     mafia_blocked = any(p.is_glued for p in game.get_alive_players() if p.role in game.mafia_team) or mafia_dead
 
@@ -105,15 +105,15 @@ async def resolve_night(bus: EventBus, game: Game):
         if a["code"] == "heal":
             healed.add(a["target"].number)
             a["actor"].last_healed = a["target"].number
-            a["target"].surikens = 0
+            a["target"].shurikens = 0
         elif a["code"] == "tula":
             a["target"].has_alibi = True
             a["actor"].last_healed = a["target"].number
-            a["target"].surikens = 0
+            a["target"].shurikens = 0
             putana_client = a["target"]
         elif a["code"] == "man_h":
             healed.add(a["target"].number)
-            a["target"].surikens = 0
+            a["target"].shurikens = 0
 
     def is_healed(number):
         healed_by_others = number in healed
@@ -130,7 +130,7 @@ async def resolve_night(bus: EventBus, game: Game):
     for a in actions:
         if a["code"] == "sur" and not a["actor"].is_glued:
             if not is_healed(a["target"].number):
-                a["target"].surikens += 1
+                a["target"].shurikens += 1
 
     mafia_victim = None
     if not mafia_blocked:
@@ -165,9 +165,9 @@ async def resolve_night(bus: EventBus, game: Game):
             killed_this_night.add(victim.number)
 
     for p in game.get_alive_players():
-        if p.surikens >= 2 and not is_healed(p.number):
+        if p.shurikens >= 2 and not is_healed(p.number):
             if p.role == "Бессмертный":
-                p.surikens = 0
+                p.shurikens = 0
             else:
                 killed_this_night.add(p.number)
 
@@ -188,11 +188,11 @@ async def resolve_night(bus: EventBus, game: Game):
         announcement += "🕊 Этой ночью никто не умер!\n"
 
     lost_shurikens = [num for num in shurikens_before if
-                      game.players_by_number[num].is_alive and game.players_by_number[num].surikens == 0]
+                      game.players_by_number[num].is_alive and game.players_by_number[num].shurikens == 0]
     if lost_shurikens:
         announcement += f"🩹 Сюрикены были успешно извлечены (сброшены) у игроков: {', '.join(map(str, lost_shurikens))}\n"
 
-    current_shurikens = [p.number for p in game.get_alive_players() if p.surikens == 1]
+    current_shurikens = [p.number for p in game.get_alive_players() if p.shurikens == 1]
     if current_shurikens:
         announcement += f"🥷 Внимание! По 1 сюрикену сейчас висит на игроках: {', '.join(map(str, current_shurikens))}\n"
 

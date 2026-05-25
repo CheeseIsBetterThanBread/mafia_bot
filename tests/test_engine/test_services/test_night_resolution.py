@@ -492,7 +492,7 @@ class TestResolveNight:
 
             await resolve_night(mock_bus, game)
 
-            assert target.surikens == 1
+            assert target.shurikens == 1
 
     @pytest.mark.asyncio
     async def test_double_shuriken_kill(self, mock_bus):
@@ -505,7 +505,7 @@ class TestResolveNight:
         ninja = game.players[2]
         target = game.players[1]
 
-        target.surikens = 1
+        target.shurikens = 1
         game.night_actions[ninja.user_id] = {"sur": target.number}
 
         with self.patch_night() as mocks:
@@ -536,7 +536,7 @@ class TestResolveNight:
 
             await resolve_night(mock_bus, game)
 
-            assert target.surikens == 0
+            assert target.shurikens == 0
 
     @pytest.mark.asyncio
     async def test_shuriken_with_tula(self, mock_bus):
@@ -559,7 +559,7 @@ class TestResolveNight:
 
             await resolve_night(mock_bus, game)
 
-            assert target.surikens == 0
+            assert target.shurikens == 0
 
     @pytest.mark.asyncio
     async def test_shuriken_with_tula_double_kill(self, mock_bus):
@@ -574,7 +574,7 @@ class TestResolveNight:
         ninja = game.players[2]
         target = game.players[1]
 
-        tula.surikens = 1
+        tula.shurikens = 1
 
         game.night_actions[ninja.user_id] = {"sur": tula.number}
         game.night_actions[tula.user_id] = {"tula": target.number}
@@ -598,7 +598,7 @@ class TestResolveNight:
         tula = game.players[2]
         ninja = game.players[1]
 
-        tula.surikens = 1
+        tula.shurikens = 1
 
         game.night_actions[ninja.user_id] = {"sur": tula.number}
         game.night_actions[tula.user_id] = {"tula": tula.number}
@@ -608,7 +608,7 @@ class TestResolveNight:
 
             await resolve_night(mock_bus, game)
 
-            assert tula.surikens == 0
+            assert tula.shurikens == 0
 
     @pytest.mark.asyncio
     async def test_two_face_kill(self, mock_bus):
@@ -704,7 +704,7 @@ class TestResolveNight:
         maniac = game.players[2]
         ninja = game.players[1]
 
-        maniac.surikens = 1
+        maniac.shurikens = 1
 
         game.night_actions[maniac.user_id] = {"man_h": maniac.number}
         game.night_actions[ninja.user_id] = {"sur": maniac.number}
@@ -715,7 +715,7 @@ class TestResolveNight:
             await resolve_night(mock_bus, game)
 
             assert maniac.is_alive
-            assert maniac.surikens == 0
+            assert maniac.shurikens == 0
 
     @pytest.mark.asyncio
     async def test_maniac_with_bandages_survives_tula(self, mock_bus):
@@ -774,7 +774,7 @@ class TestResolveNight:
         immortal = game.players[2]
         ninja = game.players[1]
 
-        immortal.surikens = 1
+        immortal.shurikens = 1
         immortal.is_glued = True
 
         game.night_actions[ninja.user_id] = {"sur": immortal.number}
@@ -785,7 +785,7 @@ class TestResolveNight:
             await resolve_night(mock_bus, game)
 
             assert immortal.is_alive
-            assert immortal.surikens == 0
+            assert immortal.shurikens == 0
 
     @pytest.mark.asyncio
     async def test_immortal_survives_tula(self, mock_bus):
@@ -999,7 +999,7 @@ class TestResolveNight:
             await resolve_night(mock_bus, game)
 
             assert target.is_alive
-            assert target.surikens == 0
+            assert target.shurikens == 0
 
     @pytest.mark.asyncio
     async def test_lawyer_blocked_by_glue(self, mock_bus):
