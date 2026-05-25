@@ -14,9 +14,10 @@ from connection.queries import QueryType
 
 from utils.helpers import alive_sorted
 
-from engine.roles import ROLE_DESCRIPTIONS
 from engine.game_state import Game, GameState
+from engine.models import Player
 from engine.presets import ROOM_PRESETS
+from engine.roles import ROLE_DESCRIPTIONS
 
 from engine.phases.day import start_day, next_speaker
 from engine.phases.defense import next_defense_speaker
@@ -846,6 +847,139 @@ class EventDispatcher:
 
     # --- NIGHT ACTION ---
 
+    async def __repeated_guard(self, query: NightActionQuery, player: Player):
+        if query.action not in ["rek", "heal", "tula", "alibi", "man_h"]:
+            return False
+
+        invalid_response = ResponseWithAlert(
+            query.callback,
+            False,
+            query.user_id,
+            "Нельзя делать это две ночи подряд"
+        )
+        if query.action == "rek" and player.last_rek == query.target:
+            await self.__send_response(invalid_response)
+            return True
+        if query.action in ["heal", "tula"] and player.last_healed == query.target:
+            await self.__send_response(invalid_response)
+            return True
+        if query.action == "alibi" and player.last_alibi == query.target:
+            await self.__send_response(invalid_response)
+            return True
+        if query.action == "man_h" and player.last_man_heal:
+            await self.__send_response(invalid_response)
+            return True
+
+        return False
+
+    async def __handle_thief(self, query: NightActionQuery, game: Game):
+        player: Player = game.players[query.user_id]
+        valid_response = ResponseWithAlert(
+            query.callback,
+            True,
+            query.user_id,
+            ""
+        )
+
+        game.expected_night_actors[query.user_id].remove("rek")
+
+        if query.target == NULL_OPTION:
+            player.last_rek = NULL_OPTION
+
+            valid_response.text = "✅ Вы решили никого не клеить."
+            await self.__send_response(valid_response)
+
+            await self.__send_response_base(
+                query.chat_id,
+                "🤐 Вор никого не заклеил.",
+                valid=True
+            )
+
+            await start_night_others(self.bus, game)
+            return
+
+        target = game.players_by_number[query.target]
+        target.is_glued = True
+        player.last_rek = query.target
+
+        valid_response.text = f"✅ Вы заклеили Игрока №{query.target}."
+        await self.__send_response(valid_response)
+
+        await self.__send_response_base(
+            query.chat_id,
+            f"🤐 Вор заклеил Игрока №{query.target}! Он пропускает день.",
+            valid=True
+        )
+
+        await start_night_others(self.bus, game)
+
+    async def __handle_don_check(self, query: NightActionQuery, game: Game):
+        t_player = game.players_by_number[query.target]
+        ans = f"✅ Игрок №{query.target} — ШЕРИФ!" if t_player.role == "Шериф" else f"❌ Игрок №{query.target} — НЕ ШЕРИФ."
+
+        await self.__send_response_base(
+            query.user_id,
+            ans,
+            valid=True
+        )
+
+    async def __handle_sheriff_check(self, query: NightActionQuery, game: Game):
+        t_player = game.players_by_number[query.target]
+        can_be_discovered = t_player.found_mafia and t_player.found_mafia_day < game.day_count
+        is_bad_dvul = t_player.role == "Двуликий" and can_be_discovered
+
+        if t_player.role in game.mafia_team or is_bad_dvul:
+            ans = f"✅ Игрок №{query.target} — МАФИЯ ({t_player.role})!"
+        else:
+            ans = f"❌ Игрок №{query.target} — НЕ МАФИЯ."
+
+        await self.__send_response_base(
+            query.user_id,
+            ans,
+            valid=True
+        )
+
+    async def __handle_two_face_check(self, query: NightActionQuery, game: Game):
+        player = game.players[query.user_id]
+        target = game.players_by_number[query.target]
+
+        if target.role not in game.mafia_team:
+            await self.__send_response_base(
+                query.user_id,
+                f"❌ Игрок №{query.target} не состоит в Мафии.",
+                valid=True
+            )
+            return
+
+        player.found_mafia = True
+        player.found_mafia_day = game.day_count
+        maf_list = ", ".join(
+            [f"№{p.number} ({p.role})" for p in game.get_alive_players() if p.role in game.mafia_team])
+
+        await self.__send_response_base(
+            query.user_id,
+            f"🎯 Вы нашли Мафию! Состав: {maf_list}. Со следующей ночи вы убиваете сами.",
+            valid=True
+        )
+        for maf in game.get_alive_players():
+            if maf.role not in game.mafia_team:
+                continue
+
+            await self.__send_response_base(
+                maf.user_id,
+                f"🎭 Двуликий нашел нас! Это Игрок №{player.number}.",
+                valid=True
+            )
+
+    def __handle_maniac(self, query: NightActionQuery, game: Game):
+        player = game.players[query.user_id]
+        player.last_man_heal = query.action == "man_h"
+
+        if query.action == "man_k" and "man_h" in game.expected_night_actors[player.user_id]:
+            game.expected_night_actors[player.user_id].remove("man_h")
+        elif query.action == "man_h" and "man_k" in game.expected_night_actors[player.user_id]:
+            game.expected_night_actors[player.user_id].remove("man_k")
+
     async def _handle_night_action(self, query: NightActionQuery):
         invalid_response = ResponseWithAlert(
             query.callback,
@@ -877,115 +1011,25 @@ class EventDispatcher:
             await self.__send_response(invalid_response)
             return
 
-        if game.state == GameState.NIGHT_THIEF and act_code == "rek":
-            if target_num != 0 and getattr(player, 'last_rek', None) == target_num:
-                invalid_response.text = "Нельзя клеить одного и того же игрока две ночи подряд!"
-                await self.__send_response(invalid_response)
-                return
-
-            game.expected_night_actors[user_id].remove("rek")
-            if target_num == 0:
-                valid_response.text = "✅ Вы решили никого не клеить."
-                await self.__send_response(valid_response)
-
-                await self.__send_response_base(
-                    query.chat_id,
-                    "🤐 Вор никого не заклеил.",
-                    valid=True
-                )
-                player.last_rek = 0
-            else:
-                target = game.players_by_number[target_num]
-                target.is_glued = True
-                player.last_rek = target_num
-                valid_response.text = f"✅ Вы заклеили Игрока №{target_num}."
-                await self.__send_response(valid_response)
-
-                await self.__send_response_base(
-                    query.chat_id,
-                    f"🤐 Вор заклеил Игрока №{target_num}! Он пропускает день.",
-                    valid=True
-                )
-
-            await start_night_others(self.bus, game)
+        if await self.__repeated_guard(query, player):
             return
 
-        if act_code in ["heal", "tula"] and player.last_healed == target_num:
-            invalid_response.text = "Нельзя лечить этого игрока две ночи подряд!"
-            await self.__send_response(invalid_response)
-            return
-        if act_code == "alibi" and player.last_alibi == target_num:
-            invalid_response.text = "Нельзя давать алиби этому игроку две ночи подряд!"
-            await self.__send_response(invalid_response)
-            return
-        if act_code == "man_h" and getattr(player, 'last_man_heal', False):
-            invalid_response.text = "Нельзя лечить себя 2 дня подряд!"
-            await self.__send_response(invalid_response)
+        if act_code == "rek":
+            await self.__handle_thief(query, game)
             return
 
         game.night_actions[user_id][act_code] = target_num
 
-        if act_code == "check_d":
-            t_player = game.players_by_number[target_num]
-            ans = f"✅ Игрок №{target_num} — ШЕРИФ!" if t_player.role == "Шериф" else f"❌ Игрок №{target_num} — НЕ ШЕРИФ."
+        match act_code:
+            case "check_d":
+                await self.__handle_don_check(query, game)
+            case "check_s":
+                await self.__handle_sheriff_check(query, game)
+            case "dvul_j":
+                await self.__handle_two_face_check(query, game)
 
-            await self.__send_response_base(
-                user_id,
-                ans,
-                valid=True
-            )
-
-        elif act_code == "check_s":
-            t_player = game.players_by_number[target_num]
-            can_be_discovered = t_player.found_mafia and t_player.found_mafia_day < game.day_count
-            is_bad_dvul = t_player.role == "Двуликий" and can_be_discovered
-
-            if t_player.role in game.mafia_team or is_bad_dvul:
-                ans = f"✅ Игрок №{target_num} — МАФИЯ ({t_player.role})!"
-            else:
-                ans = f"❌ Игрок №{target_num} — НЕ МАФИЯ."
-
-            await self.__send_response_base(
-                user_id,
-                ans,
-                valid=True
-            )
-
-        elif act_code == "dvul_j":
-            t_player = game.players_by_number[target_num]
-            if t_player.role in game.mafia_team:
-                player.found_mafia = True
-                player.found_mafia_day = game.day_count
-                maf_list = ", ".join(
-                    [f"№{p.number} ({p.role})" for p in game.get_alive_players() if p.role in game.mafia_team])
-
-                await self.__send_response_base(
-                    user_id,
-                    f"🎯 Вы нашли Мафию! Состав: {maf_list}. Со следующей ночи вы убиваете сами.",
-                    valid=True
-                )
-                for maf in game.get_alive_players():
-                    if maf.role not in game.mafia_team:
-                        continue
-
-                    await self.__send_response_base(
-                        maf.user_id,
-                        f"🎭 Двуликий нашел нас! Это Игрок №{player.number}.",
-                        valid=True
-                    )
-            else:
-                await self.__send_response_base(
-                    user_id,
-                    f"❌ Игрок №{target_num} не состоит в Мафии.",
-                    valid=True
-                )
-
-        if act_code == "man_k" and "man_h" in game.expected_night_actors[user_id]:
-            game.expected_night_actors[user_id].remove("man_h")
-            player.last_man_heal = False
-        elif act_code == "man_h":
-            game.expected_night_actors[user_id].remove("man_k")
-            player.last_man_heal = True
+        if act_code in ["man_k", "man_h"]:
+            self.__handle_maniac(query, game)
 
         game.expected_night_actors[user_id].remove(act_code)
 
