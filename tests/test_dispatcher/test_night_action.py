@@ -130,6 +130,7 @@ class TestNightActionHandlers:
         assert "Нельзя делать это две ночи подряд" in response.text
         assert response.chat_id == 1
 
+    @pytest.mark.asyncio
     async def test_repeated_guard_allows_other_actions(self, dispatcher):
         query = NightActionQuery(
             QueryType.NIGHT_ACTION, [1], -100, 1, Mock(),
