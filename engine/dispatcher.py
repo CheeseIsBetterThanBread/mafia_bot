@@ -578,7 +578,7 @@ class EventDispatcher:
 
         if player.is_glued:
             await self.__send_response_base(
-                query.chat_id,
+                user_id,
                 "🤐 Вы заклеены Вором! Вы не можете говорить в чате мафии этой ночью.",
                 valid=False
             )
@@ -596,7 +596,7 @@ class EventDispatcher:
 
         if sent_count == 0:
             await self.__send_response_base(
-                query.chat_id,
+                user_id,
                 "🥷 Вы остались единственным живым мафиози. Вас некому читать.",
                 valid=False
             )
@@ -850,13 +850,13 @@ class EventDispatcher:
         invalid_response = ResponseWithAlert(
             query.callback,
             False,
-            query.chat_id,
+            query.user_id,
             ""
         )
         valid_response = ResponseWithAlert(
             query.callback,
             True,
-            query.chat_id,
+            query.user_id,
             ""
         )
 
