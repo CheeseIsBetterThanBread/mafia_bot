@@ -141,6 +141,26 @@ class TestNightActionHandlers:
         assert not await dispatcher._EventDispatcher__repeated_guard(query, player)
 
     @pytest.mark.asyncio
+    @pytest.mark.parametrize("action,handler", [
+        ("rek", "engine.dispatcher.EventDispatcher._EventDispatcher__handle_thief"),
+        ("check_d", "engine.dispatcher.EventDispatcher._EventDispatcher__handle_don_check"),
+        ("check_s", "engine.dispatcher.EventDispatcher._EventDispatcher__handle_sheriff_check"),
+        ("dvul_j", "engine.dispatcher.EventDispatcher._EventDispatcher__handle_two_face_check")
+    ])
+    async def test_routing(self, dispatcher, mock_engine, game, action, handler):
+        game.expected_night_actors[1] = [action]
+        query = NightActionQuery(
+            QueryType.NIGHT_ACTION, [1], -100, 1, Mock(),
+            action, 2
+        )
+        mock_engine.get_game.return_value = game
+
+        with patch(handler) as mock:
+            await dispatcher._handle_night_action(query)
+
+            mock.assert_called_once_with(query, game)
+
+    @pytest.mark.asyncio
     async def test_thief_action_success(self, dispatcher, game):
         game.state = GameState.NIGHT_THIEF
         game.expected_night_actors = {1: ["rek"]}
