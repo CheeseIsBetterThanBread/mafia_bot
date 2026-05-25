@@ -29,6 +29,9 @@ class TelegramAdapter(Adapter):
     def register(self):
         @self.bus.on(ResponseBase)
         async def base_handler(response: ResponseBase):
+            if type(response) is not ResponseBase:
+                return
+
             await self.bot.send_message(
                 response.chat_id,
                 response.text,
@@ -37,6 +40,9 @@ class TelegramAdapter(Adapter):
 
         @self.bus.on(ResponseWithAlert)
         async def alert_handler(response: ResponseWithAlert):
+            if type(response) is not ResponseWithAlert:
+                return
+
             if response.is_valid:
                 await response.callback.message.edit_text(
                     response.text,
@@ -53,6 +59,9 @@ class TelegramAdapter(Adapter):
 
         @self.bus.on(ResponseWithOptions)
         async def options_handler(response: ResponseWithOptions):
+            if type(response) is not ResponseWithOptions:
+                return
+
             buttons = []
             for (text, callback_redirect) in response.candidates:
                 buttons.append([InlineKeyboardButton(text=text, callback_data=callback_redirect)])

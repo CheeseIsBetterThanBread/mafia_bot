@@ -100,7 +100,7 @@ class TestEventBus:
         event = self.ChildEvent()
         await bus.emit(event)
 
-        handler.assert_not_called()
+        handler.assert_called_once_with(event)
 
     @pytest.mark.asyncio
     async def test_emit_doesnt_call_unrelated_handlers(self, bus):
@@ -343,6 +343,6 @@ class TestIntegration:
 
         await bus.emit(SpecificEvent())
 
-        assert len(results) == 1
-        assert "base_handler" not in results
+        assert len(results) == 2
+        assert "base_handler" in results
         assert "specific_handler" in results
