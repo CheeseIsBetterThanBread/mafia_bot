@@ -46,12 +46,17 @@ class ResponseBase(Event):
         self.is_valid = valid
 
     def get_log_string(self):
-        template_string = "[Response]: {chat_id} - {parse_mode} - {text_head}"
+        template_string = "[{response_type}]: {chat_id} - {parse_mode} - {text_head}"
         return template_string.format(
+            response_type=self.response_type,
             chat_id=self.chat_id,
             parse_mode=self.parse_mode if self.parse_mode else "default",
             text_head=self.text.split("\n")[0],
         )
+
+    @property
+    def response_type(self):
+        return "ResponseBase"
 
 
 class ResponseWithAlert(ResponseBase):
@@ -59,11 +64,19 @@ class ResponseWithAlert(ResponseBase):
         super().__init__(chat_id, text, parse_mode, valid)
         self.callback = callback
 
+    @property
+    def response_type(self):
+        return "ResponseWithAlert"
+
 
 class ResponseWithOptions(ResponseBase):
     def __init__(self, candidates, chat_id, text, parse_mode=None, valid=False):
         super().__init__(chat_id, text, parse_mode, valid)
         self.candidates = candidates
+
+    @property
+    def response_type(self):
+        return "ResponseWithOptions"
 
 
 # Обработка /start_game
