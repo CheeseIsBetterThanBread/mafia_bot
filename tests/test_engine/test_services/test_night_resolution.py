@@ -7,7 +7,8 @@ from engine.services.night_resolution import (
     generate_random_moves,
     resolve_night,
     EventBus,
-    Game
+    Game,
+    NightAction
 )
 
 class TestGenerateRandomMoves:
@@ -55,7 +56,7 @@ class TestGenerateRandomMoves:
             await generate_random_moves(mock_bus, game)
 
             assert ninja.user_id in game.night_actions
-            assert game.night_actions[ninja.user_id]["sur"] == target.number
+            assert game.night_actions[ninja.user_id][NightAction.SHURIKEN] == target.number
 
             mock_bus.emit.assert_called()
 
@@ -81,7 +82,7 @@ class TestGenerateRandomMoves:
             await generate_random_moves(mock_bus, game)
 
             assert tula.user_id in game.night_actions
-            assert game.night_actions[tula.user_id]["tula"] == target.number
+            assert game.night_actions[tula.user_id][NightAction.TULA] == target.number
 
             mock_bus.emit.assert_called()
 
@@ -120,7 +121,7 @@ class TestGenerateRandomMoves:
             await generate_random_moves(mock_bus, game)
 
             assert maniac.user_id in game.night_actions
-            assert game.night_actions[maniac.user_id]["man_k"] == target.number
+            assert game.night_actions[maniac.user_id][NightAction.MANIAC_KILL] == target.number
 
             mock_bus.emit.assert_called()
 
@@ -146,7 +147,7 @@ class TestGenerateRandomMoves:
             await generate_random_moves(mock_bus, game)
 
             assert maniac.user_id in game.night_actions
-            assert game.night_actions[maniac.user_id]["man_k"] == target.number
+            assert game.night_actions[maniac.user_id][NightAction.MANIAC_KILL] == target.number
             assert maniac.last_man_heal is False
 
             mock_bus.emit.assert_called()
@@ -173,7 +174,7 @@ class TestGenerateRandomMoves:
             await generate_random_moves(mock_bus, game)
 
             assert two_face.user_id in game.night_actions
-            assert game.night_actions[two_face.user_id]["dvul_k"] == target.number
+            assert game.night_actions[two_face.user_id][NightAction.TWO_FACE_KILL] == target.number
 
             mock_bus.emit.assert_called()
 
@@ -217,14 +218,14 @@ class TestGenerateRandomMoves:
     @pytest.mark.asyncio
     async def test_skip_players_with_existing_actions(self, mock_bus, game):
         ninja = game.players[5]
-        game.night_actions[ninja.user_id] = {"sur": 2}
+        game.night_actions[ninja.user_id] = {NightAction.SHURIKEN: 2}
 
         with patch('engine.services.night_resolution.random.choice') as mock_choice:
             mock_choice.return_value = game.players[1]
 
             await generate_random_moves(mock_bus, game)
 
-            assert game.night_actions[ninja.user_id] == {"sur": 2}
+            assert game.night_actions[ninja.user_id] == {NightAction.SHURIKEN: 2}
 
     @pytest.mark.asyncio
     async def test_skip_glued_players(self, mock_bus, game):
@@ -306,8 +307,8 @@ class TestResolveNight:
         don = game.players[3]
         target = game.players[1]
 
-        game.night_actions[mafia.user_id] = {"vote": target.number}
-        game.night_actions[don.user_id] = {"vote": target.number}
+        game.night_actions[mafia.user_id] = {NightAction.VOTE: target.number}
+        game.night_actions[don.user_id] = {NightAction.VOTE: target.number}
 
         with self.patch_night() as mocks:
             mocks.check_victory.return_value = False
@@ -332,8 +333,8 @@ class TestResolveNight:
         mafia_target = game.players[1]
         don_target = game.players[4]
 
-        game.night_actions[mafia.user_id] = {"vote": mafia_target.number}
-        game.night_actions[don.user_id] = {"vote": don_target.number}
+        game.night_actions[mafia.user_id] = {NightAction.VOTE: mafia_target.number}
+        game.night_actions[don.user_id] = {NightAction.VOTE: don_target.number}
 
         with self.patch_night() as mocks:
             mocks.check_victory.return_value = False
@@ -359,8 +360,8 @@ class TestResolveNight:
         mafia_1_target = game.players[1]
         mafia_2_target = game.players[4]
 
-        game.night_actions[mafia_1.user_id] = {"vote": mafia_1_target.number}
-        game.night_actions[mafia_2.user_id] = {"vote": mafia_2_target.number}
+        game.night_actions[mafia_1.user_id] = {NightAction.VOTE: mafia_1_target.number}
+        game.night_actions[mafia_2.user_id] = {NightAction.VOTE: mafia_2_target.number}
 
         with self.patch_night() as mocks:
             mocks.check_victory.return_value = False
@@ -387,8 +388,8 @@ class TestResolveNight:
         mafia = game.players[2]
         target = game.players[1]
 
-        game.night_actions[doctor.user_id] = {"heal": target.number}
-        game.night_actions[mafia.user_id] = {"vote": target.number}
+        game.night_actions[doctor.user_id] = {NightAction.HEAL: target.number}
+        game.night_actions[mafia.user_id] = {NightAction.VOTE: target.number}
 
         with self.patch_night() as mocks:
             mocks.check_victory.return_value = False
@@ -413,8 +414,8 @@ class TestResolveNight:
         mafia = game.players[2]
         target = game.players[1]
 
-        game.night_actions[tula.user_id] = {"tula": target.number}
-        game.night_actions[mafia.user_id] = {"vote": target.number}
+        game.night_actions[tula.user_id] = {NightAction.TULA: target.number}
+        game.night_actions[mafia.user_id] = {NightAction.VOTE: target.number}
 
         with self.patch_night() as mocks:
             mocks.check_victory.return_value = False
@@ -439,8 +440,8 @@ class TestResolveNight:
         mafia = game.players[2]
         target = game.players[1]
 
-        game.night_actions[tula.user_id] = {"tula": target.number}
-        game.night_actions[mafia.user_id] = {"vote": tula.number}
+        game.night_actions[tula.user_id] = {NightAction.TULA: target.number}
+        game.night_actions[mafia.user_id] = {NightAction.VOTE: tula.number}
 
         with self.patch_night() as mocks:
             mocks.check_victory.return_value = False
@@ -461,8 +462,8 @@ class TestResolveNight:
         tula = game.players[3]
         mafia = game.players[2]
 
-        game.night_actions[tula.user_id] = {"tula": tula.number}
-        game.night_actions[mafia.user_id] = {"vote": tula.number}
+        game.night_actions[tula.user_id] = {NightAction.TULA: tula.number}
+        game.night_actions[mafia.user_id] = {NightAction.VOTE: tula.number}
 
         with self.patch_night() as mocks:
             mocks.check_victory.return_value = False
@@ -485,7 +486,7 @@ class TestResolveNight:
         ninja = game.players[2]
         target = game.players[1]
 
-        game.night_actions[ninja.user_id] = {"sur": target.number}
+        game.night_actions[ninja.user_id] = {NightAction.SHURIKEN: target.number}
 
         with self.patch_night() as mocks:
             mocks.check_victory.return_value = False
@@ -506,7 +507,7 @@ class TestResolveNight:
         target = game.players[1]
 
         target.shurikens = 1
-        game.night_actions[ninja.user_id] = {"sur": target.number}
+        game.night_actions[ninja.user_id] = {NightAction.SHURIKEN: target.number}
 
         with self.patch_night() as mocks:
             mocks.check_victory.return_value = False
@@ -528,8 +529,8 @@ class TestResolveNight:
         ninja = game.players[2]
         target = game.players[1]
 
-        game.night_actions[ninja.user_id] = {"sur": target.number}
-        game.night_actions[doctor.user_id] = {"heal": target.number}
+        game.night_actions[ninja.user_id] = {NightAction.SHURIKEN: target.number}
+        game.night_actions[doctor.user_id] = {NightAction.HEAL: target.number}
 
         with self.patch_night() as mocks:
             mocks.check_victory.return_value = False
@@ -551,8 +552,8 @@ class TestResolveNight:
         ninja = game.players[2]
         target = game.players[1]
 
-        game.night_actions[ninja.user_id] = {"sur": target.number}
-        game.night_actions[tula.user_id] = {"tula": target.number}
+        game.night_actions[ninja.user_id] = {NightAction.SHURIKEN: target.number}
+        game.night_actions[tula.user_id] = {NightAction.TULA: target.number}
 
         with self.patch_night() as mocks:
             mocks.check_victory.return_value = False
@@ -576,8 +577,8 @@ class TestResolveNight:
 
         tula.shurikens = 1
 
-        game.night_actions[ninja.user_id] = {"sur": tula.number}
-        game.night_actions[tula.user_id] = {"tula": target.number}
+        game.night_actions[ninja.user_id] = {NightAction.SHURIKEN: tula.number}
+        game.night_actions[tula.user_id] = {NightAction.TULA: target.number}
 
         with self.patch_night() as mocks:
             mocks.check_victory.return_value = False
@@ -600,8 +601,8 @@ class TestResolveNight:
 
         tula.shurikens = 1
 
-        game.night_actions[ninja.user_id] = {"sur": tula.number}
-        game.night_actions[tula.user_id] = {"tula": tula.number}
+        game.night_actions[ninja.user_id] = {NightAction.SHURIKEN: tula.number}
+        game.night_actions[tula.user_id] = {NightAction.TULA: tula.number}
 
         with self.patch_night() as mocks:
             mocks.check_victory.return_value = False
@@ -623,7 +624,7 @@ class TestResolveNight:
 
         two_face.found_mafia = True
 
-        game.night_actions[two_face.user_id] = {"dvul_k": target.number}
+        game.night_actions[two_face.user_id] = {NightAction.TWO_FACE_KILL: target.number}
 
         with self.patch_night() as mocks:
             mocks.check_victory.return_value = False
@@ -643,7 +644,7 @@ class TestResolveNight:
         maniac = game.players[2]
         target = game.players[1]
 
-        game.night_actions[maniac.user_id] = {"man_k": target.number}
+        game.night_actions[maniac.user_id] = {NightAction.MANIAC_KILL: target.number}
 
         with self.patch_night() as mocks:
             mocks.check_victory.return_value = False
@@ -663,7 +664,7 @@ class TestResolveNight:
         maniac = game.players[2]
         target = game.players[1]
 
-        game.night_actions[maniac.user_id] = {"man_k": target.number}
+        game.night_actions[maniac.user_id] = {NightAction.MANIAC_KILL: target.number}
 
         with self.patch_night() as mocks:
             mocks.check_victory.return_value = False
@@ -683,8 +684,8 @@ class TestResolveNight:
         maniac = game.players[2]
         mafia = game.players[1]
 
-        game.night_actions[maniac.user_id] = {"man_h": maniac.number}
-        game.night_actions[mafia.user_id] = {"vote": maniac.number}
+        game.night_actions[maniac.user_id] = {NightAction.MANIAC_HEAL: maniac.number}
+        game.night_actions[mafia.user_id] = {NightAction.VOTE: maniac.number}
 
         with self.patch_night() as mocks:
             mocks.check_victory.return_value = False
@@ -706,8 +707,8 @@ class TestResolveNight:
 
         maniac.shurikens = 1
 
-        game.night_actions[maniac.user_id] = {"man_h": maniac.number}
-        game.night_actions[ninja.user_id] = {"sur": maniac.number}
+        game.night_actions[maniac.user_id] = {NightAction.MANIAC_HEAL: maniac.number}
+        game.night_actions[ninja.user_id] = {NightAction.SHURIKEN: maniac.number}
 
         with self.patch_night() as mocks:
             mocks.check_victory.return_value = False
@@ -730,9 +731,9 @@ class TestResolveNight:
         mafia = game.players[1]
         tula = game.players[3]
 
-        game.night_actions[maniac.user_id] = {"man_h": maniac.number}
-        game.night_actions[mafia.user_id] = {"vote": tula.number}
-        game.night_actions[tula.user_id] = {"tula": maniac.number}
+        game.night_actions[maniac.user_id] = {NightAction.MANIAC_HEAL: maniac.number}
+        game.night_actions[mafia.user_id] = {NightAction.VOTE: tula.number}
+        game.night_actions[tula.user_id] = {NightAction.TULA: maniac.number}
 
         with self.patch_night() as mocks:
             mocks.check_victory.return_value = False
@@ -754,7 +755,7 @@ class TestResolveNight:
 
         immortal.is_glued = True
 
-        game.night_actions[mafia.user_id] = {"vote": immortal.number}
+        game.night_actions[mafia.user_id] = {NightAction.VOTE: immortal.number}
 
         with self.patch_night() as mocks:
             mocks.check_victory.return_value = False
@@ -777,7 +778,7 @@ class TestResolveNight:
         immortal.shurikens = 1
         immortal.is_glued = True
 
-        game.night_actions[ninja.user_id] = {"sur": immortal.number}
+        game.night_actions[ninja.user_id] = {NightAction.SHURIKEN: immortal.number}
 
         with self.patch_night() as mocks:
             mocks.check_victory.return_value = False
@@ -802,8 +803,8 @@ class TestResolveNight:
 
         immortal.is_glued = True
 
-        game.night_actions[mafia.user_id] = {"vote": tula.number}
-        game.night_actions[tula.user_id] = {"tula": immortal.number}
+        game.night_actions[mafia.user_id] = {NightAction.VOTE: tula.number}
+        game.night_actions[tula.user_id] = {NightAction.TULA: immortal.number}
 
         with self.patch_night() as mocks:
             mocks.check_victory.return_value = False
@@ -827,9 +828,9 @@ class TestResolveNight:
         tula = game.players[3]
         healed = game.players[4]
 
-        game.night_actions[mafia.user_id] = {"vote": tula.number}
-        game.night_actions[doctor.user_id] = {"heal": healed.number}
-        game.night_actions[tula.user_id] = {"tula": healed.number}
+        game.night_actions[mafia.user_id] = {NightAction.VOTE: tula.number}
+        game.night_actions[doctor.user_id] = {NightAction.HEAL: healed.number}
+        game.night_actions[tula.user_id] = {NightAction.TULA: healed.number}
 
         with self.patch_night() as mocks:
             mocks.check_victory.return_value = False
@@ -875,7 +876,7 @@ class TestResolveNight:
         tula = game.players[1]
         target = game.players[2]
 
-        game.night_actions[tula.user_id] = {"tula": target.user_id}
+        game.night_actions[tula.user_id] = {NightAction.TULA: target.user_id}
 
         with self.patch_night() as mocks:
             mocks.check_victory.return_value = False
@@ -893,7 +894,7 @@ class TestResolveNight:
 
         tula = game.players[1]
 
-        game.night_actions[tula.user_id] = {"tula": tula.user_id}
+        game.night_actions[tula.user_id] = {NightAction.TULA: tula.user_id}
 
         with self.patch_night() as mocks:
             mocks.check_victory.return_value = False
@@ -913,7 +914,7 @@ class TestResolveNight:
         lawyer = game.players[1]
         target = game.players[2]
 
-        game.night_actions[lawyer.user_id] = {"alibi": target.user_id}
+        game.night_actions[lawyer.user_id] = {NightAction.ALIBI: target.user_id}
 
         with self.patch_night() as mocks:
             mocks.check_victory.return_value = False
@@ -937,8 +938,8 @@ class TestResolveNight:
 
         mafia_1.is_glued = True
 
-        game.night_actions[mafia_1.user_id] = {"vote": target.number}
-        game.night_actions[mafia_2.user_id] = {"vote": target.number}
+        game.night_actions[mafia_1.user_id] = {NightAction.VOTE: target.number}
+        game.night_actions[mafia_2.user_id] = {NightAction.VOTE: target.number}
 
         with self.patch_night() as mocks:
             mocks.check_victory.return_value = False
@@ -964,8 +965,8 @@ class TestResolveNight:
 
         mafia.is_glued = True
 
-        game.night_actions[mafia.user_id] = {"vote": mafia_target.number}
-        game.night_actions[two_face.user_id] = {"dvul_k": two_face_target.number}
+        game.night_actions[mafia.user_id] = {NightAction.VOTE: mafia_target.number}
+        game.night_actions[two_face.user_id] = {NightAction.TWO_FACE_KILL: two_face_target.number}
 
         with self.patch_night() as mocks:
             mocks.check_victory.return_value = False
@@ -990,8 +991,8 @@ class TestResolveNight:
 
         ninja.is_glued = True
 
-        game.night_actions[mafia.user_id] = {"vote": target.number}
-        game.night_actions[ninja.user_id] = {"vote": target.number, "sur": target.number}
+        game.night_actions[mafia.user_id] = {NightAction.VOTE: target.number}
+        game.night_actions[ninja.user_id] = {NightAction.VOTE: target.number, NightAction.SHURIKEN: target.number}
 
         with self.patch_night() as mocks:
             mocks.check_victory.return_value = False
@@ -1016,8 +1017,8 @@ class TestResolveNight:
 
         lawyer.is_glued = True
 
-        game.night_actions[mafia.user_id] = {"vote": target.number}
-        game.night_actions[lawyer.user_id] = {"vote": target.number, "alibi": mafia.number}
+        game.night_actions[mafia.user_id] = {NightAction.VOTE: target.number}
+        game.night_actions[lawyer.user_id] = {NightAction.VOTE: target.number, NightAction.ALIBI: mafia.number}
 
         with self.patch_night() as mocks:
             mocks.check_victory.return_value = False
@@ -1031,23 +1032,29 @@ class TestResolveNight:
     async def test_two_face_blocked_by_glue(self, mock_bus):
         players_data = [
             (1, "Player 1", "Мирный житель"),
-            (2, "Player 2", "Двуликий")
+            (2, "Player 2", "Двуликий"),
+            (3, "Player 3", "Мафия"),
+            (4, "Player 4", "Мирный житель")
         ]
         game = self.create_game(players_data)
 
         two_face = game.players[2]
-        target = game.players[1]
+        two_face_target = game.players[1]
+        mafia = game.players[3]
+        mafia_target = game.players[4]
 
         two_face.is_glued = True
 
-        game.night_actions[two_face.user_id] = {"dvul_k": target.number}
+        game.night_actions[two_face.user_id] = {NightAction.TWO_FACE_KILL: two_face_target.number}
+        game.night_actions[mafia.user_id] = {NightAction.VOTE: mafia_target.number}
 
         with self.patch_night() as mocks:
             mocks.check_victory.return_value = False
 
             await resolve_night(mock_bus, game)
 
-            assert target.is_alive
+            assert two_face_target.is_alive
+            assert not mafia_target.is_alive
 
     @pytest.mark.asyncio
     async def test_maniac_without_bandages_blocked_by_glue(self, mock_bus):
@@ -1062,7 +1069,7 @@ class TestResolveNight:
 
         maniac.is_glued = True
 
-        game.night_actions[maniac.user_id] = {"man_k": target.number}
+        game.night_actions[maniac.user_id] = {NightAction.MANIAC_KILL: target.number}
 
         with self.patch_night() as mocks:
             mocks.check_victory.return_value = False
@@ -1084,7 +1091,7 @@ class TestResolveNight:
 
         maniac.is_glued = True
 
-        game.night_actions[maniac.user_id] = {"man_k": target.number}
+        game.night_actions[maniac.user_id] = {NightAction.MANIAC_KILL: target.number}
 
         with self.patch_night() as mocks:
             mocks.check_victory.return_value = False
@@ -1106,8 +1113,8 @@ class TestResolveNight:
 
         maniac.is_glued = True
 
-        game.night_actions[maniac.user_id] = {"man_h": maniac.number}
-        game.night_actions[mafia.user_id] = {"vote": maniac.number}
+        game.night_actions[maniac.user_id] = {NightAction.MANIAC_HEAL: maniac.number}
+        game.night_actions[mafia.user_id] = {NightAction.VOTE: maniac.number}
 
         with self.patch_night() as mocks:
             mocks.check_victory.return_value = False
@@ -1129,8 +1136,8 @@ class TestResolveNight:
 
         doctor.is_glued = True
 
-        game.night_actions[doctor.user_id] = {"heal": doctor.number}
-        game.night_actions[mafia.user_id] = {"vote": doctor.number}
+        game.night_actions[doctor.user_id] = {NightAction.HEAL: doctor.number}
+        game.night_actions[mafia.user_id] = {NightAction.VOTE: doctor.number}
 
         with self.patch_night() as mocks:
             mocks.check_victory.return_value = False
@@ -1152,8 +1159,8 @@ class TestResolveNight:
 
         tula.is_glued = True
 
-        game.night_actions[tula.user_id] = {"tula": tula.number}
-        game.night_actions[mafia.user_id] = {"vote": tula.number}
+        game.night_actions[tula.user_id] = {NightAction.TULA: tula.number}
+        game.night_actions[mafia.user_id] = {NightAction.VOTE: tula.number}
 
         with self.patch_night() as mocks:
             mocks.check_victory.return_value = False
@@ -1177,9 +1184,9 @@ class TestResolveNight:
 
         tula.is_glued = True
 
-        game.night_actions[tula.user_id] = {"tula": tula.number}
-        game.night_actions[mafia.user_id] = {"vote": tula.number}
-        game.night_actions[doctor.user_id] = {"heal": tula.number}
+        game.night_actions[tula.user_id] = {NightAction.TULA: tula.number}
+        game.night_actions[mafia.user_id] = {NightAction.VOTE: tula.number}
+        game.night_actions[doctor.user_id] = {NightAction.HEAL: tula.number}
 
         with self.patch_night() as mocks:
             mocks.check_victory.return_value = False

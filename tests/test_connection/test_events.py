@@ -367,7 +367,7 @@ class TestNightActionQuery:
         assert "target" not in log_string
 
     def test_night_action_different_actions(self):
-        actions = ["kill", "heal", "check", "block", "protect"]
+        actions = ["random", "string", "flow", "block", "protect"]
 
         for action in actions:
             query = NightActionQuery(

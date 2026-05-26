@@ -16,7 +16,9 @@ from engine.phases.night import (
     ResponseWithOptions,
     THIEF_TIME,
     NIGHT_TIME,
-    REMINDER_OFFSET
+    REMINDER_OFFSET,
+    NightAction,
+    ROLE_NIGHT_ACTIONS
 )
 
 
@@ -84,7 +86,7 @@ class TestStartNight:
 
             mocks.thief_timeout_logic.assert_called_once_with(mock_bus, game, game.day_count)
 
-            assert game.expected_night_actors[thief.user_id] == ["rek"]
+            assert game.expected_night_actors[thief.user_id] == [NightAction.ROB]
 
             assert mock_bus.emit.call_count >= 2
             last_call = mock_bus.emit.call_args_list[-1][0][0]
@@ -184,22 +186,14 @@ class TestStartNightOthers:
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize("two_face_action,found_mafia", [
-        ('dvul_j', False),
-        ('dvul_k', True)
+        (NightAction.TWO_FACE_CHECK, False),
+        (NightAction.TWO_FACE_KILL, True)
     ])
     async def test_set_state(self, mock_bus, game, patch_dependencies, two_face_action, found_mafia):
         game.players[8].found_mafia = found_mafia
         expected_night_actors = {
-            1: ['vote'],
-            2: ['heal'],
-            3: ['check_s'],
-            4: ['vote', 'check_d'],
-            5: ['vote', 'sur'],
-            6: ['man_k'],
-            7: ['man_k', 'man_h'],
-            8: [two_face_action],
-            9: ['vote', 'alibi'],
-            10: ['tula']
+            p.user_id: [action_info[0] for action_info in ROLE_NIGHT_ACTIONS[p.role]]
+            for p in game.players.values()
         }
 
         with patch_dependencies:
@@ -251,7 +245,7 @@ class TestStartNightOthers:
                     break
 
             assert doctor_response is not None
-            assert "лечить" in doctor_response.text
+            assert "Выберите игрока для лечения" in doctor_response.text
 
     @pytest.mark.asyncio
     async def test_tula_action(self, mock_bus, game, patch_dependencies):
@@ -268,7 +262,7 @@ class TestStartNightOthers:
                     break
 
             assert tula_response is not None
-            assert "хил + алиби" in tula_response.text
+            assert "Выберите игрока, к которому пойдете (хил + алиби)" in tula_response.text
 
     @pytest.mark.asyncio
     async def test_sheriff_action(self, mock_bus, game, patch_dependencies):
@@ -285,7 +279,7 @@ class TestStartNightOthers:
                     break
 
             assert sheriff_response is not None
-            assert "проверим на мафию" in sheriff_response.text
+            assert "Выберите игрока для проверки на мафию" in sheriff_response.text
 
     @pytest.mark.asyncio
     async def test_don_check_action(self, mock_bus, game, patch_dependencies):
@@ -301,7 +295,9 @@ class TestStartNightOthers:
                     don_responses.append(response)
 
             assert len(don_responses) == 2
-            assert "проверим на Шерифа" in don_responses[0].text or "проверим на Шерифа" in don_responses[1].text
+
+            don_text = "Выберите игрока для проверки на шерифа"
+            assert don_text in don_responses[0].text or don_text in don_responses[1].text
 
     @pytest.mark.asyncio
     async def test_ninja_shuriken_action(self, mock_bus, game, patch_dependencies):
@@ -317,7 +313,9 @@ class TestStartNightOthers:
                     ninja_responses.append(response)
 
             assert len(ninja_responses) == 2
-            assert "кидаем сюрикен" in ninja_responses[0].text or "кидаем сюрикен" in ninja_responses[1].text
+
+            ninja_text = "Выберите игрока, в которого кинуть сюрикен"
+            assert ninja_text in ninja_responses[0].text or ninja_text in ninja_responses[1].text
 
     @pytest.mark.asyncio
     async def test_lawyer_alibi_action(self, mock_bus, game, patch_dependencies):
@@ -333,7 +331,9 @@ class TestStartNightOthers:
                     lawyer_responses.append(response)
 
             assert len(lawyer_responses) == 2
-            assert "даем алиби" in lawyer_responses[0].text or "даем алиби" in lawyer_responses[1].text
+
+            lawyer_text = "Выберите игрока, который получит алиби"
+            assert lawyer_text in lawyer_responses[0].text or lawyer_text in lawyer_responses[1].text
 
     @pytest.mark.asyncio
     async def test_maniac_without_bandages(self, mock_bus, game, patch_dependencies):
@@ -349,7 +349,7 @@ class TestStartNightOthers:
                     maniac_responses.append(response)
 
             assert len(maniac_responses) == 1
-            assert 'убиваем' in maniac_responses[0].text
+            assert "Выберите игрока для убийства" in maniac_responses[0].text
 
     @pytest.mark.asyncio
     async def test_maniac_with_bandages(self, mock_bus, game, patch_dependencies):
@@ -382,7 +382,7 @@ class TestStartNightOthers:
                     break
 
             assert two_face_response is not None
-            assert "Ищем мафию" in two_face_response.text
+            assert "Выберите игрока для проверки на мафию" in two_face_response.text
 
     @pytest.mark.asyncio
     async def test_two_face_found(self, mock_bus, game, patch_dependencies):
@@ -400,7 +400,7 @@ class TestStartNightOthers:
                     break
 
             assert two_face_response is not None
-            assert "убиваем" in two_face_response.text
+            assert "Выберите игрока для убийства" in two_face_response.text
 
     @pytest.mark.asyncio
     async def test_no_actors(self, mock_bus, game, patch_dependencies):
@@ -500,7 +500,7 @@ class TestNightTimeoutLogic:
             game.add_player(i, f"Player {i}")
             game.players[i].is_alive = True
 
-        game.expected_night_actors = {1: ["vote"], 2: ["heal"]}
+        game.expected_night_actors = {1: [NightAction.VOTE], 2: [NightAction.HEAL]}
         game.day_count = 2
         game.state = GameState.NIGHT
 
