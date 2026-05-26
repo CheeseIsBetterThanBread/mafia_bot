@@ -5,6 +5,10 @@ PYTHON=python3
 COVERAGE_FILE=.coverage_value
 BADGE_FILE=coverage_badge.md
 
+# ---- Генерация ролей ----
+generate:
+	$(PYTHON) tools/generate_roles.py
+
 # ---- Запуск ----
 run:
 	$(PYTHON) -m main
@@ -19,6 +23,7 @@ coverage:
 	coverage report -m
 	coverage html
 	$(MAKE) badge
+
 
 # ---- Генерация бейджа ----
 badge:
