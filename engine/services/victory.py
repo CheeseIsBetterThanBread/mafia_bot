@@ -1,8 +1,9 @@
 from connection.events import ResponseBase
 from connection.event_bus import EventBus
 
+from config.roles import MAFIA_TEAM
+
 from engine.game_state import Game, GameState
-from engine.roles import MAFIA_TEAM
 
 
 async def check_victory(bus: EventBus, game: Game):

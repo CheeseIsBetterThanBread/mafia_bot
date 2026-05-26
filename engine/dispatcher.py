@@ -1,6 +1,7 @@
 import asyncio
 from random import shuffle
 
+from config.roles import ROLE_DESCRIPTIONS
 from config.settings import (
     NULL_OPTION,
     NOMINATE_CALLBACK_TEMPLATE,
@@ -17,7 +18,6 @@ from utils.helpers import alive_sorted
 from engine.game_state import Game, GameState
 from engine.models import Player
 from engine.presets import ROOM_PRESETS
-from engine.roles import ROLE_DESCRIPTIONS
 
 from engine.phases.day import start_day, next_speaker
 from engine.phases.defense import next_defense_speaker
