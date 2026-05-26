@@ -3,13 +3,16 @@ from pathlib import Path
 
 import os
 
-
 load_dotenv()
 
 # --- telegram ---
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_ADMIN_ID = os.getenv("TELEGRAM_ADMIN_ID", 0)
-TELEGRAM_ADMINS = [int(admin_id) for admin_id in os.getenv("TELEGRAM_ADMINS", "").split(',') if admin_id]
+TELEGRAM_ADMINS = [
+    int(admin_id)
+    for admin_id in os.getenv("TELEGRAM_ADMINS", "").split(",")
+    if admin_id
+]
 
 # --- day timers ---
 SECONDS_PER_PLAYER = 8
@@ -32,9 +35,9 @@ LOGS_DIR = ROOT_DIR / "logs"
 LOGS_DIR.mkdir(exist_ok=True)
 
 LOG_FILE = LOGS_DIR / "app.log"
-MAX_BYTES_PER_FILE = 2 ** 20
+MAX_BYTES_PER_FILE = 2**20
 BACKUP_FILES = 3
-LOG_FORMAT = '%(asctime)s - %(levelname)s - %(funcName)s - %(message)s'
+LOG_FORMAT = "%(asctime)s - %(levelname)s - %(funcName)s - %(message)s"
 
 # --- callback contract ---
 NOMINATE_CALLBACK_TEMPLATE = "nom|{chat_id}|{player_number}"
