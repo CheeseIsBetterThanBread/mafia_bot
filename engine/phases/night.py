@@ -62,7 +62,7 @@ async def start_night(bus: EventBus, game: Game):
         return
 
 
-    thief_action_info = ROLE_NIGHT_ACTIONS["Вор"]
+    thief_action_info = ROLE_NIGHT_ACTIONS["Вор"][0]
     game.expected_night_actors[thief.user_id] = [thief_action_info[0]]
 
     generate_callback = lambda number: NIGHT_CALLBACK_TEMPLATE.format(chat_id=game.chat_id, action=thief_action_info[0], target=number)
@@ -111,9 +111,10 @@ async def start_night_others(bus: EventBus, game: Game):
         if p.role == "Вор" or p.is_glued:
             continue
 
-        actions = ROLE_NIGHT_ACTIONS[p.role]
-        if not actions:
+        if p.role not in ROLE_NIGHT_ACTIONS.keys():
             continue
+
+        actions = ROLE_NIGHT_ACTIONS[p.role]
 
         generate_callback = lambda action, number: NIGHT_CALLBACK_TEMPLATE.format(chat_id=game.chat_id, action=action.value, target=number)
         game.expected_night_actors[p.user_id] = [act[0] for act in actions]
