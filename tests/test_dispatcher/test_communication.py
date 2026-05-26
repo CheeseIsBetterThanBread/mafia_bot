@@ -37,7 +37,7 @@ class TestSpeechHandlers:
         query = SpeechRelatedQuery(QueryType.SPEECH, [1], -100, 1)
         mock_engine.get_game.return_value = game
 
-        with patch('asyncio.create_task') as mock_create_task:
+        with patch("asyncio.create_task") as mock_create_task:
             await dispatcher._handle_speech(query)
 
             dispatcher.bus.emit.assert_called()
@@ -56,7 +56,7 @@ class TestSpeechHandlers:
         query = SpeechRelatedQuery(QueryType.SPEECH, [1], -100, 1)
         mock_engine.get_game.return_value = game
 
-        with patch('asyncio.create_task'):
+        with patch("asyncio.create_task"):
             await dispatcher._handle_speech(query)
 
             response = dispatcher.bus.emit.call_args_list[0][0][0]
@@ -64,16 +64,21 @@ class TestSpeechHandlers:
             assert "/nominate" not in response.text
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize("state", [
-        GameState.LOBBY,
-        GameState.VOTING,
-        GameState.BALANCE,
-        GameState.REVOTE,
-        GameState.NIGHT_THIEF,
-        GameState.NIGHT,
-        GameState.FINISHED
-    ])
-    async def test_handle_speech_invalid_state(self, dispatcher, mock_engine, game, state):
+    @pytest.mark.parametrize(
+        "state",
+        [
+            GameState.LOBBY,
+            GameState.VOTING,
+            GameState.BALANCE,
+            GameState.REVOTE,
+            GameState.NIGHT_THIEF,
+            GameState.NIGHT,
+            GameState.FINISHED,
+        ],
+    )
+    async def test_handle_speech_invalid_state(
+        self, dispatcher, mock_engine, game, state
+    ):
         game.state = state
 
         query = SpeechRelatedQuery(QueryType.SPEECH, [1], -100, 12039)
@@ -109,7 +114,9 @@ class TestSpeechHandlers:
         assert "Сейчас не ваша очередь говорить" in response.text
 
     @pytest.mark.asyncio
-    async def test_handle_speech_wrong_turn_defense(self, dispatcher, mock_engine, game):
+    async def test_handle_speech_wrong_turn_defense(
+        self, dispatcher, mock_engine, game
+    ):
         game.state = GameState.DEFENSE
         game.defense_queue = [game.players[2], game.players[3]]
 
@@ -123,7 +130,9 @@ class TestSpeechHandlers:
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize("state", [GameState.DAY, GameState.DEFENSE])
-    async def test_handle_speech_already_speaking(self, dispatcher, mock_engine, game, state):
+    async def test_handle_speech_already_speaking(
+        self, dispatcher, mock_engine, game, state
+    ):
         game.state = state
         game.speech_queue = [game.players[1], game.players[2]]
         game.defense_queue = [game.players[1], game.players[2]]
@@ -149,7 +158,9 @@ class TestSpeechHandlers:
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize("state", [GameState.DAY, GameState.DEFENSE])
-    async def test_handle_speech_creates_timer_task(self, dispatcher, mock_engine, game, state):
+    async def test_handle_speech_creates_timer_task(
+        self, dispatcher, mock_engine, game, state
+    ):
         game.state = state
         game.speech_queue = [game.players[2]]
         game.defense_queue = [game.players[2]]
@@ -158,7 +169,7 @@ class TestSpeechHandlers:
         query = SpeechRelatedQuery(QueryType.SPEECH, [1], -100, 2)
         mock_engine.get_game.return_value = game
 
-        with patch('asyncio.create_task') as mock_create_task:
+        with patch("asyncio.create_task") as mock_create_task:
             mock_create_task.return_value = AsyncMock()
 
             await dispatcher._handle_speech(query)
@@ -177,7 +188,9 @@ class TestSpeechHandlers:
         query = SpeechRelatedQuery(QueryType.END_SPEECH, [1], -100, 1)
         mock_engine.get_game.return_value = game
 
-        with patch('engine.dispatcher.next_speaker', new_callable=AsyncMock) as mock_next:
+        with patch(
+            "engine.dispatcher.next_speaker", new_callable=AsyncMock
+        ) as mock_next:
             await dispatcher._handle_end_speech(query)
 
             game.current_speech_task.cancel.assert_called_once()
@@ -196,7 +209,9 @@ class TestSpeechHandlers:
         query = SpeechRelatedQuery(QueryType.END_SPEECH, [1], -100, 1)
         mock_engine.get_game.return_value = game
 
-        with patch('engine.dispatcher.next_defense_speaker', new_callable=AsyncMock) as mock_next:
+        with patch(
+            "engine.dispatcher.next_defense_speaker", new_callable=AsyncMock
+        ) as mock_next:
             await dispatcher._handle_end_speech(query)
 
             game.current_speech_task.cancel.assert_called_once()
@@ -215,7 +230,9 @@ class TestSpeechHandlers:
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize("state", [GameState.DAY, GameState.DEFENSE])
-    async def test_handle_end_speech_no_player(self, dispatcher, mock_engine, game, state):
+    async def test_handle_end_speech_no_player(
+        self, dispatcher, mock_engine, game, state
+    ):
         game.state = state
 
         query = SpeechRelatedQuery(QueryType.END_SPEECH, [1], -100, 12039)
@@ -298,7 +315,9 @@ class TestMafiaChatHandlers:
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize("state", [GameState.NIGHT_THIEF, GameState.NIGHT])
-    async def test_mafia_chat_not_in_mafia_team(self, dispatcher, mock_engine, game, state):
+    async def test_mafia_chat_not_in_mafia_team(
+        self, dispatcher, mock_engine, game, state
+    ):
         game.players[1].role = "Мирный житель"
         game.state = state
 
@@ -343,7 +362,9 @@ class TestMafiaChatHandlers:
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize("state", [GameState.NIGHT_THIEF, GameState.NIGHT])
-    async def test_mafia_chat_only_alive_sends(self, dispatcher, mock_engine, game, state):
+    async def test_mafia_chat_only_alive_sends(
+        self, dispatcher, mock_engine, game, state
+    ):
         game.players[1].role = "Мафия"
         game.players[2].role = "Дон"
         game.players[2].is_alive = False
@@ -382,15 +403,18 @@ class TestMafiaChatHandlers:
         assert "остались единственным живым мафиози" in response.text
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize("state", [
-        GameState.LOBBY,
-        GameState.DAY,
-        GameState.DEFENSE,
-        GameState.VOTING,
-        GameState.BALANCE,
-        GameState.REVOTE,
-        GameState.FINISHED
-    ])
+    @pytest.mark.parametrize(
+        "state",
+        [
+            GameState.LOBBY,
+            GameState.DAY,
+            GameState.DEFENSE,
+            GameState.VOTING,
+            GameState.BALANCE,
+            GameState.REVOTE,
+            GameState.FINISHED,
+        ],
+    )
     async def test_mafia_chat_invalid_state(self, dispatcher, mock_engine, game, state):
         game.players[1].role = "Мафия"
         game.state = state

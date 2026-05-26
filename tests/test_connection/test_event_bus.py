@@ -193,7 +193,7 @@ class TestEventBus:
             execution_order.append(3)
 
         async def handler(_):
-            execution_order.append('handler')
+            execution_order.append("handler")
 
         bus.add_middleware(middleware1)
         bus.add_middleware(middleware2)
@@ -202,7 +202,7 @@ class TestEventBus:
         event = self.TestEvent()
         await bus.emit(event)
 
-        assert execution_order == [1, 2, 'handler', 3, 4]
+        assert execution_order == [1, 2, "handler", 3, 4]
 
     @pytest.mark.asyncio
     async def test_middleware_can_modify_event(self, bus):
@@ -255,11 +255,11 @@ class TestEventBus:
         results = []
 
         async def fast_handler(_):
-            results.append('fast')
+            results.append("fast")
 
         async def slow_handler(_):
             await asyncio.sleep(0.2)
-            results.append('slow')
+            results.append("slow")
 
         bus.subscribe(self.TestEvent, fast_handler)
         bus.subscribe(self.TestEvent, slow_handler)
@@ -267,7 +267,7 @@ class TestEventBus:
         event = self.TestEvent()
         await bus.emit(event)
 
-        assert set(results) == {'fast', 'slow'}
+        assert set(results) == {"fast", "slow"}
 
     @pytest.mark.asyncio
     async def test_concurrent_emits(self, bus):
@@ -276,11 +276,7 @@ class TestEventBus:
 
         event = self.TestEvent()
 
-        await asyncio.gather(
-            bus.emit(event),
-            bus.emit(event),
-            bus.emit(event)
-        )
+        await asyncio.gather(bus.emit(event), bus.emit(event), bus.emit(event))
 
         assert handler.call_count == 3
 

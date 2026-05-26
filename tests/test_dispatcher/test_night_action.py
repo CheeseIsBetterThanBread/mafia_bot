@@ -33,19 +33,18 @@ class TestNightActionHandlers:
             2: [NightAction.DON_CHECK],
             3: [NightAction.SHERIFF_CHECK],
             4: [NightAction.TWO_FACE_CHECK],
-            5: [NightAction.MANIAC_KILL, NightAction.MANIAC_HEAL]
+            5: [NightAction.MANIAC_KILL, NightAction.MANIAC_HEAL],
         }
         return game
 
     @pytest.mark.asyncio
     async def test_night_action_success(self, dispatcher, mock_engine, game):
         query = NightActionQuery(
-            QueryType.NIGHT_ACTION, [1], -100, 1, Mock(),
-            NightAction.VOTE, 2
+            QueryType.NIGHT_ACTION, [1], -100, 1, Mock(), NightAction.VOTE, 2
         )
         mock_engine.get_game.return_value = game
 
-        with patch('engine.dispatcher.resolve_night', new_callable=AsyncMock):
+        with patch("engine.dispatcher.resolve_night", new_callable=AsyncMock):
             await dispatcher._handle_night_action(query)
 
             assert game.night_actions[1][NightAction.VOTE] == 2
@@ -56,21 +55,23 @@ class TestNightActionHandlers:
             assert response.is_valid is True
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize("state", [
-        GameState.LOBBY,
-        GameState.DAY,
-        GameState.DEFENSE,
-        GameState.VOTING,
-        GameState.BALANCE,
-        GameState.REVOTE,
-        GameState.FINISHED
-    ])
+    @pytest.mark.parametrize(
+        "state",
+        [
+            GameState.LOBBY,
+            GameState.DAY,
+            GameState.DEFENSE,
+            GameState.VOTING,
+            GameState.BALANCE,
+            GameState.REVOTE,
+            GameState.FINISHED,
+        ],
+    )
     async def test_night_action_wrong_state(self, dispatcher, mock_engine, game, state):
         game.state = state
 
         query = NightActionQuery(
-            QueryType.NIGHT_ACTION, [1], -100, 1, Mock(),
-            NightAction.VOTE, 2
+            QueryType.NIGHT_ACTION, [1], -100, 1, Mock(), NightAction.VOTE, 2
         )
         mock_engine.get_game.return_value = game
 
@@ -83,8 +84,7 @@ class TestNightActionHandlers:
     @pytest.mark.asyncio
     async def test_night_action_invalid_action(self, dispatcher, mock_engine, game):
         query = NightActionQuery(
-            QueryType.NIGHT_ACTION, [1], -100, 1, Mock(),
-            "invalid_action", 2
+            QueryType.NIGHT_ACTION, [1], -100, 1, Mock(), "invalid_action", 2
         )
         mock_engine.get_game.return_value = game
 
@@ -97,8 +97,7 @@ class TestNightActionHandlers:
     @pytest.mark.asyncio
     async def test_night_action_no_game(self, dispatcher, mock_engine):
         query = NightActionQuery(
-            QueryType.NIGHT_ACTION, [1], -100, 1, Mock(),
-            NightAction.VOTE, 2
+            QueryType.NIGHT_ACTION, [1], -100, 1, Mock(), NightAction.VOTE, 2
         )
         mock_engine.get_game.return_value = None
 
@@ -109,17 +108,19 @@ class TestNightActionHandlers:
         assert response.chat_id == 1
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize("action,attribute,value", [
-        (NightAction.ROB, "last_rek", 2),
-        (NightAction.HEAL, "last_healed", 2),
-        (NightAction.TULA, "last_healed", 2),
-        (NightAction.ALIBI, "last_alibi", 2),
-        (NightAction.MANIAC_HEAL, "last_man_heal", True)
-    ])
+    @pytest.mark.parametrize(
+        "action,attribute,value",
+        [
+            (NightAction.ROB, "last_rek", 2),
+            (NightAction.HEAL, "last_healed", 2),
+            (NightAction.TULA, "last_healed", 2),
+            (NightAction.ALIBI, "last_alibi", 2),
+            (NightAction.MANIAC_HEAL, "last_man_heal", True),
+        ],
+    )
     async def test_repeated_guard(self, dispatcher, action, attribute, value):
         query = NightActionQuery(
-            QueryType.NIGHT_ACTION, [1], -100, 1, Mock(),
-            action, 2
+            QueryType.NIGHT_ACTION, [1], -100, 1, Mock(), action, 2
         )
         player = Player(1, "", 4)
         setattr(player, attribute, value)
@@ -133,27 +134,46 @@ class TestNightActionHandlers:
     @pytest.mark.asyncio
     async def test_repeated_guard_allows_other_actions(self, dispatcher):
         query = NightActionQuery(
-            QueryType.NIGHT_ACTION, [1], -100, 1, Mock(),
-            "action", 2
+            QueryType.NIGHT_ACTION, [1], -100, 1, Mock(), "action", 2
         )
         player = Player(1, "", 4)
 
         assert not await dispatcher._EventDispatcher__repeated_guard(query, player)
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize("action,handler", [
-        (NightAction.ROB, "engine.dispatcher.EventDispatcher._EventDispatcher__handle_thief"),
-        (NightAction.DON_CHECK, "engine.dispatcher.EventDispatcher._EventDispatcher__handle_don_check"),
-        (NightAction.SHERIFF_CHECK, "engine.dispatcher.EventDispatcher._EventDispatcher__handle_sheriff_check"),
-        (NightAction.TWO_FACE_CHECK, "engine.dispatcher.EventDispatcher._EventDispatcher__handle_two_face_check"),
-        (NightAction.MANIAC_KILL, "engine.dispatcher.EventDispatcher._EventDispatcher__handle_maniac"),
-        (NightAction.MANIAC_HEAL, "engine.dispatcher.EventDispatcher._EventDispatcher__handle_maniac")
-    ])
+    @pytest.mark.parametrize(
+        "action,handler",
+        [
+            (
+                NightAction.ROB,
+                "engine.dispatcher.EventDispatcher._EventDispatcher__handle_thief",
+            ),
+            (
+                NightAction.DON_CHECK,
+                "engine.dispatcher.EventDispatcher._EventDispatcher__handle_don_check",
+            ),
+            (
+                NightAction.SHERIFF_CHECK,
+                "engine.dispatcher.EventDispatcher._EventDispatcher__handle_sheriff_check",
+            ),
+            (
+                NightAction.TWO_FACE_CHECK,
+                "engine.dispatcher.EventDispatcher._EventDispatcher__handle_two_face_check",
+            ),
+            (
+                NightAction.MANIAC_KILL,
+                "engine.dispatcher.EventDispatcher._EventDispatcher__handle_maniac",
+            ),
+            (
+                NightAction.MANIAC_HEAL,
+                "engine.dispatcher.EventDispatcher._EventDispatcher__handle_maniac",
+            ),
+        ],
+    )
     async def test_routing(self, dispatcher, mock_engine, game, action, handler):
         game.expected_night_actors[1] = [action]
         query = NightActionQuery(
-            QueryType.NIGHT_ACTION, [1], -100, 1, Mock(),
-            action, 2
+            QueryType.NIGHT_ACTION, [1], -100, 1, Mock(), action, 2
         )
         mock_engine.get_game.return_value = game
 
@@ -169,17 +189,21 @@ class TestNightActionHandlers:
         game.players[1].last_rek = None
 
         query = NightActionQuery(
-            QueryType.NIGHT_ACTION, [1], -100, 1, Mock(),
-            NightAction.ROB, 2
+            QueryType.NIGHT_ACTION, [1], -100, 1, Mock(), NightAction.ROB, 2
         )
 
-        with patch('engine.dispatcher.start_night_others', new_callable=AsyncMock) as mock_others:
+        with patch(
+            "engine.dispatcher.start_night_others", new_callable=AsyncMock
+        ) as mock_others:
             await dispatcher._EventDispatcher__handle_thief(query, game)
 
             assert game.players[2].is_glued is True
             assert game.players[1].last_rek == 2
 
-            assert "Вы заклеили Игрока №2" in dispatcher.bus.emit.call_args_list[0][0][0].text
+            assert (
+                "Вы заклеили Игрока №2"
+                in dispatcher.bus.emit.call_args_list[0][0][0].text
+            )
 
             mock_others.assert_called_once_with(dispatcher.bus, game)
 
@@ -190,11 +214,12 @@ class TestNightActionHandlers:
         game.players[1].last_rek = None
 
         query = NightActionQuery(
-            QueryType.NIGHT_ACTION, [1], -100, 1, Mock(),
-            NightAction.ROB, NULL_OPTION
+            QueryType.NIGHT_ACTION, [1], -100, 1, Mock(), NightAction.ROB, NULL_OPTION
         )
 
-        with patch('engine.dispatcher.start_night_others', new_callable=AsyncMock) as mock_others:
+        with patch(
+            "engine.dispatcher.start_night_others", new_callable=AsyncMock
+        ) as mock_others:
             await dispatcher._EventDispatcher__handle_thief(query, game)
 
             assert game.players[1].last_rek == NULL_OPTION
@@ -207,8 +232,7 @@ class TestNightActionHandlers:
     @pytest.mark.asyncio
     async def test_heal_action_success(self, dispatcher, mock_engine, game):
         query = NightActionQuery(
-            QueryType.NIGHT_ACTION, [1], -100, 1, Mock(),
-            NightAction.HEAL, 3
+            QueryType.NIGHT_ACTION, [1], -100, 1, Mock(), NightAction.HEAL, 3
         )
         mock_engine.get_game.return_value = game
 
@@ -221,8 +245,7 @@ class TestNightActionHandlers:
     async def test_tula_action_success(self, dispatcher, mock_engine, game):
         game.expected_night_actors[1] = [NightAction.TULA]
         query = NightActionQuery(
-            QueryType.NIGHT_ACTION, [1], -100, 1, Mock(),
-            NightAction.TULA, 3
+            QueryType.NIGHT_ACTION, [1], -100, 1, Mock(), NightAction.TULA, 3
         )
         mock_engine.get_game.return_value = game
 
@@ -234,8 +257,7 @@ class TestNightActionHandlers:
     @pytest.mark.asyncio
     async def test_maniac_kill_action(self, dispatcher, game):
         query = NightActionQuery(
-            QueryType.NIGHT_ACTION, [5], -100, 5, Mock(),
-            NightAction.MANIAC_KILL, 2
+            QueryType.NIGHT_ACTION, [5], -100, 5, Mock(), NightAction.MANIAC_KILL, 2
         )
 
         dispatcher._EventDispatcher__handle_maniac(query, game)
@@ -247,8 +269,7 @@ class TestNightActionHandlers:
     @pytest.mark.asyncio
     async def test_maniac_heal_action(self, dispatcher, game):
         query = NightActionQuery(
-            QueryType.NIGHT_ACTION, [5], -100, 5, Mock(),
-            NightAction.MANIAC_HEAL, 2
+            QueryType.NIGHT_ACTION, [5], -100, 5, Mock(), NightAction.MANIAC_HEAL, 2
         )
 
         dispatcher._EventDispatcher__handle_maniac(query, game)
@@ -262,8 +283,7 @@ class TestNightActionHandlers:
         game.expected_night_actors[1].append(NightAction.ALIBI)
 
         query = NightActionQuery(
-            QueryType.NIGHT_ACTION, [1], -100, 1, Mock(),
-            NightAction.ALIBI, 3
+            QueryType.NIGHT_ACTION, [1], -100, 1, Mock(), NightAction.ALIBI, 3
         )
         mock_engine.get_game.return_value = game
 
@@ -278,8 +298,7 @@ class TestNightActionHandlers:
         game.players[2].role = "Мафия"
 
         query = NightActionQuery(
-            QueryType.NIGHT_ACTION, [4], -100, 4, Mock(),
-            NightAction.TWO_FACE_CHECK, 1
+            QueryType.NIGHT_ACTION, [4], -100, 4, Mock(), NightAction.TWO_FACE_CHECK, 1
         )
 
         await dispatcher._EventDispatcher__handle_two_face_check(query, game)
@@ -296,25 +315,30 @@ class TestNightActionHandlers:
             elif response.chat_id in [1, 2]:
                 assert "Двуликий нашел нас" in response.text
             else:
-                assert "Вы нашли Мафию" not in response.text and "Двуликий нашел нас" not in response.text
+                assert (
+                    "Вы нашли Мафию" not in response.text
+                    and "Двуликий нашел нас" not in response.text
+                )
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize("role", [
-        "Мирный житель",
-        "Бессмертный",
-        "Доктор",
-        "Тула",
-        "Шериф",
-        "Маньяк с бинтами",
-        "Маньяк без бинтов",
-        "Вор"
-    ])
+    @pytest.mark.parametrize(
+        "role",
+        [
+            "Мирный житель",
+            "Бессмертный",
+            "Доктор",
+            "Тула",
+            "Шериф",
+            "Маньяк с бинтами",
+            "Маньяк без бинтов",
+            "Вор",
+        ],
+    )
     async def test_two_face_not_finds_mafia(self, dispatcher, game, role):
         game.players[5].role = role
 
         query = NightActionQuery(
-            QueryType.NIGHT_ACTION, [4], -100, 4, Mock(),
-            NightAction.TWO_FACE_CHECK, 5
+            QueryType.NIGHT_ACTION, [4], -100, 4, Mock(), NightAction.TWO_FACE_CHECK, 5
         )
 
         await dispatcher._EventDispatcher__handle_two_face_check(query, game)
@@ -332,8 +356,7 @@ class TestNightActionHandlers:
         game.players[3].role = "Шериф"
 
         query = NightActionQuery(
-            QueryType.NIGHT_ACTION, [2], -100, 2, Mock(),
-            NightAction.DON_CHECK, 3
+            QueryType.NIGHT_ACTION, [2], -100, 2, Mock(), NightAction.DON_CHECK, 3
         )
 
         await dispatcher._EventDispatcher__handle_don_check(query, game)
@@ -344,24 +367,26 @@ class TestNightActionHandlers:
         assert "✅" in response.text
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize("role", [
-        "Мирный житель",
-        "Бессмертный",
-        "Доктор",
-        "Тула",
-        "Маньяк с бинтами",
-        "Маньяк без бинтов",
-        "Вор",
-        "Мафия",
-        "Ниндзя",
-        "Адвокат"
-    ])
+    @pytest.mark.parametrize(
+        "role",
+        [
+            "Мирный житель",
+            "Бессмертный",
+            "Доктор",
+            "Тула",
+            "Маньяк с бинтами",
+            "Маньяк без бинтов",
+            "Вор",
+            "Мафия",
+            "Ниндзя",
+            "Адвокат",
+        ],
+    )
     async def test_check_don_sheriff_not_found(self, dispatcher, game, role):
         game.players[3].role = role
 
         query = NightActionQuery(
-            QueryType.NIGHT_ACTION, [2], -100, 2, Mock(),
-            NightAction.DON_CHECK, 3
+            QueryType.NIGHT_ACTION, [2], -100, 2, Mock(), NightAction.DON_CHECK, 3
         )
 
         await dispatcher._EventDispatcher__handle_don_check(query, game)
@@ -372,18 +397,12 @@ class TestNightActionHandlers:
         assert "НЕ ШЕРИФ" in response.text
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize("role", [
-        "Дон",
-        "Мафия",
-        "Ниндзя",
-        "Адвокат"
-    ])
+    @pytest.mark.parametrize("role", ["Дон", "Мафия", "Ниндзя", "Адвокат"])
     async def test_check_sheriff_mafia_found(self, dispatcher, game, role):
         game.players[4].role = role
 
         query = NightActionQuery(
-            QueryType.NIGHT_ACTION, [3], -100, 3, Mock(),
-            NightAction.SHERIFF_CHECK, 4
+            QueryType.NIGHT_ACTION, [3], -100, 3, Mock(), NightAction.SHERIFF_CHECK, 4
         )
 
         await dispatcher._EventDispatcher__handle_sheriff_check(query, game)
@@ -395,22 +414,24 @@ class TestNightActionHandlers:
         assert "МАФИЯ" in response.text and "✅" in response.text
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize("role", [
-        "Мирный житель",
-        "Бессмертный",
-        "Доктор",
-        "Тула",
-        "Маньяк с бинтами",
-        "Маньяк без бинтов",
-        "Вор",
-        "Шериф"
-    ])
+    @pytest.mark.parametrize(
+        "role",
+        [
+            "Мирный житель",
+            "Бессмертный",
+            "Доктор",
+            "Тула",
+            "Маньяк с бинтами",
+            "Маньяк без бинтов",
+            "Вор",
+            "Шериф",
+        ],
+    )
     async def test_check_sheriff_not_mafia(self, dispatcher, game, role):
         game.players[4].role = role
 
         query = NightActionQuery(
-            QueryType.NIGHT_ACTION, [3], -100, 3, Mock(),
-            NightAction.SHERIFF_CHECK, 4
+            QueryType.NIGHT_ACTION, [3], -100, 3, Mock(), NightAction.SHERIFF_CHECK, 4
         )
 
         await dispatcher._EventDispatcher__handle_sheriff_check(query, game)
@@ -422,20 +443,20 @@ class TestNightActionHandlers:
         assert "НЕ МАФИЯ" in response.text
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize("found,day_offset,expected", [
-        (False, -1, False),
-        (True, 0, False),
-        (True, -1, True)
-    ])
-    async def test_check_sheriff_and_two_face(self, dispatcher, game, found, day_offset, expected):
+    @pytest.mark.parametrize(
+        "found,day_offset,expected",
+        [(False, -1, False), (True, 0, False), (True, -1, True)],
+    )
+    async def test_check_sheriff_and_two_face(
+        self, dispatcher, game, found, day_offset, expected
+    ):
         two_face = game.players[4]
         two_face.role = "Двуликий"
         two_face.found_mafia = found
         two_face.found_mafia_day = game.day_count + day_offset
 
         query = NightActionQuery(
-            QueryType.NIGHT_ACTION, [3], -100, 3, Mock(),
-            NightAction.SHERIFF_CHECK, 4
+            QueryType.NIGHT_ACTION, [3], -100, 3, Mock(), NightAction.SHERIFF_CHECK, 4
         )
 
         await dispatcher._EventDispatcher__handle_sheriff_check(query, game)
@@ -452,12 +473,13 @@ class TestNightActionHandlers:
         game.expected_night_actors = {1: [NightAction.VOTE]}
 
         query = NightActionQuery(
-            QueryType.NIGHT_ACTION, [1], -100, 1, Mock(),
-            NightAction.VOTE, 2
+            QueryType.NIGHT_ACTION, [1], -100, 1, Mock(), NightAction.VOTE, 2
         )
         mock_engine.get_game.return_value = game
 
-        with patch('engine.dispatcher.resolve_night', new_callable=AsyncMock) as mock_resolve:
+        with patch(
+            "engine.dispatcher.resolve_night", new_callable=AsyncMock
+        ) as mock_resolve:
             await dispatcher._handle_night_action(query)
 
             mock_resolve.assert_called_once_with(dispatcher.bus, game)
@@ -465,12 +487,13 @@ class TestNightActionHandlers:
     @pytest.mark.asyncio
     async def test_not_all_actions_done(self, dispatcher, mock_engine, game):
         query = NightActionQuery(
-            QueryType.NIGHT_ACTION, [1], -100, 1, Mock(),
-            NightAction.VOTE, 2
+            QueryType.NIGHT_ACTION, [1], -100, 1, Mock(), NightAction.VOTE, 2
         )
         mock_engine.get_game.return_value = game
 
-        with patch('engine.dispatcher.resolve_night', new_callable=AsyncMock) as mock_resolve:
+        with patch(
+            "engine.dispatcher.resolve_night", new_callable=AsyncMock
+        ) as mock_resolve:
             await dispatcher._handle_night_action(query)
 
             mock_resolve.assert_not_called()

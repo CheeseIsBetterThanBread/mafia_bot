@@ -2,11 +2,7 @@ from random import shuffle
 
 import pytest
 
-from utils.helpers import (
-    alive_sorted,
-    rotate_queue,
-    Player
-)
+from utils.helpers import alive_sorted, rotate_queue, Player
 
 
 @pytest.fixture
@@ -16,9 +12,10 @@ def raw_players():
         (2, "Bob"),
         (5, "Eve"),
         (1, "Alice"),
-        (4, "Daniel")
+        (4, "Daniel"),
     ]
     return ids_and_usernames
+
 
 @pytest.fixture
 def players(raw_players):

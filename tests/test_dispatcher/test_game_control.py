@@ -28,13 +28,7 @@ class TestGameHandlers:
 
     @pytest.mark.asyncio
     async def test_start_game_success(self, dispatcher, mock_engine):
-        query = StartGameQuery(
-            QueryType.START_GAME,
-            [1, 2],
-            -100,
-            1,
-            "group"
-        )
+        query = StartGameQuery(QueryType.START_GAME, [1, 2], -100, 1, "group")
 
         await dispatcher._handle_start_game(query)
 
@@ -47,13 +41,7 @@ class TestGameHandlers:
 
     @pytest.mark.asyncio
     async def test_start_game_non_admin(self, dispatcher, mock_engine):
-        query = StartGameQuery(
-            QueryType.START_GAME,
-            [1, 2],
-            -100,
-            3,
-            "group"
-        )
+        query = StartGameQuery(QueryType.START_GAME, [1, 2], -100, 3, "group")
 
         await dispatcher._handle_start_game(query)
 
@@ -66,13 +54,7 @@ class TestGameHandlers:
 
     @pytest.mark.asyncio
     async def test_start_game_already_running(self, dispatcher, mock_engine, game):
-        query = StartGameQuery(
-            QueryType.START_GAME,
-            [1, 2],
-            -100,
-            1,
-            "group"
-        )
+        query = StartGameQuery(QueryType.START_GAME, [1, 2], -100, 1, "group")
 
         game.state = GameState.DAY
         mock_engine.games = {-100: game}
@@ -86,13 +68,7 @@ class TestGameHandlers:
 
     @pytest.mark.asyncio
     async def test_start_game_finished_allows_new(self, dispatcher, mock_engine, game):
-        query = StartGameQuery(
-            QueryType.START_GAME,
-            [1, 2],
-            -100,
-            1,
-            "group"
-        )
+        query = StartGameQuery(QueryType.START_GAME, [1, 2], -100, 1, "group")
 
         game.state = GameState.FINISHED
         mock_engine.games = {-100: game}
@@ -105,14 +81,7 @@ class TestGameHandlers:
     async def test_join_game_success(self, dispatcher, mock_engine, game):
         game.state = GameState.LOBBY
 
-        query = JoinQuery(
-            QueryType.JOIN_GAME,
-            [1, 2],
-            -100,
-            13,
-            Mock(),
-            "NewPlayer"
-        )
+        query = JoinQuery(QueryType.JOIN_GAME, [1, 2], -100, 13, Mock(), "NewPlayer")
 
         mock_engine.get_game.return_value = game
 
@@ -128,14 +97,7 @@ class TestGameHandlers:
 
     @pytest.mark.asyncio
     async def test_join_game_no_lobby(self, dispatcher, mock_engine):
-        query = JoinQuery(
-            QueryType.JOIN_GAME,
-            [1, 2],
-            -100,
-            5,
-            Mock(),
-            "NewPlayer"
-        )
+        query = JoinQuery(QueryType.JOIN_GAME, [1, 2], -100, 5, Mock(), "NewPlayer")
 
         mock_engine.get_game.return_value = None
 
@@ -150,14 +112,7 @@ class TestGameHandlers:
     async def test_join_game_wrong_state(self, dispatcher, mock_engine, game):
         game.state = GameState.DAY
 
-        query = JoinQuery(
-            QueryType.JOIN_GAME,
-            [1, 2],
-            -100,
-            5,
-            Mock(),
-            "NewPlayer"
-        )
+        query = JoinQuery(QueryType.JOIN_GAME, [1, 2], -100, 5, Mock(), "NewPlayer")
 
         mock_engine.get_game.return_value = game
 
@@ -171,14 +126,7 @@ class TestGameHandlers:
         game.state = GameState.LOBBY
         game.players[5] = Mock()
 
-        query = JoinQuery(
-            QueryType.JOIN_GAME,
-            [1, 2],
-            -100,
-            5,
-            Mock(),
-            "NewPlayer"
-        )
+        query = JoinQuery(QueryType.JOIN_GAME, [1, 2], -100, 5, Mock(), "NewPlayer")
 
         mock_engine.get_game.return_value = game
 
@@ -195,8 +143,10 @@ class TestGameHandlers:
         query = RunQuery(QueryType.RUN, [1], -100, 1)
         mock_engine.get_game.return_value = game
 
-        with patch('engine.dispatcher.shuffle', return_value=None) as mock_shuffle:
-            with patch('engine.dispatcher.start_day', new_callable=AsyncMock) as mock_start_day:
+        with patch("engine.dispatcher.shuffle", return_value=None) as mock_shuffle:
+            with patch(
+                "engine.dispatcher.start_day", new_callable=AsyncMock
+            ) as mock_start_day:
                 await dispatcher._handle_run(query)
 
                 assert game.current_preset is not None
@@ -225,7 +175,7 @@ class TestGameHandlers:
         query = RunQuery(QueryType.RUN, [1], -100, 1)
         mock_engine.get_game.return_value = game
 
-        with patch('engine.dispatcher.ROOM_PRESETS', {6: [], 8: [], 10: []}):
+        with patch("engine.dispatcher.ROOM_PRESETS", {6: [], 8: [], 10: []}):
             await dispatcher._handle_run(query)
 
             response = dispatcher.bus.emit.call_args[0][0]
@@ -241,16 +191,19 @@ class TestGameHandlers:
         dispatcher.bus.emit.assert_not_called()
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize("state", [
-        GameState.DAY,
-        GameState.DEFENSE,
-        GameState.VOTING,
-        GameState.BALANCE,
-        GameState.REVOTE,
-        GameState.NIGHT_THIEF,
-        GameState.NIGHT,
-        GameState.FINISHED
-    ])
+    @pytest.mark.parametrize(
+        "state",
+        [
+            GameState.DAY,
+            GameState.DEFENSE,
+            GameState.VOTING,
+            GameState.BALANCE,
+            GameState.REVOTE,
+            GameState.NIGHT_THIEF,
+            GameState.NIGHT,
+            GameState.FINISHED,
+        ],
+    )
     async def test_run_no_game(self, dispatcher, mock_engine, game, state):
         game.state = state
 
@@ -277,8 +230,8 @@ class TestGameHandlers:
         game.set_preset = Mock()
         game.set_preset.return_value = roles
 
-        with patch('engine.dispatcher.shuffle'):
-            with patch('engine.dispatcher.start_day', new_callable=AsyncMock):
+        with patch("engine.dispatcher.shuffle"):
+            with patch("engine.dispatcher.start_day", new_callable=AsyncMock):
                 await dispatcher._handle_run(query)
 
         mafia_messages = []
@@ -297,7 +250,9 @@ class TestGameHandlers:
         query = StartNightQuery(QueryType.START_NIGHT, [1], -100, 1)
         mock_engine.get_game.return_value = game
 
-        with patch('engine.dispatcher.start_night', new_callable=AsyncMock) as mock_night:
+        with patch(
+            "engine.dispatcher.start_night", new_callable=AsyncMock
+        ) as mock_night:
             await dispatcher._handle_start_night(query)
 
             mock_night.assert_called_once_with(dispatcher.bus, game)
@@ -312,7 +267,9 @@ class TestGameHandlers:
         query = StartNightQuery(QueryType.START_NIGHT, [1], -100, 2)
         mock_engine.get_game.return_value = game
 
-        with patch('engine.dispatcher.start_night', new_callable=AsyncMock) as mock_night:
+        with patch(
+            "engine.dispatcher.start_night", new_callable=AsyncMock
+        ) as mock_night:
             await dispatcher._handle_start_night(query)
 
             mock_night.assert_not_called()
@@ -332,20 +289,25 @@ class TestGameHandlers:
         query = StartNightQuery(QueryType.START_NIGHT, [1], -100, 1)
         mock_engine.get_game.return_value = game
 
-        with patch('engine.dispatcher.start_night', new_callable=AsyncMock):
+        with patch("engine.dispatcher.start_night", new_callable=AsyncMock):
             await dispatcher._handle_start_night(query)
 
             mock_task.cancel.assert_called_once()
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize("state", [GameState.LOBBY, GameState.FINISHED, GameState.NIGHT_THIEF, GameState.NIGHT])
+    @pytest.mark.parametrize(
+        "state",
+        [GameState.LOBBY, GameState.FINISHED, GameState.NIGHT_THIEF, GameState.NIGHT],
+    )
     async def test_start_night_wrong_state(self, dispatcher, mock_engine, game, state):
         game.state = state
 
         query = StartNightQuery(QueryType.START_NIGHT, [1], -100, 1)
         mock_engine.get_game.return_value = game
 
-        with patch('engine.dispatcher.start_night', new_callable=AsyncMock) as mock_night:
+        with patch(
+            "engine.dispatcher.start_night", new_callable=AsyncMock
+        ) as mock_night:
             await dispatcher._handle_start_night(query)
 
             mock_night.assert_not_called()
@@ -357,7 +319,9 @@ class TestGameHandlers:
         query = SkipNightQuery(QueryType.SKIP_NIGHT, [1], -100, 1)
         mock_engine.get_game.return_value = game
 
-        with patch('engine.dispatcher.resolve_night', new_callable=AsyncMock) as mock_resolve:
+        with patch(
+            "engine.dispatcher.resolve_night", new_callable=AsyncMock
+        ) as mock_resolve:
             await dispatcher._handle_skip_night(query)
 
             mock_resolve.assert_called_once_with(dispatcher.bus, game)
@@ -370,7 +334,9 @@ class TestGameHandlers:
         query = SkipNightQuery(QueryType.SKIP_NIGHT, [1], -100, 1)
         mock_engine.get_game.return_value = game
 
-        with patch('engine.dispatcher.start_night_others', new_callable=AsyncMock) as mock_others:
+        with patch(
+            "engine.dispatcher.start_night_others", new_callable=AsyncMock
+        ) as mock_others:
             await dispatcher._handle_skip_night(query)
 
             response = dispatcher.bus.emit.call_args[0][0]
@@ -384,7 +350,9 @@ class TestGameHandlers:
         query = SkipNightQuery(QueryType.SKIP_NIGHT, [1], -100, 2)
         mock_engine.get_game.return_value = game
 
-        with patch('engine.dispatcher.resolve_night', new_callable=AsyncMock) as mock_resolve:
+        with patch(
+            "engine.dispatcher.resolve_night", new_callable=AsyncMock
+        ) as mock_resolve:
             await dispatcher._handle_skip_night(query)
 
             mock_resolve.assert_not_called()
@@ -394,23 +362,30 @@ class TestGameHandlers:
             assert "только создателю" in response.text.lower()
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize("state", [
-        GameState.LOBBY,
-        GameState.DAY,
-        GameState.DEFENSE,
-        GameState.VOTING,
-        GameState.BALANCE,
-        GameState.REVOTE,
-        GameState.FINISHED
-    ])
+    @pytest.mark.parametrize(
+        "state",
+        [
+            GameState.LOBBY,
+            GameState.DAY,
+            GameState.DEFENSE,
+            GameState.VOTING,
+            GameState.BALANCE,
+            GameState.REVOTE,
+            GameState.FINISHED,
+        ],
+    )
     async def test_skip_night_wrong_state(self, dispatcher, mock_engine, game, state):
         game.state = state
 
         query = SkipNightQuery(QueryType.SKIP_NIGHT, [1], -100, 1)
         mock_engine.get_game.return_value = game
 
-        with patch('engine.dispatcher.resolve_night', new_callable=AsyncMock) as mock_resolve:
-            with patch('engine.dispatcher.start_night_others', new_callable=AsyncMock) as mock_others:
+        with patch(
+            "engine.dispatcher.resolve_night", new_callable=AsyncMock
+        ) as mock_resolve:
+            with patch(
+                "engine.dispatcher.start_night_others", new_callable=AsyncMock
+            ) as mock_others:
                 await dispatcher._handle_skip_night(query)
 
                 mock_resolve.assert_not_called()

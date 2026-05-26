@@ -12,10 +12,12 @@ def mock_bus():
     bus.emit = AsyncMock()
     return bus
 
+
 @pytest.fixture
 def setup_router(mock_bus):
     mock_router = setup_bus(mock_bus)
     return mock_router, mock_bus
+
 
 @pytest.fixture
 def mock_message():
@@ -29,6 +31,7 @@ def mock_message():
     message.answer = AsyncMock()
     return message
 
+
 @pytest.fixture
 def mock_callback():
     callback = Mock(spec=CallbackQuery)
@@ -41,6 +44,7 @@ def mock_callback():
     callback.answer = AsyncMock()
     callback.data = "some_data"
     return callback
+
 
 class MockText:
     def __init__(self, value, startswith=False):
@@ -69,7 +73,10 @@ class TestTelegramHandlers:
 
         with capture_logger_output() as log_output:
             await cmd_start(mock_message)
-            assert f" {mock_message.from_user.id} - {mock_message.from_user.username} " in log_output.getvalue()
+            assert (
+                f" {mock_message.from_user.id} - {mock_message.from_user.username} "
+                in log_output.getvalue()
+            )
 
         mock_message.answer.assert_called()
         assert mock_message.answer.call_count == 2
@@ -90,7 +97,7 @@ class TestTelegramHandlers:
 
         mock_message.answer.assert_called_once()
         args = mock_message.answer.call_args[0]
-        assert 'Список команд бота' in str(args)
+        assert "Список команд бота" in str(args)
 
     @pytest.mark.asyncio
     async def test_cmd_start_game(self, mock_message, setup_router):
@@ -135,15 +142,20 @@ class TestTelegramHandlers:
         assert query.cmd == QueryType.RUN
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize("command,expected_type", [
-        ("alive", QueryType.ALIVE),
-        ("description", QueryType.DESCRIPTION),
-        ("roles", QueryType.ROLES),
-        ("nominated", QueryType.NOMINATED),
-        ("voted", QueryType.VOTED),
-        ("status", QueryType.STATUS),
-    ])
-    async def test_info_commands(self, mock_message, setup_router, command, expected_type):
+    @pytest.mark.parametrize(
+        "command,expected_type",
+        [
+            ("alive", QueryType.ALIVE),
+            ("description", QueryType.DESCRIPTION),
+            ("roles", QueryType.ROLES),
+            ("nominated", QueryType.NOMINATED),
+            ("voted", QueryType.VOTED),
+            ("status", QueryType.STATUS),
+        ],
+    )
+    async def test_info_commands(
+        self, mock_message, setup_router, command, expected_type
+    ):
         router, mock_bus = setup_router
 
         commands_map = {
@@ -164,11 +176,16 @@ class TestTelegramHandlers:
         assert query.cmd == expected_type
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize("command,expected_type", [
-        ("speech", QueryType.SPEECH),
-        ("end_speech", QueryType.END_SPEECH),
-    ])
-    async def test_speech_commands(self, mock_message, setup_router, command, expected_type):
+    @pytest.mark.parametrize(
+        "command,expected_type",
+        [
+            ("speech", QueryType.SPEECH),
+            ("end_speech", QueryType.END_SPEECH),
+        ],
+    )
+    async def test_speech_commands(
+        self, mock_message, setup_router, command, expected_type
+    ):
         router, mock_bus = setup_router
 
         commands_map = {
@@ -203,20 +220,21 @@ class TestTelegramHandlers:
         chat_id = -100123456789
         player_number = 5
         mock_callback.data = NOMINATE_CALLBACK_TEMPLATE.format(
-            chat_id=chat_id,
-            player_number=player_number
+            chat_id=chat_id, player_number=player_number
         )
 
-        with patch('adapters.telegram.handlers.TemplateParser') as MockParser:
+        with patch("adapters.telegram.handlers.TemplateParser") as MockParser:
             mock_parser = MockParser.return_value
             mock_parser.parse.return_value = {
-                'chat_id': chat_id,
-                'player_number': player_number
+                "chat_id": chat_id,
+                "player_number": player_number,
             }
 
             await handle_nominate(mock_callback)
 
-            MockParser.assert_called_once_with(NOMINATE_CALLBACK_TEMPLATE, NOMINATE_TYPES)
+            MockParser.assert_called_once_with(
+                NOMINATE_CALLBACK_TEMPLATE, NOMINATE_TYPES
+            )
 
             mock_parser.parse.assert_called_once_with(mock_callback.data)
 
@@ -246,15 +264,14 @@ class TestTelegramHandlers:
         chat_id = -100123456789
         player_number = 3
         mock_callback.data = VOTE_CALLBACK_TEMPLATE.format(
-            chat_id=chat_id,
-            player_number=player_number
+            chat_id=chat_id, player_number=player_number
         )
 
-        with patch('adapters.telegram.handlers.TemplateParser') as MockParser:
+        with patch("adapters.telegram.handlers.TemplateParser") as MockParser:
             mock_parser = MockParser.return_value
             mock_parser.parse.return_value = {
-                'chat_id': chat_id,
-                'player_number': player_number
+                "chat_id": chat_id,
+                "player_number": player_number,
             }
 
             await handle_vote(mock_callback)
@@ -289,16 +306,12 @@ class TestTelegramHandlers:
         chat_id = -100123456789
         number = 2
         mock_callback.data = BALANCE_CALLBACK_TEMPLATE.format(
-            chat_id=chat_id,
-            number=number
+            chat_id=chat_id, number=number
         )
 
-        with patch('adapters.telegram.handlers.TemplateParser') as MockParser:
+        with patch("adapters.telegram.handlers.TemplateParser") as MockParser:
             mock_parser = MockParser.return_value
-            mock_parser.parse.return_value = {
-                'chat_id': chat_id,
-                'number': number
-            }
+            mock_parser.parse.return_value = {"chat_id": chat_id, "number": number}
 
             await handle_balance(mock_callback)
 
@@ -345,17 +358,15 @@ class TestTelegramHandlers:
         action = NightAction.ROB
         target = 5
         mock_callback.data = NIGHT_CALLBACK_TEMPLATE.format(
-            chat_id=chat_id,
-            action=action,
-            target=target
+            chat_id=chat_id, action=action, target=target
         )
 
-        with patch('adapters.telegram.handlers.TemplateParser') as MockParser:
+        with patch("adapters.telegram.handlers.TemplateParser") as MockParser:
             mock_parser = MockParser.return_value
             mock_parser.parse.return_value = {
-                'chat_id': chat_id,
-                'action': action,
-                'target': target
+                "chat_id": chat_id,
+                "action": action,
+                "target": target,
             }
 
             await handle_night_action(mock_callback)
@@ -416,14 +427,16 @@ class TestTelegramHandlers:
     async def test_router_without_bus(self, mock_message):
         from adapters.telegram.handlers import router as clean_router
 
-        if hasattr(clean_router, 'bus'):
-            delattr(clean_router, 'bus')
+        if hasattr(clean_router, "bus"):
+            delattr(clean_router, "bus")
 
         with pytest.raises(ValueError, match="Failed to connect to EventBus"):
             await cmd_start_game(mock_message)
 
     @pytest.mark.asyncio
-    async def test_full_workflow_start_game_to_join(self, setup_router, mock_message, mock_callback):
+    async def test_full_workflow_start_game_to_join(
+        self, setup_router, mock_message, mock_callback
+    ):
         router, mock_bus = setup_router
 
         await cmd_start_game(mock_message)
@@ -445,7 +458,7 @@ class TestEdgeCases:
     async def test_callback_with_malformed_data(self, mock_callback):
         mock_callback.data = "invalid_format"
 
-        with patch('utils.parser.TemplateParser') as MockParser:
+        with patch("utils.parser.TemplateParser") as MockParser:
             mock_parser = MockParser.return_value
             mock_parser.parse.side_effect = ValueError("Invalid data")
 

@@ -4,10 +4,7 @@ from connection.events import *
 class TestQueryBase:
     def test_query_initialization(self):
         query = QueryBase(
-            cmd="/start",
-            admin_ids=[123, 456],
-            chat_id=-100123456,
-            user_id=789
+            cmd="/start", admin_ids=[123, 456], chat_id=-100123456, user_id=789
         )
 
         assert query.cmd == "/start"
@@ -16,24 +13,14 @@ class TestQueryBase:
         assert query.user_id == 789
 
     def test_query_get_log_string(self):
-        query = QueryBase(
-            cmd="/test",
-            admin_ids=[1, 2],
-            chat_id=-100999,
-            user_id=888
-        )
+        query = QueryBase(cmd="/test", admin_ids=[1, 2], chat_id=-100999, user_id=888)
 
         log_string = query.get_log_string()
         expected = "[/test]: -100999 - 888"
         assert log_string == expected
 
     def test_query_with_empty_admin_ids(self):
-        query = QueryBase(
-            cmd="/command",
-            admin_ids=[],
-            chat_id=-100111,
-            user_id=222
-        )
+        query = QueryBase(cmd="/command", admin_ids=[], chat_id=-100111, user_id=222)
 
         log_string = query.get_log_string()
         assert "/command" in log_string
@@ -45,14 +32,11 @@ class TestQueryBase:
             pass
 
         query = QueryDerived(
-            cmd="/callback_test",
-            admin_ids=[100],
-            chat_id=-200,
-            user_id=300
+            cmd="/callback_test", admin_ids=[100], chat_id=-200, user_id=300
         )
 
         log_string = query.get_log_string()
-        expected = '[/callback_test]: -200 - 300'
+        expected = "[/callback_test]: -200 - 300"
         assert log_string == expected
 
 
@@ -62,11 +46,7 @@ class TestQueryWithCallback:
             return "called"
 
         query = QueryWithCallback(
-            cmd="/join",
-            admin_ids=[1],
-            chat_id=-100,
-            user_id=2,
-            callback=mock_callback
+            cmd="/join", admin_ids=[1], chat_id=-100, user_id=2, callback=mock_callback
         )
 
         assert query.cmd == "/join"
@@ -75,11 +55,7 @@ class TestQueryWithCallback:
 
     def test_callback_inheritance(self):
         query = QueryWithCallback(
-            cmd="/test",
-            admin_ids=[],
-            chat_id=-1,
-            user_id=1,
-            callback=lambda: None
+            cmd="/test", admin_ids=[], chat_id=-1, user_id=1, callback=lambda: None
         )
 
         assert isinstance(query, QueryBase)
@@ -94,7 +70,7 @@ class TestQueryWithTarget:
             chat_id=-100,
             user_id=3,
             callback=lambda: None,
-            target_id=42
+            target_id=42,
         )
 
         assert query.target_id == 42
@@ -107,7 +83,7 @@ class TestQueryWithTarget:
             chat_id=-500,
             user_id=20,
             callback=lambda: None,
-            target_id=30
+            target_id=30,
         )
 
         log_string = query.get_log_string()
@@ -121,7 +97,7 @@ class TestQueryWithTarget:
             chat_id=-1,
             user_id=2,
             callback=lambda: None,
-            target_id=3
+            target_id=3,
         )
 
         assert isinstance(query, QueryBase)
@@ -132,9 +108,7 @@ class TestQueryWithTarget:
 class TestResponseBase:
     def test_response_initialization(self):
         response = ResponseBase(
-            chat_id=-100123,
-            text="Hello, world!",
-            parse_mode="HTML"
+            chat_id=-100123, text="Hello, world!", parse_mode="HTML"
         )
 
         assert response.chat_id == -100123
@@ -142,10 +116,7 @@ class TestResponseBase:
         assert response.parse_mode == "HTML"
 
     def test_response_default_parse_mode(self):
-        response = ResponseBase(
-            chat_id=-100,
-            text="Message without parse mode"
-        )
+        response = ResponseBase(chat_id=-100, text="Message without parse mode")
 
         assert response.parse_mode is None
 
@@ -153,7 +124,7 @@ class TestResponseBase:
         response = ResponseBase(
             chat_id=-777,
             text="First line\nSecond line\nThird line",
-            parse_mode="Markdown"
+            parse_mode="Markdown",
         )
 
         log_string = response.get_log_string()
@@ -164,10 +135,7 @@ class TestResponseBase:
         assert "Second line" not in log_string
 
     def test_response_get_log_string_default_parse_mode(self):
-        response = ResponseBase(
-            chat_id=-1,
-            text="Simple message"
-        )
+        response = ResponseBase(chat_id=-1, text="Simple message")
 
         log_string = response.get_log_string()
         assert "default" in log_string
@@ -192,7 +160,7 @@ class TestResponseWithAlert:
             valid=True,
             chat_id=-100,
             text="Alert message",
-            parse_mode="HTML"
+            parse_mode="HTML",
         )
 
         assert response.callback == mock_callback
@@ -202,10 +170,7 @@ class TestResponseWithAlert:
 
     def test_alert_inheritance(self):
         response = ResponseWithAlert(
-            callback=lambda: None,
-            valid=False,
-            chat_id=-1,
-            text="Test"
+            callback=lambda: None, valid=False, chat_id=-1, text="Test"
         )
 
         assert isinstance(response, ResponseBase)
@@ -216,7 +181,7 @@ class TestResponseWithAlert:
             callback=lambda: None,
             valid=True,
             chat_id=-500,
-            text="Alert text\nSecond line"
+            text="Alert text\nSecond line",
         )
 
         log_string = response.get_log_string()
@@ -232,7 +197,7 @@ class TestResponseWithOptions:
             candidates=candidates,
             chat_id=-100,
             text="Choose an option:",
-            parse_mode="Markdown"
+            parse_mode="Markdown",
         )
 
         assert response.candidates == candidates
@@ -240,20 +205,12 @@ class TestResponseWithOptions:
         assert response.parse_mode == "Markdown"
 
     def test_options_empty_candidates(self):
-        response = ResponseWithOptions(
-            candidates=[],
-            chat_id=-1,
-            text="No options"
-        )
+        response = ResponseWithOptions(candidates=[], chat_id=-1, text="No options")
 
         assert response.candidates == []
 
     def test_options_inheritance(self):
-        response = ResponseWithOptions(
-            candidates=[1, 2, 3],
-            chat_id=-10,
-            text="Test"
-        )
+        response = ResponseWithOptions(candidates=[1, 2, 3], chat_id=-10, text="Test")
 
         assert isinstance(response, ResponseBase)
         assert isinstance(response, ResponseWithOptions)
@@ -266,7 +223,7 @@ class TestStartGameQuery:
             admin_ids=[100, 200],
             chat_id=-100123,
             user_id=300,
-            chat_type="group"
+            chat_type="group",
         )
 
         assert query.cmd == "/start_game"
@@ -279,7 +236,7 @@ class TestStartGameQuery:
             admin_ids=[1],
             chat_id=-500,
             user_id=2,
-            chat_type="supergroup"
+            chat_type="supergroup",
         )
 
         log_string = query.get_log_string()
@@ -297,7 +254,7 @@ class TestJoinQuery:
             chat_id=-100,
             user_id=3,
             callback=lambda: None,
-            username="player123"
+            username="player123",
         )
 
         assert query.username == "player123"
@@ -310,7 +267,7 @@ class TestJoinQuery:
             chat_id=-777,
             user_id=888,
             callback=lambda: None,
-            username="cool_player"
+            username="cool_player",
         )
 
         log_string = query.get_log_string()
@@ -319,13 +276,21 @@ class TestJoinQuery:
 
     def test_join_log_includes_admin_count(self):
         query1 = JoinQuery(
-            cmd="/join", admin_ids=[1], chat_id=-1, user_id=1,
-            callback=lambda: None, username="user1"
+            cmd="/join",
+            admin_ids=[1],
+            chat_id=-1,
+            user_id=1,
+            callback=lambda: None,
+            username="user1",
         )
 
         query2 = JoinQuery(
-            cmd="/join", admin_ids=[1, 2, 3, 4], chat_id=-1, user_id=1,
-            callback=lambda: None, username="user2"
+            cmd="/join",
+            admin_ids=[1, 2, 3, 4],
+            chat_id=-1,
+            user_id=1,
+            callback=lambda: None,
+            username="user2",
         )
 
         log1 = query1.get_log_string()
@@ -344,7 +309,7 @@ class TestNightActionQuery:
             user_id=2,
             callback=lambda: None,
             action="kill",
-            target="player3"
+            target="player3",
         )
 
         assert query.action == "kill"
@@ -358,7 +323,7 @@ class TestNightActionQuery:
             user_id=20,
             callback=lambda: None,
             action="investigate",
-            target="suspect"
+            target="suspect",
         )
 
         log_string = query.get_log_string()
@@ -371,8 +336,13 @@ class TestNightActionQuery:
 
         for action in actions:
             query = NightActionQuery(
-                cmd="/night", admin_ids=[1], chat_id=-1, user_id=1,
-                callback=lambda: None, action=action, target="someone"
+                cmd="/night",
+                admin_ids=[1],
+                chat_id=-1,
+                user_id=1,
+                callback=lambda: None,
+                action=action,
+                target="someone",
             )
             log_string = query.get_log_string()
             assert action in log_string
@@ -385,7 +355,7 @@ class TestMafiaChatQuery:
             admin_ids=[1, 2],
             chat_id=-100,
             user_id=3,
-            text="Let's discuss our plan"
+            text="Let's discuss our plan",
         )
 
         assert query.text == "Let's discuss our plan"
@@ -396,7 +366,7 @@ class TestMafiaChatQuery:
             admin_ids=[10],
             chat_id=-777,
             user_id=888,
-            text="First line of message\nSecond line\nThird line"
+            text="First line of message\nSecond line\nThird line",
         )
 
         log_string = query.get_log_string()
@@ -406,11 +376,7 @@ class TestMafiaChatQuery:
 
     def test_mafia_chat_empty_text(self):
         query = MafiaChatQuery(
-            cmd="/mafia",
-            admin_ids=[1],
-            chat_id=-1,
-            user_id=1,
-            text=""
+            cmd="/mafia", admin_ids=[1], chat_id=-1, user_id=1, text=""
         )
 
         log_string = query.get_log_string()
@@ -419,82 +385,52 @@ class TestMafiaChatQuery:
 
 class TestAliasQueries:
     def test_run_query_alias(self):
-        query = RunQuery(
-            cmd="/run",
-            admin_ids=[1],
-            chat_id=-100,
-            user_id=2
-        )
+        query = RunQuery(cmd="/run", admin_ids=[1], chat_id=-100, user_id=2)
 
         assert isinstance(query, QueryBase)
         assert not isinstance(query, QueryWithCallback)
 
     def test_info_query_alias(self):
-        query = InfoQuery(
-            cmd="/status",
-            admin_ids=[1],
-            chat_id=-100,
-            user_id=2
-        )
+        query = InfoQuery(cmd="/status", admin_ids=[1], chat_id=-100, user_id=2)
 
         assert isinstance(query, QueryBase)
 
     def test_speech_related_query_alias(self):
         query = SpeechRelatedQuery(
-            cmd="/speech",
-            admin_ids=[1],
-            chat_id=-100,
-            user_id=2
+            cmd="/speech", admin_ids=[1], chat_id=-100, user_id=2
         )
 
         assert isinstance(query, QueryBase)
 
     def test_pre_nominate_query_alias(self):
         query = PreNominateQuery(
-            cmd="/pre_nominate",
-            admin_ids=[1],
-            chat_id=-100,
-            user_id=2
+            cmd="/pre_nominate", admin_ids=[1], chat_id=-100, user_id=2
         )
 
         assert isinstance(query, QueryBase)
 
     def test_pre_vote_query_alias(self):
-        query = PreVoteQuery(
-            cmd="/pre_vote",
-            admin_ids=[1],
-            chat_id=-100,
-            user_id=2
-        )
+        query = PreVoteQuery(cmd="/pre_vote", admin_ids=[1], chat_id=-100, user_id=2)
 
         assert isinstance(query, QueryBase)
 
     def test_pre_balance_query_alias(self):
         query = PreBalanceQuery(
-            cmd="/pre_balance",
-            admin_ids=[1],
-            chat_id=-100,
-            user_id=2
+            cmd="/pre_balance", admin_ids=[1], chat_id=-100, user_id=2
         )
 
         assert isinstance(query, QueryBase)
 
     def test_start_night_query_alias(self):
         query = StartNightQuery(
-            cmd="/start_night",
-            admin_ids=[1],
-            chat_id=-100,
-            user_id=2
+            cmd="/start_night", admin_ids=[1], chat_id=-100, user_id=2
         )
 
         assert isinstance(query, QueryBase)
 
     def test_skip_night_query_alias(self):
         query = SkipNightQuery(
-            cmd="/skip_night",
-            admin_ids=[1],
-            chat_id=-100,
-            user_id=2
+            cmd="/skip_night", admin_ids=[1], chat_id=-100, user_id=2
         )
 
         assert isinstance(query, QueryBase)
@@ -522,10 +458,7 @@ class TestInheritanceHierarchy:
 class TestEdgeCases:
     def test_negative_chat_id(self):
         query = QueryBase(
-            cmd="/test",
-            admin_ids=[1],
-            chat_id=-100123456789,
-            user_id=123
+            cmd="/test", admin_ids=[1], chat_id=-100123456789, user_id=123
         )
 
         assert query.chat_id == -100123456789
@@ -540,7 +473,7 @@ class TestEdgeCases:
             chat_id=-1,
             user_id=1,
             callback=lambda: None,
-            username="user"
+            username="user",
         )
 
         log = query.get_log_string()
@@ -549,13 +482,10 @@ class TestEdgeCases:
     def test_special_characters_in_text(self):
         special_text = "Special chars: !@#$%^&*()_+{}|:<>?~`"
 
-        response = ResponseBase(
-            chat_id=-1,
-            text=special_text
-        )
+        response = ResponseBase(chat_id=-1, text=special_text)
 
         log = response.get_log_string()
-        assert special_text.split('\n')[0] in log
+        assert special_text.split("\n")[0] in log
 
     def test_none_values(self):
         query = QueryWithTarget(
@@ -564,7 +494,7 @@ class TestEdgeCases:
             chat_id=None,
             user_id=None,
             callback=None,
-            target_id=None
+            target_id=None,
         )
 
         assert query.cmd is None
@@ -577,11 +507,24 @@ class TestEdgeCases:
 class TestLogStringFormat:
     def test_all_queries_have_log_method(self):
         query_classes = [
-            QueryBase, QueryWithCallback, QueryWithTarget,
-            StartGameQuery, JoinQuery, RunQuery, InfoQuery,
-            SpeechRelatedQuery, PreNominateQuery, NominateQuery,
-            PreVoteQuery, VoteQuery, PreBalanceQuery, BalanceQuery,
-            StartNightQuery, SkipNightQuery, NightActionQuery, MafiaChatQuery
+            QueryBase,
+            QueryWithCallback,
+            QueryWithTarget,
+            StartGameQuery,
+            JoinQuery,
+            RunQuery,
+            InfoQuery,
+            SpeechRelatedQuery,
+            PreNominateQuery,
+            NominateQuery,
+            PreVoteQuery,
+            VoteQuery,
+            PreBalanceQuery,
+            BalanceQuery,
+            StartNightQuery,
+            SkipNightQuery,
+            NightActionQuery,
+            MafiaChatQuery,
         ]
         callback = lambda: None
 
@@ -607,14 +550,12 @@ class TestLogStringFormat:
             else:
                 obj = query_class("/test", [1], -1, 1)
 
-            assert hasattr(obj, 'get_log_string')
+            assert hasattr(obj, "get_log_string")
             assert callable(obj.get_log_string)
             assert isinstance(obj.get_log_string(), str)
 
     def test_all_responses_have_log_method(self):
-        response_classes = [
-            ResponseBase, ResponseWithAlert, ResponseWithOptions
-        ]
+        response_classes = [ResponseBase, ResponseWithAlert, ResponseWithOptions]
 
         for response_class in response_classes:
             if response_class == ResponseWithAlert:
@@ -624,6 +565,6 @@ class TestLogStringFormat:
             else:
                 obj = response_class(-1, "text")
 
-            assert hasattr(obj, 'get_log_string')
+            assert hasattr(obj, "get_log_string")
             assert callable(obj.get_log_string)
             assert isinstance(obj.get_log_string(), str)

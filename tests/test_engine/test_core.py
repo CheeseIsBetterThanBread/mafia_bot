@@ -1,13 +1,7 @@
 import pytest
 from unittest.mock import Mock, patch
 
-from engine.core import (
-    EventBus,
-    EventDispatcher,
-    Game,
-    GameEngine,
-    QueryBase
-)
+from engine.core import EventBus, EventDispatcher, Game, GameEngine, QueryBase
 
 
 class TestGameEngine:
@@ -19,7 +13,7 @@ class TestGameEngine:
 
     @pytest.fixture
     def engine(self, mock_bus):
-        with patch('engine.core.EventDispatcher') as mock_dispatcher_class:
+        with patch("engine.core.EventDispatcher") as mock_dispatcher_class:
             mock_dispatcher = Mock(spec=EventDispatcher)
             mock_dispatcher_class.return_value = mock_dispatcher
 
@@ -31,7 +25,7 @@ class TestGameEngine:
             return engine
 
     def test_engine_initialization(self, mock_bus):
-        with patch('engine.core.EventDispatcher') as mock_dispatcher:
+        with patch("engine.core.EventDispatcher") as mock_dispatcher:
             engine = GameEngine(mock_bus)
 
             assert engine.bus == mock_bus
@@ -41,7 +35,7 @@ class TestGameEngine:
             assert isinstance(engine.dispatcher, Mock)
 
     def test_engine_creates_dispatcher(self, mock_bus):
-        with patch('engine.core.EventDispatcher') as mock_dispatcher:
+        with patch("engine.core.EventDispatcher") as mock_dispatcher:
             engine = GameEngine(mock_bus)
 
             mock_dispatcher.assert_called_once_with(engine)
@@ -134,7 +128,7 @@ class TestGameEngine:
 
     @pytest.mark.asyncio
     async def test_register_subscribes_to_query_base(self, mock_bus):
-        with patch('engine.core.EventDispatcher'):
+        with patch("engine.core.EventDispatcher"):
             engine = GameEngine(mock_bus)
             engine.register()
 
@@ -142,7 +136,7 @@ class TestGameEngine:
 
     @pytest.mark.asyncio
     async def test_register_creates_dispatch_handler(self, mock_bus):
-        with patch('engine.core.EventDispatcher'):
+        with patch("engine.core.EventDispatcher"):
             engine = GameEngine(mock_bus)
             engine.register()
 
@@ -158,12 +152,7 @@ class TestGameEngine:
         class TestQuery(QueryBase):
             pass
 
-        query = TestQuery(
-            cmd='/cmd',
-            admin_ids=[],
-            chat_id=0,
-            user_id=-1
-        )
+        query = TestQuery(cmd="/cmd", admin_ids=[], chat_id=0, user_id=-1)
 
         mock_bus = Mock(spec=EventBus)
         handlers = []
@@ -177,7 +166,7 @@ class TestGameEngine:
 
         mock_bus.on.side_effect = on_side_effect
 
-        with patch('engine.core.EventDispatcher') as mock_dispatcher_class:
+        with patch("engine.core.EventDispatcher") as mock_dispatcher_class:
             mock_dispatcher = Mock(spec=EventDispatcher)
             mock_dispatcher_class.return_value = mock_dispatcher
 
@@ -205,7 +194,7 @@ class TestGameEngine:
 
         mock_bus.on.side_effect = on_side_effect
 
-        with patch('engine.core.EventDispatcher') as mock_dispatcher_class:
+        with patch("engine.core.EventDispatcher") as mock_dispatcher_class:
             mock_dispatcher = Mock(spec=EventDispatcher)
             mock_dispatcher_class.return_value = mock_dispatcher
 
@@ -213,10 +202,7 @@ class TestGameEngine:
             engine.register()
 
             test_query = QueryBase(
-                cmd='/cmd',
-                admin_ids=[],
-                chat_id=108332,
-                user_id=92364329
+                cmd="/cmd", admin_ids=[], chat_id=108332, user_id=92364329
             )
 
             assert captured_handler
@@ -272,7 +258,7 @@ class TestGameEngine:
 
         mock_bus.on.side_effect = on_side_effect
 
-        with patch('engine.core.EventDispatcher') as mock_dispatcher_class:
+        with patch("engine.core.EventDispatcher") as mock_dispatcher_class:
             mock_dispatcher = Mock(spec=EventDispatcher)
             mock_dispatcher_class.return_value = mock_dispatcher
 
@@ -288,10 +274,7 @@ class TestGameEngine:
                 pass
 
             query = TestQuery(
-                cmd='/cmd',
-                admin_ids=[],
-                chat_id=9827348,
-                user_id=17868634
+                cmd="/cmd", admin_ids=[], chat_id=9827348, user_id=17868634
             )
 
             assert captured_handler
@@ -326,7 +309,7 @@ class TestGameEngine:
 
     @pytest.mark.asyncio
     async def test_multiple_register_calls(self, mock_bus):
-        with patch('engine.dispatcher.EventDispatcher'):
+        with patch("engine.dispatcher.EventDispatcher"):
             engine1 = GameEngine(mock_bus)
             engine1.register()
 
@@ -342,7 +325,7 @@ class TestGameEngineEdgeCases:
         return Mock(spec=EventBus)
 
     def test_create_game_with_same_id_sequence(self, mock_bus):
-        with patch('engine.core.EventDispatcher'):
+        with patch("engine.core.EventDispatcher"):
             engine = GameEngine(mock_bus)
 
         chat_id = -100
@@ -357,7 +340,7 @@ class TestGameEngineEdgeCases:
         assert engine.games[chat_id].game_number == 3
 
     def test_get_game_after_deletion(self, mock_bus):
-        with patch('engine.core.EventDispatcher'):
+        with patch("engine.core.EventDispatcher"):
             engine = GameEngine(mock_bus)
 
         chat_id = -100

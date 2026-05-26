@@ -28,7 +28,15 @@ class TestBalanceHandlers:
         game.balance_players = [2, 3, 4]
         game.current_votes = {"acquit": 0, "kill": 0, "revote": 0}
         game.vote_history = {}
-        game.voting_queue = deque([game.players[1], game.players[2], game.players[3], game.players[4], game.players[5]])
+        game.voting_queue = deque(
+            [
+                game.players[1],
+                game.players[2],
+                game.players[3],
+                game.players[4],
+                game.players[5],
+            ]
+        )
         return game
 
     @pytest.mark.asyncio
@@ -71,16 +79,19 @@ class TestBalanceHandlers:
         dispatcher.bus.emit.assert_not_called()
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize("state", [
-        GameState.LOBBY,
-        GameState.DAY,
-        GameState.DEFENSE,
-        GameState.VOTING,
-        GameState.REVOTE,
-        GameState.NIGHT_THIEF,
-        GameState.NIGHT,
-        GameState.FINISHED
-    ])
+    @pytest.mark.parametrize(
+        "state",
+        [
+            GameState.LOBBY,
+            GameState.DAY,
+            GameState.DEFENSE,
+            GameState.VOTING,
+            GameState.REVOTE,
+            GameState.NIGHT_THIEF,
+            GameState.NIGHT,
+            GameState.FINISHED,
+        ],
+    )
     async def test_pre_balance_wrong_state(self, dispatcher, mock_engine, game, state):
         game.state = state
 
@@ -108,7 +119,9 @@ class TestBalanceHandlers:
         query = BalanceQuery(QueryType.BALANCE, [1], -100, 1, Mock(), 1)
         mock_engine.get_game.return_value = game
 
-        with patch('engine.dispatcher.resolve_balance', new_callable=AsyncMock) as mock_resolve:
+        with patch(
+            "engine.dispatcher.resolve_balance", new_callable=AsyncMock
+        ) as mock_resolve:
             await dispatcher._handle_balance(query)
 
             assert game.current_votes["acquit"] == 1
@@ -143,13 +156,17 @@ class TestBalanceHandlers:
         assert game.vote_history[1] == "Переголосовать"
 
     @pytest.mark.asyncio
-    async def test_balance_last_voter_calls_resolve(self, dispatcher, mock_engine, game):
+    async def test_balance_last_voter_calls_resolve(
+        self, dispatcher, mock_engine, game
+    ):
         game.voting_queue = deque([game.players[1]])
 
         query = BalanceQuery(QueryType.BALANCE, [1], -100, 1, Mock(), 1)
         mock_engine.get_game.return_value = game
 
-        with patch('engine.dispatcher.resolve_balance', new_callable=AsyncMock) as mock_resolve:
+        with patch(
+            "engine.dispatcher.resolve_balance", new_callable=AsyncMock
+        ) as mock_resolve:
             await dispatcher._handle_balance(query)
 
             assert len(game.voting_queue) == 0
@@ -161,7 +178,7 @@ class TestBalanceHandlers:
         query = BalanceQuery(QueryType.BALANCE, [1], -100, 1, Mock(), 1)
         mock_engine.get_game.return_value = game
 
-        with patch('engine.dispatcher.resolve_balance', new_callable=AsyncMock):
+        with patch("engine.dispatcher.resolve_balance", new_callable=AsyncMock):
             await dispatcher._handle_balance(query)
 
             assert dispatcher.bus.emit.call_count >= 2
@@ -195,16 +212,19 @@ class TestBalanceHandlers:
         assert "Баланс не идет" in response.text
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize("state", [
-        GameState.LOBBY,
-        GameState.DAY,
-        GameState.DEFENSE,
-        GameState.VOTING,
-        GameState.REVOTE,
-        GameState.NIGHT_THIEF,
-        GameState.NIGHT,
-        GameState.FINISHED
-    ])
+    @pytest.mark.parametrize(
+        "state",
+        [
+            GameState.LOBBY,
+            GameState.DAY,
+            GameState.DEFENSE,
+            GameState.VOTING,
+            GameState.REVOTE,
+            GameState.NIGHT_THIEF,
+            GameState.NIGHT,
+            GameState.FINISHED,
+        ],
+    )
     async def test_balance_wrong_state(self, dispatcher, mock_engine, game, state):
         game.state = state
 

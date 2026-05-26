@@ -8,12 +8,12 @@ import sys
 
 from unittest.mock import patch
 
-
 root_dir = Path(__file__).parent.parent
 sys.path.insert(0, str(root_dir))
 
+
 @contextmanager
-def capture_logger_output(log_level = logging.DEBUG):
+def capture_logger_output(log_level=logging.DEBUG):
     from config.settings import LOG_FORMAT
     from utils.logger import LOGGER
 
@@ -49,10 +49,7 @@ class MockOperations:
             name: value() if isinstance(value, type) else value
             for name, value in self.mock_config.items()
         }
-        self.patcher = patch.multiple(
-            self.target,
-            **self.created_mocks
-        )
+        self.patcher = patch.multiple(self.target, **self.created_mocks)
         self.patcher.start()
         return SimpleNamespace(**self.created_mocks)
 

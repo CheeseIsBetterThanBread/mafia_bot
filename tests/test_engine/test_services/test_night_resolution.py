@@ -8,8 +8,9 @@ from engine.services.night_resolution import (
     resolve_night,
     EventBus,
     Game,
-    NightAction
+    NightAction,
 )
+
 
 class TestGenerateRandomMoves:
     @pytest.fixture
@@ -35,7 +36,7 @@ class TestGenerateRandomMoves:
             (10, "Player 10", "Маньяк с бинтами"),
             (11, "Player 11", "Двуликий"),
             (12, "Player 12", "Бессмертный"),
-            (13, "Player 13", "Шериф")
+            (13, "Player 13", "Шериф"),
         ]
 
         for uid, name, role in players_data:
@@ -49,14 +50,16 @@ class TestGenerateRandomMoves:
     async def test_ninja_random_move(self, mock_bus, game):
         ninja = game.players[5]
 
-        with patch('engine.services.night_resolution.random.choice') as mock_choice:
+        with patch("engine.services.night_resolution.random.choice") as mock_choice:
             target = game.players[2]
             mock_choice.return_value = target
 
             await generate_random_moves(mock_bus, game)
 
             assert ninja.user_id in game.night_actions
-            assert game.night_actions[ninja.user_id][NightAction.SHURIKEN] == target.number
+            assert (
+                game.night_actions[ninja.user_id][NightAction.SHURIKEN] == target.number
+            )
 
             mock_bus.emit.assert_called()
 
@@ -75,7 +78,7 @@ class TestGenerateRandomMoves:
         tula = game.players[8]
         tula.last_healed = None
 
-        with patch('engine.services.night_resolution.random.choice') as mock_choice:
+        with patch("engine.services.night_resolution.random.choice") as mock_choice:
             target = game.players[3]
             mock_choice.return_value = target
 
@@ -104,7 +107,7 @@ class TestGenerateRandomMoves:
             if player.number != 8:
                 player.is_alive = False
 
-        with patch('engine.services.night_resolution.random.choice') as mock_choice:
+        with patch("engine.services.night_resolution.random.choice") as mock_choice:
             await generate_random_moves(mock_bus, game)
 
             assert tula.last_healed is None
@@ -114,14 +117,17 @@ class TestGenerateRandomMoves:
     async def test_maniac_without_bandages_random_move(self, mock_bus, game):
         maniac = game.players[9]
 
-        with patch('engine.services.night_resolution.random.choice') as mock_choice:
+        with patch("engine.services.night_resolution.random.choice") as mock_choice:
             target = game.players[4]
             mock_choice.return_value = target
 
             await generate_random_moves(mock_bus, game)
 
             assert maniac.user_id in game.night_actions
-            assert game.night_actions[maniac.user_id][NightAction.MANIAC_KILL] == target.number
+            assert (
+                game.night_actions[maniac.user_id][NightAction.MANIAC_KILL]
+                == target.number
+            )
 
             mock_bus.emit.assert_called()
 
@@ -140,14 +146,17 @@ class TestGenerateRandomMoves:
         maniac = game.players[10]
         maniac.last_man_heal = True
 
-        with patch('engine.services.night_resolution.random.choice') as mock_choice:
+        with patch("engine.services.night_resolution.random.choice") as mock_choice:
             target = game.players[5]
             mock_choice.return_value = target
 
             await generate_random_moves(mock_bus, game)
 
             assert maniac.user_id in game.night_actions
-            assert game.night_actions[maniac.user_id][NightAction.MANIAC_KILL] == target.number
+            assert (
+                game.night_actions[maniac.user_id][NightAction.MANIAC_KILL]
+                == target.number
+            )
             assert maniac.last_man_heal is False
 
             mock_bus.emit.assert_called()
@@ -167,14 +176,17 @@ class TestGenerateRandomMoves:
         two_face = game.players[11]
         two_face.found_mafia = True
 
-        with patch('engine.services.night_resolution.random.choice') as mock_choice:
+        with patch("engine.services.night_resolution.random.choice") as mock_choice:
             target = game.players[6]
             mock_choice.return_value = target
 
             await generate_random_moves(mock_bus, game)
 
             assert two_face.user_id in game.night_actions
-            assert game.night_actions[two_face.user_id][NightAction.TWO_FACE_KILL] == target.number
+            assert (
+                game.night_actions[two_face.user_id][NightAction.TWO_FACE_KILL]
+                == target.number
+            )
 
             mock_bus.emit.assert_called()
 
@@ -220,7 +232,7 @@ class TestGenerateRandomMoves:
         ninja = game.players[5]
         game.night_actions[ninja.user_id] = {NightAction.SHURIKEN: 2}
 
-        with patch('engine.services.night_resolution.random.choice') as mock_choice:
+        with patch("engine.services.night_resolution.random.choice") as mock_choice:
             mock_choice.return_value = game.players[1]
 
             await generate_random_moves(mock_bus, game)
@@ -232,7 +244,7 @@ class TestGenerateRandomMoves:
         ninja = game.players[5]
         ninja.is_glued = True
 
-        with patch('engine.services.night_resolution.random.choice') as mock_choice:
+        with patch("engine.services.night_resolution.random.choice") as mock_choice:
             mock_choice.return_value = game.players[1]
             await generate_random_moves(mock_bus, game)
 
@@ -260,10 +272,10 @@ class TestResolveNight:
     @staticmethod
     def patch_night():
         return MockOperations(
-            'engine.services.night_resolution',
-            generate_random_moves = AsyncMock(),
-            start_day = AsyncMock(),
-            check_victory = AsyncMock()
+            "engine.services.night_resolution",
+            generate_random_moves=AsyncMock(),
+            start_day=AsyncMock(),
+            check_victory=AsyncMock(),
         )
 
     @pytest.mark.asyncio
@@ -281,7 +293,7 @@ class TestResolveNight:
             (10, "Player 10", "Маньяк с бинтами"),
             (11, "Player 11", "Двуликий"),
             (12, "Player 12", "Бессмертный"),
-            (13, "Player 13", "Шериф")
+            (13, "Player 13", "Шериф"),
         ]
         game = self.create_game(players_data)
 
@@ -323,7 +335,7 @@ class TestResolveNight:
             (1, "Player 1", "Мирный житель"),
             (2, "Player 2", "Мафия"),
             (3, "Player 3", "Дон"),
-            (4, "Player 4", "Мирный житель")
+            (4, "Player 4", "Мирный житель"),
         ]
         game = self.create_game(players_data)
 
@@ -350,7 +362,7 @@ class TestResolveNight:
             (1, "Player 1", "Мирный житель"),
             (2, "Player 2", "Мафия"),
             (3, "Player 3", "Мафия"),
-            (4, "Player 4", "Мирный житель")
+            (4, "Player 4", "Мирный житель"),
         ]
         game = self.create_game(players_data)
 
@@ -370,17 +382,27 @@ class TestResolveNight:
 
             response = mock_bus.emit.call_args[0][0]
 
-            first_won = (not mafia_1_target.is_alive) and f"{mafia_1_target.number}" in response.text and "убиты" in response.text
-            second_won = (not mafia_2_target.is_alive) and f"{mafia_2_target.number}" in response.text and "убиты" in response.text
+            first_won = (
+                (not mafia_1_target.is_alive)
+                and f"{mafia_1_target.number}" in response.text
+                and "убиты" in response.text
+            )
+            second_won = (
+                (not mafia_2_target.is_alive)
+                and f"{mafia_2_target.number}" in response.text
+                and "убиты" in response.text
+            )
 
-            assert (first_won and mafia_2_target.is_alive) or (second_won and mafia_1_target.is_alive)
+            assert (first_won and mafia_2_target.is_alive) or (
+                second_won and mafia_1_target.is_alive
+            )
 
     @pytest.mark.asyncio
     async def test_doctor_heal(self, mock_bus):
         players_data = [
             (1, "Player 1", "Мирный житель"),
             (2, "Player 2", "Мафия"),
-            (3, "Player 3", "Доктор")
+            (3, "Player 3", "Доктор"),
         ]
         game = self.create_game(players_data)
 
@@ -406,7 +428,7 @@ class TestResolveNight:
         players_data = [
             (1, "Player 1", "Мирный житель"),
             (2, "Player 2", "Мафия"),
-            (3, "Player 3", "Тула")
+            (3, "Player 3", "Тула"),
         ]
         game = self.create_game(players_data)
 
@@ -432,7 +454,7 @@ class TestResolveNight:
         players_data = [
             (1, "Player 1", "Мирный житель"),
             (2, "Player 2", "Мафия"),
-            (3, "Player 3", "Тула")
+            (3, "Player 3", "Тула"),
         ]
         game = self.create_game(players_data)
 
@@ -453,10 +475,7 @@ class TestResolveNight:
 
     @pytest.mark.asyncio
     async def test_tula_self_heal(self, mock_bus):
-        players_data = [
-            (2, "Player 2", "Мафия"),
-            (3, "Player 3", "Тула")
-        ]
+        players_data = [(2, "Player 2", "Мафия"), (3, "Player 3", "Тула")]
         game = self.create_game(players_data)
 
         tula = game.players[3]
@@ -477,10 +496,7 @@ class TestResolveNight:
 
     @pytest.mark.asyncio
     async def test_shuriken(self, mock_bus):
-        players_data = [
-            (1, "Player 1", "Мирный житель"),
-            (2, "Player 2", "Ниндзя")
-        ]
+        players_data = [(1, "Player 1", "Мирный житель"), (2, "Player 2", "Ниндзя")]
         game = self.create_game(players_data)
 
         ninja = game.players[2]
@@ -497,10 +513,7 @@ class TestResolveNight:
 
     @pytest.mark.asyncio
     async def test_double_shuriken_kill(self, mock_bus):
-        players_data = [
-            (1, "Player 1", "Мирный житель"),
-            (2, "Player 2", "Ниндзя")
-        ]
+        players_data = [(1, "Player 1", "Мирный житель"), (2, "Player 2", "Ниндзя")]
         game = self.create_game(players_data)
 
         ninja = game.players[2]
@@ -521,7 +534,7 @@ class TestResolveNight:
         players_data = [
             (1, "Player 1", "Мирный житель"),
             (2, "Player 2", "Ниндзя"),
-            (3, "Player 3", "Доктор")
+            (3, "Player 3", "Доктор"),
         ]
         game = self.create_game(players_data)
 
@@ -544,7 +557,7 @@ class TestResolveNight:
         players_data = [
             (1, "Player 1", "Мирный житель"),
             (2, "Player 2", "Ниндзя"),
-            (3, "Player 3", "Тула")
+            (3, "Player 3", "Тула"),
         ]
         game = self.create_game(players_data)
 
@@ -567,7 +580,7 @@ class TestResolveNight:
         players_data = [
             (1, "Player 1", "Мирный житель"),
             (2, "Player 2", "Ниндзя"),
-            (3, "Player 3", "Тула")
+            (3, "Player 3", "Тула"),
         ]
         game = self.create_game(players_data)
 
@@ -590,10 +603,7 @@ class TestResolveNight:
 
     @pytest.mark.asyncio
     async def test_shuriken_with_tula_self_heal(self, mock_bus):
-        players_data = [
-            (1, "Player 1", "Ниндзя"),
-            (2, "Player 2", "Тула")
-        ]
+        players_data = [(1, "Player 1", "Ниндзя"), (2, "Player 2", "Тула")]
         game = self.create_game(players_data)
 
         tula = game.players[2]
@@ -613,10 +623,7 @@ class TestResolveNight:
 
     @pytest.mark.asyncio
     async def test_two_face_kill(self, mock_bus):
-        players_data = [
-            (1, "Player 1", "Мирный житель"),
-            (2, "Player 2", "Двуликий")
-        ]
+        players_data = [(1, "Player 1", "Мирный житель"), (2, "Player 2", "Двуликий")]
         game = self.create_game(players_data)
 
         two_face = game.players[2]
@@ -624,7 +631,9 @@ class TestResolveNight:
 
         two_face.found_mafia = True
 
-        game.night_actions[two_face.user_id] = {NightAction.TWO_FACE_KILL: target.number}
+        game.night_actions[two_face.user_id] = {
+            NightAction.TWO_FACE_KILL: target.number
+        }
 
         with self.patch_night() as mocks:
             mocks.check_victory.return_value = False
@@ -637,7 +646,7 @@ class TestResolveNight:
     async def test_maniac_without_bandages_kill(self, mock_bus):
         players_data = [
             (1, "Player 1", "Мирный житель"),
-            (2, "Player 2", "Маньяк без бинтов")
+            (2, "Player 2", "Маньяк без бинтов"),
         ]
         game = self.create_game(players_data)
 
@@ -657,7 +666,7 @@ class TestResolveNight:
     async def test_maniac_with_bandages_kill(self, mock_bus):
         players_data = [
             (1, "Player 1", "Мирный житель"),
-            (2, "Player 2", "Маньяк с бинтами")
+            (2, "Player 2", "Маньяк с бинтами"),
         ]
         game = self.create_game(players_data)
 
@@ -675,10 +684,7 @@ class TestResolveNight:
 
     @pytest.mark.asyncio
     async def test_maniac_with_bandages_survives_shot(self, mock_bus):
-        players_data = [
-            (1, "Player 1", "Мафия"),
-            (2, "Player 2", "Маньяк с бинтами")
-        ]
+        players_data = [(1, "Player 1", "Мафия"), (2, "Player 2", "Маньяк с бинтами")]
         game = self.create_game(players_data)
 
         maniac = game.players[2]
@@ -696,10 +702,7 @@ class TestResolveNight:
 
     @pytest.mark.asyncio
     async def test_maniac_with_bandages_survives_shurikens(self, mock_bus):
-        players_data = [
-            (1, "Player 1", "Ниндзя"),
-            (2, "Player 2", "Маньяк с бинтами")
-        ]
+        players_data = [(1, "Player 1", "Ниндзя"), (2, "Player 2", "Маньяк с бинтами")]
         game = self.create_game(players_data)
 
         maniac = game.players[2]
@@ -723,7 +726,7 @@ class TestResolveNight:
         players_data = [
             (1, "Player 1", "Мафия"),
             (2, "Player 2", "Маньяк с бинтами"),
-            (3, "Player 3", "Тула")
+            (3, "Player 3", "Тула"),
         ]
         game = self.create_game(players_data)
 
@@ -744,10 +747,7 @@ class TestResolveNight:
 
     @pytest.mark.asyncio
     async def test_immortal_survives_shot(self, mock_bus):
-        players_data = [
-            (1, "Player 1", "Мафия"),
-            (2, "Player 2", "Бессмертный")
-        ]
+        players_data = [(1, "Player 1", "Мафия"), (2, "Player 2", "Бессмертный")]
         game = self.create_game(players_data)
 
         immortal = game.players[2]
@@ -766,10 +766,7 @@ class TestResolveNight:
 
     @pytest.mark.asyncio
     async def test_immortal_survives_shurikens(self, mock_bus):
-        players_data = [
-            (1, "Player 1", "Ниндзя"),
-            (2, "Player 2", "Бессмертный")
-        ]
+        players_data = [(1, "Player 1", "Ниндзя"), (2, "Player 2", "Бессмертный")]
         game = self.create_game(players_data)
 
         immortal = game.players[2]
@@ -793,7 +790,7 @@ class TestResolveNight:
         players_data = [
             (1, "Player 1", "Мафия"),
             (2, "Player 2", "Бессмертный"),
-            (3, "Player 3", "Тула")
+            (3, "Player 3", "Тула"),
         ]
         game = self.create_game(players_data)
 
@@ -819,7 +816,7 @@ class TestResolveNight:
             (1, "Player 1", "Мафия"),
             (2, "Player 2", "Доктор"),
             (3, "Player 3", "Тула"),
-            (4, "Player 4", "Мирный житель")
+            (4, "Player 4", "Мирный житель"),
         ]
         game = self.create_game(players_data)
 
@@ -854,7 +851,7 @@ class TestResolveNight:
             (10, "Player 10", "Маньяк с бинтами"),
             (11, "Player 11", "Двуликий"),
             (12, "Player 12", "Бессмертный"),
-            (13, "Player 13", "Шериф")
+            (13, "Player 13", "Шериф"),
         ]
         game = self.create_game(players_data)
 
@@ -867,10 +864,7 @@ class TestResolveNight:
 
     @pytest.mark.asyncio
     async def test_tula_gives_alibi(self, mock_bus):
-        players_data = [
-            (1, "Player 1", "Тула"),
-            (2, "Player 2", "Мирный житель")
-        ]
+        players_data = [(1, "Player 1", "Тула"), (2, "Player 2", "Мирный житель")]
         game = self.create_game(players_data)
 
         tula = game.players[1]
@@ -905,10 +899,7 @@ class TestResolveNight:
 
     @pytest.mark.asyncio
     async def test_lawyer_gives_alibi(self, mock_bus):
-        players_data = [
-            (1, "Player 1", "Адвокат"),
-            (2, "Player 2", "Мирный житель")
-        ]
+        players_data = [(1, "Player 1", "Адвокат"), (2, "Player 2", "Мирный житель")]
         game = self.create_game(players_data)
 
         lawyer = game.players[1]
@@ -928,7 +919,7 @@ class TestResolveNight:
         players_data = [
             (1, "Player 1", "Мирный житель"),
             (2, "Player 2", "Мафия"),
-            (3, "Player 3", "Мафия")
+            (3, "Player 3", "Мафия"),
         ]
         game = self.create_game(players_data)
 
@@ -954,7 +945,7 @@ class TestResolveNight:
             (1, "Player 1", "Мирный житель"),
             (2, "Player 2", "Мафия"),
             (3, "Player 3", "Двуликий"),
-            (4, "Player 4", "Мирный житель")
+            (4, "Player 4", "Мирный житель"),
         ]
         game = self.create_game(players_data)
 
@@ -966,7 +957,9 @@ class TestResolveNight:
         mafia.is_glued = True
 
         game.night_actions[mafia.user_id] = {NightAction.VOTE: mafia_target.number}
-        game.night_actions[two_face.user_id] = {NightAction.TWO_FACE_KILL: two_face_target.number}
+        game.night_actions[two_face.user_id] = {
+            NightAction.TWO_FACE_KILL: two_face_target.number
+        }
 
         with self.patch_night() as mocks:
             mocks.check_victory.return_value = False
@@ -981,7 +974,7 @@ class TestResolveNight:
         players_data = [
             (1, "Player 1", "Мирный житель"),
             (2, "Player 2", "Мафия"),
-            (3, "Player 3", "Ниндзя")
+            (3, "Player 3", "Ниндзя"),
         ]
         game = self.create_game(players_data)
 
@@ -992,7 +985,10 @@ class TestResolveNight:
         ninja.is_glued = True
 
         game.night_actions[mafia.user_id] = {NightAction.VOTE: target.number}
-        game.night_actions[ninja.user_id] = {NightAction.VOTE: target.number, NightAction.SHURIKEN: target.number}
+        game.night_actions[ninja.user_id] = {
+            NightAction.VOTE: target.number,
+            NightAction.SHURIKEN: target.number,
+        }
 
         with self.patch_night() as mocks:
             mocks.check_victory.return_value = False
@@ -1007,7 +1003,7 @@ class TestResolveNight:
         players_data = [
             (1, "Player 1", "Мирный житель"),
             (2, "Player 2", "Мафия"),
-            (3, "Player 3", "Адвокат")
+            (3, "Player 3", "Адвокат"),
         ]
         game = self.create_game(players_data)
 
@@ -1018,7 +1014,10 @@ class TestResolveNight:
         lawyer.is_glued = True
 
         game.night_actions[mafia.user_id] = {NightAction.VOTE: target.number}
-        game.night_actions[lawyer.user_id] = {NightAction.VOTE: target.number, NightAction.ALIBI: mafia.number}
+        game.night_actions[lawyer.user_id] = {
+            NightAction.VOTE: target.number,
+            NightAction.ALIBI: mafia.number,
+        }
 
         with self.patch_night() as mocks:
             mocks.check_victory.return_value = False
@@ -1034,7 +1033,7 @@ class TestResolveNight:
             (1, "Player 1", "Мирный житель"),
             (2, "Player 2", "Двуликий"),
             (3, "Player 3", "Мафия"),
-            (4, "Player 4", "Мирный житель")
+            (4, "Player 4", "Мирный житель"),
         ]
         game = self.create_game(players_data)
 
@@ -1045,7 +1044,9 @@ class TestResolveNight:
 
         two_face.is_glued = True
 
-        game.night_actions[two_face.user_id] = {NightAction.TWO_FACE_KILL: two_face_target.number}
+        game.night_actions[two_face.user_id] = {
+            NightAction.TWO_FACE_KILL: two_face_target.number
+        }
         game.night_actions[mafia.user_id] = {NightAction.VOTE: mafia_target.number}
 
         with self.patch_night() as mocks:
@@ -1060,7 +1061,7 @@ class TestResolveNight:
     async def test_maniac_without_bandages_blocked_by_glue(self, mock_bus):
         players_data = [
             (1, "Player 1", "Мирный житель"),
-            (2, "Player 2", "Маньяк без бинтов")
+            (2, "Player 2", "Маньяк без бинтов"),
         ]
         game = self.create_game(players_data)
 
@@ -1082,7 +1083,7 @@ class TestResolveNight:
     async def test_maniac_with_bandages_kill_blocked_by_glue(self, mock_bus):
         players_data = [
             (1, "Player 1", "Мирный житель"),
-            (2, "Player 2", "Маньяк с бинтами")
+            (2, "Player 2", "Маньяк с бинтами"),
         ]
         game = self.create_game(players_data)
 
@@ -1102,10 +1103,7 @@ class TestResolveNight:
 
     @pytest.mark.asyncio
     async def test_maniac_with_bandages_heal_blocked_by_glue(self, mock_bus):
-        players_data = [
-            (1, "Player 1", "Маньяк без бинтов"),
-            (2, "Plater 2", "Мафия")
-        ]
+        players_data = [(1, "Player 1", "Маньяк без бинтов"), (2, "Plater 2", "Мафия")]
         game = self.create_game(players_data)
 
         maniac = game.players[1]
@@ -1125,10 +1123,7 @@ class TestResolveNight:
 
     @pytest.mark.asyncio
     async def test_doctor_blocked_by_glue(self, mock_bus):
-        players_data = [
-            (1, "Player 1", "Доктор"),
-            (2, "Plater 2", "Мафия")
-        ]
+        players_data = [(1, "Player 1", "Доктор"), (2, "Plater 2", "Мафия")]
         game = self.create_game(players_data)
 
         doctor = game.players[1]
@@ -1148,10 +1143,7 @@ class TestResolveNight:
 
     @pytest.mark.asyncio
     async def test_tula_heal_blocked_by_glue(self, mock_bus):
-        players_data = [
-            (1, "Player 1", "Тула"),
-            (2, "Plater 2", "Мафия")
-        ]
+        players_data = [(1, "Player 1", "Тула"), (2, "Plater 2", "Мафия")]
         game = self.create_game(players_data)
 
         tula = game.players[1]
@@ -1174,7 +1166,7 @@ class TestResolveNight:
         players_data = [
             (1, "Player 1", "Тула"),
             (2, "Plater 2", "Мафия"),
-            (3, "Player 3", "Доктор")
+            (3, "Player 3", "Доктор"),
         ]
         game = self.create_game(players_data)
 

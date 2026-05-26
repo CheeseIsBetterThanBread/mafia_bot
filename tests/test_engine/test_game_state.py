@@ -5,12 +5,7 @@ from unittest.mock import patch, Mock
 
 from tests.conftest import MockOperations
 
-from engine.game_state import (
-    Game,
-    GameState,
-    MAFIA_TEAM,
-    ROOM_PRESETS
-)
+from engine.game_state import Game, GameState, MAFIA_TEAM, ROOM_PRESETS
 
 
 class TestGameInitialization:
@@ -181,7 +176,7 @@ class TestQueueBuilding:
 
         assert game_with_players.day_starter_num == initial_starter
 
-    @patch('engine.game_state.rotate_queue')
+    @patch("engine.game_state.rotate_queue")
     def test_build_daily_queue_calls_rotate(self, mock_rotate, game_with_players):
         mock_rotate.return_value = (deque([4, 5, 3]), 1)
 
@@ -198,9 +193,9 @@ class TestRolePreset:
     def game(self):
         return Game(-100, 1)
 
-    @patch('engine.game_state.choice')
+    @patch("engine.game_state.choice")
     def test_set_preset_with_valid_count(self, mock_choice, game):
-        mock_preset = ['mafia', 'commissar', 'civilian']
+        mock_preset = ["mafia", "commissar", "civilian"]
         mock_choice.return_value = mock_preset
 
         result = game.set_preset(10)
@@ -209,33 +204,33 @@ class TestRolePreset:
         assert result == mock_preset
         assert game.current_preset == mock_preset
 
-    @patch('engine.game_state.choice')
+    @patch("engine.game_state.choice")
     def test_set_preset_different_counts(self, mock_choice, game):
         max_count = max(ROOM_PRESETS.keys())
 
         test_counts = [5, 8, 10, 12, 15]
 
         for count in test_counts:
-            mock_preset = ['test_role']
+            mock_preset = ["test_role"]
             mock_choice.return_value = mock_preset
 
             expected_answer = mock_preset.copy()
             if count > max_count:
-                expected_answer += ['Мирный житель'] * (count - max_count)
+                expected_answer += ["Мирный житель"] * (count - max_count)
 
             result = game.set_preset(count)
 
             mock_choice.assert_called_with(ROOM_PRESETS[min(count, max_count)])
             assert result == expected_answer
 
-    @patch('engine.game_state.choice')
+    @patch("engine.game_state.choice")
     def test_set_preset_returns_copy(self, mock_choice, game):
-        original_preset = ['mafia', 'don']
+        original_preset = ["mafia", "don"]
         mock_choice.return_value = original_preset
 
         result = game.set_preset(10)
 
-        result.append('new_role')
+        result.append("new_role")
 
         assert result != original_preset
         assert len(game.current_preset) == len(original_preset) + 1
@@ -245,10 +240,10 @@ class TestSpeechTime:
     @staticmethod
     def patch_time(speech_time, minimal_time, maximal_time):
         return MockOperations(
-            'engine.game_state',
-            SECONDS_PER_PLAYER = speech_time,
-            SPEECH_LOWER_BOUND = minimal_time,
-            SPEECH_UPPER_BOUND = maximal_time
+            "engine.game_state",
+            SECONDS_PER_PLAYER=speech_time,
+            SPEECH_LOWER_BOUND=minimal_time,
+            SPEECH_UPPER_BOUND=maximal_time,
         )
 
     @pytest.fixture
@@ -263,46 +258,53 @@ class TestSpeechTime:
             time = game_with_players.calculate_speech_time()
 
             from engine.game_state import SECONDS_PER_PLAYER
-            assert time == len(game_with_players.get_alive_players()) * SECONDS_PER_PLAYER
+
+            assert (
+                time == len(game_with_players.get_alive_players()) * SECONDS_PER_PLAYER
+            )
 
     def test_calculate_speech_time_below_lower_bound(self, game_with_players):
         with self.patch_time(1, 10, 60):
-            with patch.object(game_with_players, 'get_alive_players') as mock_alive:
+            with patch.object(game_with_players, "get_alive_players") as mock_alive:
                 mock_alive.return_value = [Mock() for _ in range(5)]
 
                 time = game_with_players.calculate_speech_time()
 
                 from engine.game_state import SPEECH_LOWER_BOUND
+
                 assert time == SPEECH_LOWER_BOUND
 
     def test_calculate_speech_time_above_upper_bound(self, game_with_players):
         with self.patch_time(10, 10, 60):
-            with patch.object(game_with_players, 'get_alive_players') as mock_alive:
+            with patch.object(game_with_players, "get_alive_players") as mock_alive:
                 mock_alive.return_value = [Mock() for _ in range(20)]
 
                 time = game_with_players.calculate_speech_time()
 
                 from engine.game_state import SPEECH_UPPER_BOUND
+
                 assert time == SPEECH_UPPER_BOUND
 
     def test_calculate_speech_time_exactly_lower_bound(self, game_with_players):
         with self.patch_time(2, 10, 60):
-            with patch.object(game_with_players, 'get_alive_players') as mock_alive:
+            with patch.object(game_with_players, "get_alive_players") as mock_alive:
                 mock_alive.return_value = [Mock() for _ in range(5)]
 
                 time = game_with_players.calculate_speech_time()
 
                 from engine.game_state import SPEECH_LOWER_BOUND
+
                 assert time == SPEECH_LOWER_BOUND
 
     def test_calculate_speech_time_exactly_upper_bound(self, game_with_players):
         with self.patch_time(6, 10, 60):
-            with patch.object(game_with_players, 'get_alive_players') as mock_alive:
+            with patch.object(game_with_players, "get_alive_players") as mock_alive:
                 mock_alive.return_value = [Mock() for _ in range(10)]
 
                 time = game_with_players.calculate_speech_time()
 
                 from engine.game_state import SPEECH_UPPER_BOUND
+
                 assert time == SPEECH_UPPER_BOUND
 
     def test_calculate_speech_time_changes_with_alive_count(self, game_with_players):
@@ -343,8 +345,15 @@ class TestGameStateTransitions:
 
     def test_all_states_exist(self):
         expected_states = [
-            'LOBBY', 'DAY', 'DEFENSE', 'VOTING', 'BALANCE',
-            'REVOTE', 'NIGHT_THIEF', 'NIGHT', 'FINISHED'
+            "LOBBY",
+            "DAY",
+            "DEFENSE",
+            "VOTING",
+            "BALANCE",
+            "REVOTE",
+            "NIGHT_THIEF",
+            "NIGHT",
+            "FINISHED",
         ]
 
         for state in expected_states:
@@ -416,13 +425,13 @@ class TestEdgeCases:
 
         assert queue == deque()
 
-    @patch('engine.game_state.ROOM_PRESETS', {5: ['preset1', 'preset2']})
+    @patch("engine.game_state.ROOM_PRESETS", {5: ["preset1", "preset2"]})
     def test_set_preset_random_selection(self):
         game = Game(-100, 1)
 
         results = set()
-        with patch('engine.game_state.choice') as mock_choice:
-            mock_choice.side_effect = [['preset1'], ['preset2'], ['preset1']]
+        with patch("engine.game_state.choice") as mock_choice:
+            mock_choice.side_effect = [["preset1"], ["preset2"], ["preset1"]]
 
             for _ in range(3):
                 result = game.set_preset(5)

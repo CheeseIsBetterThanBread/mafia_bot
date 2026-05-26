@@ -27,7 +27,15 @@ class TestVoteHandlers:
         game.nominated = [2, 3, 4]
         game.current_votes = {2: 0, 3: 0, 4: 0}
         game.vote_history = {}
-        game.voting_queue = deque([game.players[1], game.players[2], game.players[3], game.players[4], game.players[5]])
+        game.voting_queue = deque(
+            [
+                game.players[1],
+                game.players[2],
+                game.players[3],
+                game.players[4],
+                game.players[5],
+            ]
+        )
         game.state = GameState.VOTING
         game.balance_players = []
         return game
@@ -88,16 +96,18 @@ class TestVoteHandlers:
         dispatcher.bus.emit.assert_not_called()
 
     @pytest.mark.asyncio
-
-    @pytest.mark.parametrize("state", [
-        GameState.LOBBY,
-        GameState.DAY,
-        GameState.DEFENSE,
-        GameState.BALANCE,
-        GameState.NIGHT_THIEF,
-        GameState.NIGHT,
-        GameState.FINISHED
-    ])
+    @pytest.mark.parametrize(
+        "state",
+        [
+            GameState.LOBBY,
+            GameState.DAY,
+            GameState.DEFENSE,
+            GameState.BALANCE,
+            GameState.NIGHT_THIEF,
+            GameState.NIGHT,
+            GameState.FINISHED,
+        ],
+    )
     async def test_pre_vote_wrong_state(self, dispatcher, mock_engine, game, state):
         game.state = state
 
@@ -115,7 +125,9 @@ class TestVoteHandlers:
         query = VoteQuery(QueryType.VOTE, [1], -100, 1, Mock(), target_number)
         mock_engine.get_game.return_value = game
 
-        with patch('engine.dispatcher.finish_voting', new_callable=AsyncMock) as mock_finish:
+        with patch(
+            "engine.dispatcher.finish_voting", new_callable=AsyncMock
+        ) as mock_finish:
             await dispatcher._handle_vote(query)
 
             assert game.current_votes[target_number] == 1
@@ -125,7 +137,9 @@ class TestVoteHandlers:
             response = dispatcher.bus.emit.call_args_list[0][0][0]
             assert isinstance(response, ResponseWithAlert)
             assert response.is_valid is True
-            assert f"Игрок №1 проголосовал против Игрока №{target_number}" in response.text
+            assert (
+                f"Игрок №1 проголосовал против Игрока №{target_number}" in response.text
+            )
 
             mock_finish.assert_not_called()
 
@@ -136,7 +150,9 @@ class TestVoteHandlers:
         query = VoteQuery(QueryType.VOTE, [1], -100, 1, Mock(), 3)
         mock_engine.get_game.return_value = game
 
-        with patch('engine.dispatcher.finish_voting', new_callable=AsyncMock) as mock_finish:
+        with patch(
+            "engine.dispatcher.finish_voting", new_callable=AsyncMock
+        ) as mock_finish:
             await dispatcher._handle_vote(query)
 
             assert len(game.voting_queue) == 0
@@ -148,7 +164,7 @@ class TestVoteHandlers:
         query = VoteQuery(QueryType.VOTE, [1], -100, 1, Mock(), 3)
         mock_engine.get_game.return_value = game
 
-        with patch('engine.dispatcher.finish_voting', new_callable=AsyncMock):
+        with patch("engine.dispatcher.finish_voting", new_callable=AsyncMock):
             await dispatcher._handle_vote(query)
 
             assert dispatcher.bus.emit.call_count >= 2
@@ -205,15 +221,18 @@ class TestVoteHandlers:
         assert "Голосование сейчас не идет" in response.text
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize("state", [
-        GameState.LOBBY,
-        GameState.DAY,
-        GameState.DEFENSE,
-        GameState.BALANCE,
-        GameState.NIGHT_THIEF,
-        GameState.NIGHT,
-        GameState.FINISHED
-    ])
+    @pytest.mark.parametrize(
+        "state",
+        [
+            GameState.LOBBY,
+            GameState.DAY,
+            GameState.DEFENSE,
+            GameState.BALANCE,
+            GameState.NIGHT_THIEF,
+            GameState.NIGHT,
+            GameState.FINISHED,
+        ],
+    )
     async def test_vote_wrong_state(self, dispatcher, mock_engine, game, state):
         game.state = state
 

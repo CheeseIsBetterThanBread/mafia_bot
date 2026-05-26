@@ -97,16 +97,19 @@ class TestNominateHandlers:
         dispatcher.bus.emit.assert_not_called()
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize("state", [
-        GameState.LOBBY,
-        GameState.DEFENSE,
-        GameState.VOTING,
-        GameState.BALANCE,
-        GameState.REVOTE,
-        GameState.NIGHT_THIEF,
-        GameState.NIGHT,
-        GameState.FINISHED
-    ])
+    @pytest.mark.parametrize(
+        "state",
+        [
+            GameState.LOBBY,
+            GameState.DEFENSE,
+            GameState.VOTING,
+            GameState.BALANCE,
+            GameState.REVOTE,
+            GameState.NIGHT_THIEF,
+            GameState.NIGHT,
+            GameState.FINISHED,
+        ],
+    )
     async def test_pre_nominate_wrong_state(self, dispatcher, mock_engine, game, state):
         game.state = state
 
@@ -177,7 +180,9 @@ class TestNominateHandlers:
         assert 3 not in game.nominated
 
     @pytest.mark.asyncio
-    async def test_nominate_already_nominated_player(self, dispatcher, mock_engine, game):
+    async def test_nominate_already_nominated_player(
+        self, dispatcher, mock_engine, game
+    ):
         game.state = GameState.DAY
         game.nominated = [3]
 
@@ -204,7 +209,9 @@ class TestNominateHandlers:
         assert "уже покинул стол" in response.text
 
     @pytest.mark.asyncio
-    async def test_nominate_speaker_already_nominated_this_round(self, dispatcher, mock_engine, game):
+    async def test_nominate_speaker_already_nominated_this_round(
+        self, dispatcher, mock_engine, game
+    ):
         game.state = GameState.DAY
         game.players[1].has_nominated = True
 
@@ -227,16 +234,19 @@ class TestNominateHandlers:
         assert "Действие недоступно" in response.text
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize("state", [
-        GameState.LOBBY,
-        GameState.DEFENSE,
-        GameState.VOTING,
-        GameState.BALANCE,
-        GameState.REVOTE,
-        GameState.NIGHT_THIEF,
-        GameState.NIGHT,
-        GameState.FINISHED
-    ])
+    @pytest.mark.parametrize(
+        "state",
+        [
+            GameState.LOBBY,
+            GameState.DEFENSE,
+            GameState.VOTING,
+            GameState.BALANCE,
+            GameState.REVOTE,
+            GameState.NIGHT_THIEF,
+            GameState.NIGHT,
+            GameState.FINISHED,
+        ],
+    )
     async def test_nominate_wrong_state(self, dispatcher, mock_engine, game, state):
         game.state = state
 

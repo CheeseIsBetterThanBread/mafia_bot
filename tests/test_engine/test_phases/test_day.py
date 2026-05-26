@@ -3,13 +3,7 @@ from collections import deque
 import pytest
 from unittest.mock import AsyncMock, patch
 
-from engine.phases.day import (
-    start_day,
-    next_speaker,
-    EventBus,
-    Game,
-    GameState
-)
+from engine.phases.day import start_day, next_speaker, EventBus, Game, GameState
 
 
 class TestStartDay:
@@ -155,7 +149,9 @@ class TestNextSpeaker:
         initial_queue = list(game.speech_queue)
         first_speaker = game.speech_queue[0]
 
-        with patch('engine.phases.defense.start_defense', new_callable=AsyncMock) as mock_defense:
+        with patch(
+            "engine.phases.defense.start_defense", new_callable=AsyncMock
+        ) as mock_defense:
             await next_speaker(mock_bus, game)
             mock_defense.assert_not_called()
 
@@ -173,20 +169,27 @@ class TestNextSpeaker:
 
         game.speech_queue = game.build_daily_queue()
 
-        with patch('engine.phases.defense.start_defense', new_callable=AsyncMock) as mock_defense:
+        with patch(
+            "engine.phases.defense.start_defense", new_callable=AsyncMock
+        ) as mock_defense:
             await next_speaker(mock_bus, game)
             mock_defense.assert_not_called()
 
         assert mock_bus.emit.call_count >= 2
 
         first_call = mock_bus.emit.call_args_list[0][0][0]
-        assert f"{second_player.number} заклеен Вором и пропускает свою речь" in first_call.text
+        assert (
+            f"{second_player.number} заклеен Вором и пропускает свою речь"
+            in first_call.text
+        )
 
     @pytest.mark.asyncio
     async def test_no_speech_queue(self, mock_bus, game):
         game.speech_queue = deque()
 
-        with patch('engine.phases.defense.start_defense', new_callable=AsyncMock) as mock_defense:
+        with patch(
+            "engine.phases.defense.start_defense", new_callable=AsyncMock
+        ) as mock_defense:
             await next_speaker(mock_bus, game)
             mock_defense.assert_not_called()
 
@@ -194,9 +197,13 @@ class TestNextSpeaker:
 
     @pytest.mark.asyncio
     async def test_last_speaker_starts_defense(self, mock_bus, game):
-        game.speech_queue = deque([list(game.players.values())[game.day_starter_num - 1]])
+        game.speech_queue = deque(
+            [list(game.players.values())[game.day_starter_num - 1]]
+        )
 
-        with patch('engine.phases.defense.start_defense', new_callable=AsyncMock) as mock_defense:
+        with patch(
+            "engine.phases.defense.start_defense", new_callable=AsyncMock
+        ) as mock_defense:
             await next_speaker(mock_bus, game)
 
             mock_bus.emit.assert_called_once()
@@ -212,7 +219,9 @@ class TestNextSpeaker:
 
         game.speech_queue = game.build_daily_queue()
 
-        with patch('engine.phases.defense.start_defense', new_callable=AsyncMock) as mock_defense:
+        with patch(
+            "engine.phases.defense.start_defense", new_callable=AsyncMock
+        ) as mock_defense:
             await next_speaker(mock_bus, game)
 
             assert mock_bus.emit.call_count == len(game.players)
@@ -225,7 +234,9 @@ class TestNextSpeaker:
     async def test_maintain_order(self, mock_bus, game):
         original_order = [p.number for p in game.speech_queue]
 
-        with patch('engine.phases.defense.start_defense', new_callable=AsyncMock) as mock_defense:
+        with patch(
+            "engine.phases.defense.start_defense", new_callable=AsyncMock
+        ) as mock_defense:
             await next_speaker(mock_bus, game)
             mock_defense.assert_not_called()
 
@@ -236,7 +247,9 @@ class TestNextSpeaker:
     async def test_announce_correctly(self, mock_bus, game):
         second_speaker = game.speech_queue[(game.day_starter_num - 1) + 1]
 
-        with patch('engine.phases.defense.start_defense', new_callable=AsyncMock) as mock_defense:
+        with patch(
+            "engine.phases.defense.start_defense", new_callable=AsyncMock
+        ) as mock_defense:
             await next_speaker(mock_bus, game)
             mock_defense.assert_not_called()
 
@@ -247,7 +260,9 @@ class TestNextSpeaker:
     async def test_multiple_calls(self, mock_bus, game):
         initial_length = len(game.speech_queue)
 
-        with patch('engine.phases.defense.start_defense', new_callable=AsyncMock) as mock_defense:
+        with patch(
+            "engine.phases.defense.start_defense", new_callable=AsyncMock
+        ) as mock_defense:
             for i in range(initial_length):
                 await next_speaker(mock_bus, game)
 
@@ -260,7 +275,9 @@ class TestNextSpeaker:
         glued_player = list(game.speech_queue)[(game.day_starter_num - 1) + 1]
         glued_player.is_glued = True
 
-        with patch('engine.phases.defense.start_defense', new_callable=AsyncMock) as mock_defense:
+        with patch(
+            "engine.phases.defense.start_defense", new_callable=AsyncMock
+        ) as mock_defense:
             await next_speaker(mock_bus, game)
             mock_defense.assert_not_called()
 
@@ -292,7 +309,9 @@ class TestIntegrationDayPhases:
         assert game.state == GameState.DAY
         assert len(game.speech_queue) == 3
 
-        with patch('engine.phases.defense.start_defense', new_callable=AsyncMock) as mock_defense:
+        with patch(
+            "engine.phases.defense.start_defense", new_callable=AsyncMock
+        ) as mock_defense:
             initial_queue_length = len(game.speech_queue)
 
             for i in range(initial_queue_length):
@@ -306,7 +325,9 @@ class TestIntegrationDayPhases:
 
         await start_day(mock_bus, game)
 
-        with patch('engine.phases.defense.start_defense', new_callable=AsyncMock) as mock_defense:
+        with patch(
+            "engine.phases.defense.start_defense", new_callable=AsyncMock
+        ) as mock_defense:
             initial_queue_length = len(game.speech_queue)
 
             for i in range(initial_queue_length - 1):

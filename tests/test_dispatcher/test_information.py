@@ -10,8 +10,9 @@ RUNNING_STATES = [
     GameState.BALANCE,
     GameState.REVOTE,
     GameState.NIGHT_THIEF,
-    GameState.NIGHT
+    GameState.NIGHT,
 ]
+
 
 class TestInfoHandlers:
     @pytest.fixture
@@ -32,7 +33,13 @@ class TestInfoHandlers:
             game.add_player(i, f"Player {i}")
             game.players[i].is_alive = True
             game.players[i].shurikens = i % 3
-        game.current_preset = ["Мафия", "Доктор", "Мирный житель", "Мирный житель", "Мирный житель"]
+        game.current_preset = [
+            "Мафия",
+            "Доктор",
+            "Мирный житель",
+            "Мирный житель",
+            "Мирный житель",
+        ]
         return game
 
     @pytest.mark.asyncio
@@ -58,7 +65,9 @@ class TestInfoHandlers:
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize("state", [GameState.LOBBY, GameState.FINISHED])
-    async def test_handle_alive_invalid_state(self, dispatcher, mock_engine, game, state):
+    async def test_handle_alive_invalid_state(
+        self, dispatcher, mock_engine, game, state
+    ):
         game.state = state
         mock_engine.get_game.return_value = game
 
@@ -83,17 +92,22 @@ class TestInfoHandlers:
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize("state", RUNNING_STATES)
-    async def test_handle_description_success(self, dispatcher, mock_engine, game, state):
+    async def test_handle_description_success(
+        self, dispatcher, mock_engine, game, state
+    ):
         game.state = state
 
         query = InfoQuery(QueryType.DESCRIPTION, [1], -100, 2)
         mock_engine.get_game.return_value = game
 
-        with patch('engine.dispatcher.ROLE_DESCRIPTIONS', {
-            "Мафия": "Mafia description",
-            "Доктор": "Doctor description",
-            "Мирный житель": "Civilian description"
-        }):
+        with patch(
+            "engine.dispatcher.ROLE_DESCRIPTIONS",
+            {
+                "Мафия": "Mafia description",
+                "Доктор": "Doctor description",
+                "Мирный житель": "Civilian description",
+            },
+        ):
             await dispatcher._handle_description(query)
 
             dispatcher.bus.emit.assert_called_once()
@@ -106,17 +120,22 @@ class TestInfoHandlers:
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize("state", [GameState.LOBBY, GameState.FINISHED])
-    async def test_handle_description_invalid_state(self, dispatcher, mock_engine, game, state):
+    async def test_handle_description_invalid_state(
+        self, dispatcher, mock_engine, game, state
+    ):
         game.state = state
 
         query = InfoQuery(QueryType.DESCRIPTION, [1], -100, 1)
         mock_engine.get_game.return_value = game
 
-        with patch('engine.dispatcher.ROLE_DESCRIPTIONS', {
-            "Мафия": "Mafia description",
-            "Доктор": "Doctor description",
-            "Мирный житель": "Civilian description"
-        }):
+        with patch(
+            "engine.dispatcher.ROLE_DESCRIPTIONS",
+            {
+                "Мафия": "Mafia description",
+                "Доктор": "Doctor description",
+                "Мирный житель": "Civilian description",
+            },
+        ):
             await dispatcher._handle_description(query)
 
             dispatcher.bus.emit.assert_called_once()
@@ -125,18 +144,19 @@ class TestInfoHandlers:
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize("state", RUNNING_STATES)
-    async def test_handle_description_unique_roles(self, dispatcher, mock_engine, game, state):
+    async def test_handle_description_unique_roles(
+        self, dispatcher, mock_engine, game, state
+    ):
         game.current_preset = ["Мафия", "Мафия", "Доктор", "Мирный", "Мирный"]
         game.state = state
 
         query = InfoQuery(QueryType.DESCRIPTION, [1], -100, 0)
         mock_engine.get_game.return_value = game
 
-        with patch('engine.dispatcher.ROLE_DESCRIPTIONS', {
-            "Мафия": "Mafia desc",
-            "Доктор": "Doctor desc",
-            "Мирный": "Civilian desc"
-        }):
+        with patch(
+            "engine.dispatcher.ROLE_DESCRIPTIONS",
+            {"Мафия": "Mafia desc", "Доктор": "Doctor desc", "Мирный": "Civilian desc"},
+        ):
             await dispatcher._handle_description(query)
 
             response = dispatcher.bus.emit.call_args[0][0]
@@ -174,7 +194,9 @@ class TestInfoHandlers:
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize("state", [GameState.LOBBY, GameState.FINISHED])
-    async def test_handle_roles_invalid_state(self, dispatcher, mock_engine, game, state):
+    async def test_handle_roles_invalid_state(
+        self, dispatcher, mock_engine, game, state
+    ):
         game.state = state
         game.current_preset = ["Мафия", "Доктор", "Мирный", "Шериф", "Дон"]
 
@@ -200,7 +222,9 @@ class TestInfoHandlers:
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize("state", RUNNING_STATES)
-    async def test_handle_nominated_with_nominations(self, dispatcher, mock_engine, game, state):
+    async def test_handle_nominated_with_nominations(
+        self, dispatcher, mock_engine, game, state
+    ):
         game.state = state
         game.nominated = [2, 4, 5]
 
@@ -215,7 +239,9 @@ class TestInfoHandlers:
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize("state", [GameState.LOBBY, GameState.FINISHED])
-    async def test_handle_nominated_invalid_state(self, dispatcher, mock_engine, game, state):
+    async def test_handle_nominated_invalid_state(
+        self, dispatcher, mock_engine, game, state
+    ):
         game.state = state
         game.nominated = [2, 4, 5]
 
@@ -255,7 +281,9 @@ class TestInfoHandlers:
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize("state", [GameState.VOTING, GameState.REVOTE])
-    async def test_handle_voted_in_voting_state(self, dispatcher, mock_engine, game, state):
+    async def test_handle_voted_in_voting_state(
+        self, dispatcher, mock_engine, game, state
+    ):
         game.state = state
         game.current_votes = {2: 3, 3: 1, 4: 2}
         game.vote_history = {1: 2, 2: 2, 3: 3, 4: 4, 5: 2}
@@ -277,7 +305,13 @@ class TestInfoHandlers:
     async def test_handle_voted_in_balance_state(self, dispatcher, mock_engine, game):
         game.state = GameState.BALANCE
         game.current_votes = {"acquit": 2, "kill": 3, "revote": 1}
-        game.vote_history = {1: "acquit", 2: "kill", 3: "kill", 4: "revote", 5: "acquit"}
+        game.vote_history = {
+            1: "acquit",
+            2: "kill",
+            3: "kill",
+            4: "revote",
+            5: "acquit",
+        }
 
         query = InfoQuery(QueryType.VOTED, [1], -100, 1)
         mock_engine.get_game.return_value = game
@@ -292,15 +326,20 @@ class TestInfoHandlers:
         assert "Игрок №2 ➡️ kill" in response.text
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize("state", [
-        GameState.LOBBY,
-        GameState.DAY,
-        GameState.DEFENSE,
-        GameState.NIGHT_THIEF,
-        GameState.NIGHT,
-        GameState.FINISHED
-    ])
-    async def test_handle_voted_invalid_state(self, dispatcher, mock_engine, game, state):
+    @pytest.mark.parametrize(
+        "state",
+        [
+            GameState.LOBBY,
+            GameState.DAY,
+            GameState.DEFENSE,
+            GameState.NIGHT_THIEF,
+            GameState.NIGHT,
+            GameState.FINISHED,
+        ],
+    )
+    async def test_handle_voted_invalid_state(
+        self, dispatcher, mock_engine, game, state
+    ):
         game.state = state
 
         query = InfoQuery(QueryType.VOTED, [1], -100, 1)
@@ -362,7 +401,9 @@ class TestInfoHandlers:
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize("state", [GameState.LOBBY, GameState.FINISHED])
-    async def test_handle_status_invalid_state(self, dispatcher, mock_engine, game, state):
+    async def test_handle_status_invalid_state(
+        self, dispatcher, mock_engine, game, state
+    ):
         game.state = state
         game.players[1].shurikens = 0
         game.players[2].shurikens = 1

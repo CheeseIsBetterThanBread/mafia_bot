@@ -11,7 +11,7 @@ from adapters.telegram.adapter import (
     ResponseBase,
     ResponseWithAlert,
     ResponseWithOptions,
-    TelegramAdapter
+    TelegramAdapter,
 )
 
 
@@ -35,11 +35,13 @@ def mock_bot():
     bot.send_message = AsyncMock()
     return bot
 
+
 @pytest.fixture
 def mock_bus():
     bus = Mock(spec=EventBus)
     bus.on = Mock(return_value=lambda x: x)
     return bus
+
 
 @pytest.fixture
 def mock_callback():
@@ -49,6 +51,7 @@ def mock_callback():
     callback.message.reply_markup = None
     callback.answer = AsyncMock()
     return callback
+
 
 @pytest.fixture
 def adapter(mock_bot, mock_bus):
@@ -91,16 +94,12 @@ class TestTelegramAdapter:
         TelegramAdapter(mock_bot, mock_bus)
 
         response = ResponseBase(
-            chat_id=123456789,
-            text="Test message",
-            parse_mode="HTML"
+            chat_id=123456789, text="Test message", parse_mode="HTML"
         )
         await handlers[ResponseBase](response)
 
         mock_bot.send_message.assert_called_once_with(
-            123456789,
-            "Test message",
-            parse_mode="HTML"
+            123456789, "Test message", parse_mode="HTML"
         )
 
     @pytest.mark.asyncio
@@ -118,19 +117,17 @@ class TestTelegramAdapter:
         mock_bus.on.side_effect = on_side_effect
         TelegramAdapter(mock_bot, mock_bus)
 
-        response = ResponseBase(
-            chat_id=123456789,
-            text="Test message",
-            parse_mode=None
-        )
+        response = ResponseBase(chat_id=123456789, text="Test message", parse_mode=None)
         await handlers[ResponseBase](response)
 
         mock_bot.send_message.assert_called_once()
         call_args = mock_bot.send_message.call_args[1]
-        assert isinstance(call_args['parse_mode'], Default)
+        assert isinstance(call_args["parse_mode"], Default)
 
     @pytest.mark.asyncio
-    async def test_alert_handler_valid_response_edits_message(self, mock_bot, mock_callback):
+    async def test_alert_handler_valid_response_edits_message(
+        self, mock_bot, mock_callback
+    ):
         mock_bus = Mock(spec=EventBus)
         handlers = {}
 
@@ -149,7 +146,7 @@ class TestTelegramAdapter:
             valid=True,
             text="Updated message",
             callback=mock_callback,
-            parse_mode="HTML"
+            parse_mode="HTML",
         )
         response.is_valid = Mock(return_value=True)
         await handlers[ResponseWithAlert](response)
@@ -157,12 +154,14 @@ class TestTelegramAdapter:
         mock_callback.message.edit_text.assert_called_once_with(
             "Updated message",
             reply_markup=mock_callback.message.reply_markup,
-            parse_mode="HTML"
+            parse_mode="HTML",
         )
         mock_callback.answer.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_alert_handler_invalid_response_shows_alert(self, mock_bot, mock_callback):
+    async def test_alert_handler_invalid_response_shows_alert(
+        self, mock_bot, mock_callback
+    ):
         mock_bus = Mock(spec=EventBus)
         handlers = {}
 
@@ -181,14 +180,12 @@ class TestTelegramAdapter:
             valid=False,
             text="Error message",
             callback=mock_callback,
-            parse_mode="HTML"
+            parse_mode="HTML",
         )
         await handlers[ResponseWithAlert](response)
 
         mock_callback.answer.assert_called_once_with(
-            "Error message",
-            show_alert=True,
-            parse_mode="HTML"
+            "Error message", show_alert=True, parse_mode="HTML"
         )
         mock_callback.message.edit_text.assert_not_called()
 
@@ -212,12 +209,12 @@ class TestTelegramAdapter:
             valid=True,
             text="Message",
             callback=mock_callback,
-            parse_mode=None
+            parse_mode=None,
         )
         await handlers[ResponseWithAlert](response)
 
         call_args = mock_callback.message.edit_text.call_args
-        assert isinstance(call_args[1]['parse_mode'], Default)
+        assert isinstance(call_args[1]["parse_mode"], Default)
 
     @pytest.mark.asyncio
     async def test_options_handler_creates_keyboard(self, mock_bot):
@@ -244,7 +241,7 @@ class TestTelegramAdapter:
             chat_id=123456789,
             text="Choose option:",
             candidates=candidates,
-            parse_mode="HTML"
+            parse_mode="HTML",
         )
         await handlers[ResponseWithOptions](response)
 
@@ -256,7 +253,7 @@ class TestTelegramAdapter:
         assert args[1] == "Choose option:"  # text
 
         kwargs = call_args[1]
-        reply_markup = kwargs['reply_markup']
+        reply_markup = kwargs["reply_markup"]
         assert isinstance(reply_markup, InlineKeyboardMarkup)
 
         keyboard_buttons = reply_markup.inline_keyboard
@@ -268,7 +265,7 @@ class TestTelegramAdapter:
         assert keyboard_buttons[2][0].text == "Option 3"
         assert keyboard_buttons[2][0].callback_data == "callback_3"
 
-        assert kwargs['parse_mode'] == "HTML"
+        assert kwargs["parse_mode"] == "HTML"
 
     @pytest.mark.asyncio
     async def test_options_handler_empty_candidates(self, mock_bot):
@@ -286,15 +283,12 @@ class TestTelegramAdapter:
         TelegramAdapter(mock_bot, mock_bus)
 
         response = ResponseWithOptions(
-            chat_id=123456789,
-            text="No options",
-            candidates=[],
-            parse_mode=None
+            chat_id=123456789, text="No options", candidates=[], parse_mode=None
         )
         await handlers[ResponseWithOptions](response)
 
         call_args = mock_bot.send_message.call_args
-        reply_markup = call_args[1]['reply_markup']
+        reply_markup = call_args[1]["reply_markup"]
         assert isinstance(reply_markup, InlineKeyboardMarkup)
         assert len(reply_markup.inline_keyboard) == 0
 
@@ -319,18 +313,18 @@ class TestTelegramAdapter:
             chat_id=123456789,
             text="Single option",
             candidates=candidates,
-            parse_mode="Markdown"
+            parse_mode="Markdown",
         )
         await handlers[ResponseWithOptions](response)
 
         mock_bot.send_message.assert_called_once()
         call_args = mock_bot.send_message.call_args
-        reply_markup = call_args[1]['reply_markup']
+        reply_markup = call_args[1]["reply_markup"]
 
         assert len(reply_markup.inline_keyboard) == 1
         assert reply_markup.inline_keyboard[0][0].text == "Only Option"
         assert reply_markup.inline_keyboard[0][0].callback_data == "callback_only"
-        assert call_args[1]['parse_mode'] == "Markdown"
+        assert call_args[1]["parse_mode"] == "Markdown"
 
     @pytest.mark.asyncio
     async def test_adapter_handles_all_event_types(self, mock_bot, mock_callback):
@@ -357,6 +351,7 @@ class TestIntegrationWithEventBus:
     @pytest.fixture
     def real_bus(self):
         from connection.event_bus import EventBus
+
         return EventBus()
 
     @pytest.fixture
@@ -380,20 +375,18 @@ class TestIntegrationWithEventBus:
         adapter = TelegramAdapter(mock_bot, real_bus)
 
         response = ResponseBase(
-            chat_id=123456789,
-            text="End-to-end test",
-            parse_mode="Markdown"
+            chat_id=123456789, text="End-to-end test", parse_mode="Markdown"
         )
         await adapter.bus.emit(response)
 
         mock_bot.send_message.assert_called_once_with(
-            123456789,
-            "End-to-end test",
-            parse_mode="Markdown"
+            123456789, "End-to-end test", parse_mode="Markdown"
         )
 
     @pytest.mark.asyncio
-    async def test_end_to_end_with_alert_response(self, mock_bot, real_bus, mock_callback):
+    async def test_end_to_end_with_alert_response(
+        self, mock_bot, real_bus, mock_callback
+    ):
         adapter = TelegramAdapter(mock_bot, real_bus)
 
         response = ResponseWithAlert(
@@ -401,7 +394,7 @@ class TestIntegrationWithEventBus:
             valid=True,
             text="Alert message",
             callback=mock_callback,
-            parse_mode="HTML"
+            parse_mode="HTML",
         )
         await adapter.bus.emit(response)
 

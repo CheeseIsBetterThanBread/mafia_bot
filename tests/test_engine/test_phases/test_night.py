@@ -18,7 +18,7 @@ from engine.phases.night import (
     NIGHT_TIME,
     REMINDER_OFFSET,
     NightAction,
-    ROLE_NIGHT_ACTIONS
+    ROLE_NIGHT_ACTIONS,
 )
 
 
@@ -47,10 +47,10 @@ class TestStartNight:
     @pytest.fixture
     def patch_dependencies(self):
         return MockOperations(
-            'engine.phases.night',
+            "engine.phases.night",
             thief_timeout_logic=AsyncMock(),
             start_night_others=AsyncMock(),
-            sleep=AsyncMock()
+            sleep=AsyncMock(),
         )
 
     @pytest.mark.asyncio
@@ -84,7 +84,9 @@ class TestStartNight:
         with patch_dependencies as mocks:
             await start_night(mock_bus, game)
 
-            mocks.thief_timeout_logic.assert_called_once_with(mock_bus, game, game.day_count)
+            mocks.thief_timeout_logic.assert_called_once_with(
+                mock_bus, game, game.day_count
+            )
 
             assert game.expected_night_actors[thief.user_id] == [NightAction.ROB]
 
@@ -100,7 +102,9 @@ class TestStartNight:
         with patch_dependencies as mocks:
             await start_night(mock_bus, game)
 
-            mocks.thief_timeout_logic.assert_called_once_with(mock_bus, game, game.day_count)
+            mocks.thief_timeout_logic.assert_called_once_with(
+                mock_bus, game, game.day_count
+            )
             mocks.sleep.assert_called_once()
             assert mock_bus.emit.call_count >= 2
 
@@ -163,7 +167,7 @@ class TestStartNightOthers:
             7: "Маньяк с бинтами",
             8: "Двуликий",
             9: "Адвокат",
-            10: "Тула"
+            10: "Тула",
         }
 
         for uid, role in roles.items():
@@ -178,18 +182,20 @@ class TestStartNightOthers:
     @pytest.fixture
     def patch_dependencies(self):
         return MockOperations(
-            'engine.phases.night',
+            "engine.phases.night",
             night_timeout_logic=AsyncMock(),
             resolve_night=AsyncMock(),
-            sleep=AsyncMock()
+            sleep=AsyncMock(),
         )
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize("two_face_action,found_mafia", [
-        (NightAction.TWO_FACE_CHECK, False),
-        (NightAction.TWO_FACE_KILL, True)
-    ])
-    async def test_set_state(self, mock_bus, game, patch_dependencies, two_face_action, found_mafia):
+    @pytest.mark.parametrize(
+        "two_face_action,found_mafia",
+        [(NightAction.TWO_FACE_CHECK, False), (NightAction.TWO_FACE_KILL, True)],
+    )
+    async def test_set_state(
+        self, mock_bus, game, patch_dependencies, two_face_action, found_mafia
+    ):
         game.players[8].found_mafia = found_mafia
         expected_night_actors = {
             p.user_id: [action_info[0] for action_info in ROLE_NIGHT_ACTIONS[p.role]]
@@ -207,7 +213,9 @@ class TestStartNightOthers:
         with patch_dependencies as mocks:
             await start_night_others(mock_bus, game)
 
-            mocks.night_timeout_logic.assert_called_once_with(mock_bus, game, game.day_count)
+            mocks.night_timeout_logic.assert_called_once_with(
+                mock_bus, game, game.day_count
+            )
 
     @pytest.mark.asyncio
     async def test_mafia_actions(self, mock_bus, game, patch_dependencies):
@@ -225,7 +233,10 @@ class TestStartNightOthers:
             mafia_calls = []
             for call_args in mock_bus.emit.call_args_list:
                 response = call_args[0][0]
-                if isinstance(response, ResponseWithOptions) and response.chat_id in mafia_team_ids:
+                if (
+                    isinstance(response, ResponseWithOptions)
+                    and response.chat_id in mafia_team_ids
+                ):
                     mafia_calls.append(response)
 
             assert len(mafia_calls) == mafia_actions
@@ -240,7 +251,10 @@ class TestStartNightOthers:
             doctor_response = None
             for call_args in mock_bus.emit.call_args_list:
                 response = call_args[0][0]
-                if isinstance(response, ResponseWithOptions) and response.chat_id == doctor.user_id:
+                if (
+                    isinstance(response, ResponseWithOptions)
+                    and response.chat_id == doctor.user_id
+                ):
                     doctor_response = response
                     break
 
@@ -257,12 +271,18 @@ class TestStartNightOthers:
             tula_response = None
             for call_args in mock_bus.emit.call_args_list:
                 response = call_args[0][0]
-                if isinstance(response, ResponseWithOptions) and response.chat_id == tula.user_id:
+                if (
+                    isinstance(response, ResponseWithOptions)
+                    and response.chat_id == tula.user_id
+                ):
                     tula_response = response
                     break
 
             assert tula_response is not None
-            assert "Выберите игрока, к которому пойдете (хил + алиби)" in tula_response.text
+            assert (
+                "Выберите игрока, к которому пойдете (хил + алиби)"
+                in tula_response.text
+            )
 
     @pytest.mark.asyncio
     async def test_sheriff_action(self, mock_bus, game, patch_dependencies):
@@ -274,7 +294,10 @@ class TestStartNightOthers:
             sheriff_response = None
             for call_args in mock_bus.emit.call_args_list:
                 response = call_args[0][0]
-                if isinstance(response, ResponseWithOptions) and response.chat_id == sheriff.user_id:
+                if (
+                    isinstance(response, ResponseWithOptions)
+                    and response.chat_id == sheriff.user_id
+                ):
                     sheriff_response = response
                     break
 
@@ -291,13 +314,18 @@ class TestStartNightOthers:
             don_responses = []
             for call_args in mock_bus.emit.call_args_list:
                 response = call_args[0][0]
-                if isinstance(response, ResponseWithOptions) and response.chat_id == don.user_id:
+                if (
+                    isinstance(response, ResponseWithOptions)
+                    and response.chat_id == don.user_id
+                ):
                     don_responses.append(response)
 
             assert len(don_responses) == 2
 
             don_text = "Выберите игрока для проверки на шерифа"
-            assert don_text in don_responses[0].text or don_text in don_responses[1].text
+            assert (
+                don_text in don_responses[0].text or don_text in don_responses[1].text
+            )
 
     @pytest.mark.asyncio
     async def test_ninja_shuriken_action(self, mock_bus, game, patch_dependencies):
@@ -309,13 +337,19 @@ class TestStartNightOthers:
             ninja_responses = []
             for call_args in mock_bus.emit.call_args_list:
                 response = call_args[0][0]
-                if isinstance(response, ResponseWithOptions) and response.chat_id == ninja.user_id:
+                if (
+                    isinstance(response, ResponseWithOptions)
+                    and response.chat_id == ninja.user_id
+                ):
                     ninja_responses.append(response)
 
             assert len(ninja_responses) == 2
 
             ninja_text = "Выберите игрока, в которого кинуть сюрикен"
-            assert ninja_text in ninja_responses[0].text or ninja_text in ninja_responses[1].text
+            assert (
+                ninja_text in ninja_responses[0].text
+                or ninja_text in ninja_responses[1].text
+            )
 
     @pytest.mark.asyncio
     async def test_lawyer_alibi_action(self, mock_bus, game, patch_dependencies):
@@ -327,13 +361,19 @@ class TestStartNightOthers:
             lawyer_responses = []
             for call_args in mock_bus.emit.call_args_list:
                 response = call_args[0][0]
-                if isinstance(response, ResponseWithOptions) and response.chat_id == lawyer.user_id:
+                if (
+                    isinstance(response, ResponseWithOptions)
+                    and response.chat_id == lawyer.user_id
+                ):
                     lawyer_responses.append(response)
 
             assert len(lawyer_responses) == 2
 
             lawyer_text = "Выберите игрока, который получит алиби"
-            assert lawyer_text in lawyer_responses[0].text or lawyer_text in lawyer_responses[1].text
+            assert (
+                lawyer_text in lawyer_responses[0].text
+                or lawyer_text in lawyer_responses[1].text
+            )
 
     @pytest.mark.asyncio
     async def test_maniac_without_bandages(self, mock_bus, game, patch_dependencies):
@@ -345,7 +385,10 @@ class TestStartNightOthers:
             maniac_responses = []
             for call_args in mock_bus.emit.call_args_list:
                 response = call_args[0][0]
-                if isinstance(response, ResponseWithOptions) and response.chat_id == maniac.user_id:
+                if (
+                    isinstance(response, ResponseWithOptions)
+                    and response.chat_id == maniac.user_id
+                ):
                     maniac_responses.append(response)
 
             assert len(maniac_responses) == 1
@@ -361,7 +404,10 @@ class TestStartNightOthers:
             maniac_responses = []
             for call_args in mock_bus.emit.call_args_list:
                 response = call_args[0][0]
-                if isinstance(response, ResponseWithOptions) and response.chat_id == maniac.user_id:
+                if (
+                    isinstance(response, ResponseWithOptions)
+                    and response.chat_id == maniac.user_id
+                ):
                     maniac_responses.append(response)
 
             assert len(maniac_responses) == 2
@@ -377,7 +423,10 @@ class TestStartNightOthers:
             two_face_response = None
             for call_args in mock_bus.emit.call_args_list:
                 response = call_args[0][0]
-                if isinstance(response, ResponseWithOptions) and response.chat_id == two_face.user_id:
+                if (
+                    isinstance(response, ResponseWithOptions)
+                    and response.chat_id == two_face.user_id
+                ):
                     two_face_response = response
                     break
 
@@ -395,7 +444,10 @@ class TestStartNightOthers:
             two_face_response = None
             for call_args in mock_bus.emit.call_args_list:
                 response = call_args[0][0]
-                if isinstance(response, ResponseWithOptions) and response.chat_id == two_face.user_id:
+                if (
+                    isinstance(response, ResponseWithOptions)
+                    and response.chat_id == two_face.user_id
+                ):
                     two_face_response = response
                     break
 
@@ -442,9 +494,7 @@ class TestThiefTimeoutLogic:
     @pytest.fixture
     def patch_dependencies(self):
         return MockOperations(
-            "engine.phases.night",
-            start_night_others=AsyncMock(),
-            sleep=AsyncMock()
+            "engine.phases.night", start_night_others=AsyncMock(), sleep=AsyncMock()
         )
 
     @pytest.mark.asyncio
@@ -509,9 +559,7 @@ class TestNightTimeoutLogic:
     @pytest.fixture
     def patch_dependencies(self):
         return MockOperations(
-            "engine.phases.night",
-            resolve_night=AsyncMock(),
-            sleep=AsyncMock()
+            "engine.phases.night", resolve_night=AsyncMock(), sleep=AsyncMock()
         )
 
     @pytest.mark.asyncio
@@ -620,11 +668,13 @@ class TestIntegrationNightPhases:
             thief_timeout_logic=AsyncMock(),
             night_timeout_logic=AsyncMock(),
             resolve_night=AsyncMock(),
-            sleep=AsyncMock()
+            sleep=AsyncMock(),
         )
 
     @pytest.mark.asyncio
-    async def test_full_night_cycle_with_thief(self, mock_bus, game, patch_dependencies):
+    async def test_full_night_cycle_with_thief(
+        self, mock_bus, game, patch_dependencies
+    ):
         with patch_dependencies:
             await start_night(mock_bus, game)
 

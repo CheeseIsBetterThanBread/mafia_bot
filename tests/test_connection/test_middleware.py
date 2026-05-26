@@ -73,7 +73,7 @@ class TestLoggingMiddleware:
         next_handler = AsyncMock()
 
         result = logging_middleware(event, next_handler)
-        assert hasattr(result, '__await__')
+        assert hasattr(result, "__await__")
 
 
 class TestErrorMiddleware:
@@ -81,7 +81,6 @@ class TestErrorMiddleware:
     async def test_error_middleware_passes_successful_call(self):
         event = MockEvent("successful")
         next_handler = AsyncMock()
-
 
         with capture_logger_output(logging.ERROR) as log_content:
             await error_middleware(event, next_handler)
@@ -117,7 +116,9 @@ class TestErrorMiddleware:
                 await error_middleware(event, next_handler)
 
                 next_handler.assert_awaited_once_with(event)
-                assert f"{event.get_log_string()} | {exception}" in log_content.getvalue()
+                assert (
+                    f"{event.get_log_string()} | {exception}" in log_content.getvalue()
+                )
 
     @pytest.mark.asyncio
     async def test_error_middleware_with_different_log_strings(self):
@@ -134,7 +135,9 @@ class TestErrorMiddleware:
                 await error_middleware(event, next_handler)
 
                 next_handler.assert_awaited_once_with(event)
-                assert f"{event.get_log_string()} | {exception}" in log_content.getvalue()
+                assert (
+                    f"{event.get_log_string()} | {exception}" in log_content.getvalue()
+                )
 
     @pytest.mark.asyncio
     async def test_error_middleware_preserves_not_raise_after_catch(self):

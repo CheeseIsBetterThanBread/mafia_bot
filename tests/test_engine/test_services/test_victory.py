@@ -6,7 +6,7 @@ from engine.services.victory import (
     EventBus,
     Game,
     GameState,
-    ResponseBase
+    ResponseBase,
 )
 
 

@@ -3,13 +3,19 @@ import pytest
 from utils.validate import validate_adapter
 
 
-class A:...
-class B:...
-class C:...
+class A: ...
+
+
+class B: ...
+
+
+class C: ...
+
 
 class SimpleBus:
     def __init__(self):
         self.subscribers = {}
+
 
 class SimpleAdapter:
     REQUIRED_EVENTS = [A, B, C]

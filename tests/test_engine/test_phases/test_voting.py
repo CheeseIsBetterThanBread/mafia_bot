@@ -11,7 +11,7 @@ from engine.phases.voting import (
     resolve_balance,
     EventBus,
     Game,
-    GameState
+    GameState,
 )
 
 
@@ -37,8 +37,12 @@ class TestEliminate:
     async def test_without_alibi(self, mock_bus, game):
         killed_number = 2
 
-        with patch('engine.phases.night.start_night', new_callable=AsyncMock) as mock_night:
-            with patch('engine.phases.voting.check_victory', new_callable=AsyncMock) as mock_victory:
+        with patch(
+            "engine.phases.night.start_night", new_callable=AsyncMock
+        ) as mock_night:
+            with patch(
+                "engine.phases.voting.check_victory", new_callable=AsyncMock
+            ) as mock_victory:
                 mock_victory.return_value = False
 
                 await eliminate(mock_bus, game, killed_number)
@@ -60,8 +64,12 @@ class TestEliminate:
         killed_number = 2
         game.players_by_number[killed_number].has_alibi = True
 
-        with patch('engine.phases.night.start_night', new_callable=AsyncMock) as mock_night:
-            with patch('engine.phases.voting.check_victory', new_callable=AsyncMock) as mock_victory:
+        with patch(
+            "engine.phases.night.start_night", new_callable=AsyncMock
+        ) as mock_night:
+            with patch(
+                "engine.phases.voting.check_victory", new_callable=AsyncMock
+            ) as mock_victory:
                 mock_victory.return_value = False
 
                 await eliminate(mock_bus, game, killed_number)
@@ -69,7 +77,10 @@ class TestEliminate:
                 assert game.players[killed_number].is_alive is True
 
                 first_call = mock_bus.emit.call_args_list[0][0][0]
-                assert f"🛡 Игрок №{killed_number} должен был покинуть стол" in first_call.text
+                assert (
+                    f"🛡 Игрок №{killed_number} должен был покинуть стол"
+                    in first_call.text
+                )
                 assert "АЛИБИ" in first_call.text
 
                 mock_night.assert_called_once_with(mock_bus, game)
@@ -78,8 +89,12 @@ class TestEliminate:
     async def test_triggers_victory(self, mock_bus, game):
         killed_number = 2
 
-        with patch('engine.phases.night.start_night', new_callable=AsyncMock) as mock_night:
-            with patch('engine.phases.voting.check_victory', new_callable=AsyncMock) as mock_victory:
+        with patch(
+            "engine.phases.night.start_night", new_callable=AsyncMock
+        ) as mock_night:
+            with patch(
+                "engine.phases.voting.check_victory", new_callable=AsyncMock
+            ) as mock_victory:
                 mock_victory.return_value = True
 
                 await eliminate(mock_bus, game, killed_number)
@@ -125,7 +140,9 @@ class TestStartVoting:
     async def test_single_nominated_autokick(self, mock_bus, game):
         game.nominated = [3]
 
-        with patch('engine.phases.voting.eliminate', new_callable=AsyncMock) as mock_eliminate:
+        with patch(
+            "engine.phases.voting.eliminate", new_callable=AsyncMock
+        ) as mock_eliminate:
             await start_voting(mock_bus, game)
 
             response = mock_bus.emit.call_args[0][0]
@@ -169,7 +186,9 @@ class TestFinishVoting:
         game.current_votes = {2: 5, 3: 2, 4: 1}
         game.revote_count = 0
 
-        with patch('engine.phases.voting.eliminate', new_callable=AsyncMock) as mock_eliminate:
+        with patch(
+            "engine.phases.voting.eliminate", new_callable=AsyncMock
+        ) as mock_eliminate:
             await finish_voting(mock_bus, game)
 
             mock_eliminate.assert_called_once_with(mock_bus, game, 2)
@@ -179,7 +198,9 @@ class TestFinishVoting:
         game.current_votes = {2: 3, 3: 3, 4: 2}
         game.revote_count = 0
 
-        with patch('engine.phases.voting.start_balance', new_callable=AsyncMock) as mock_balance:
+        with patch(
+            "engine.phases.voting.start_balance", new_callable=AsyncMock
+        ) as mock_balance:
             await finish_voting(mock_bus, game)
 
             mock_balance.assert_called_once_with(mock_bus, game, [2, 3])
@@ -189,7 +210,9 @@ class TestFinishVoting:
         game.current_votes = {2: 3, 3: 3, 4: 2}
         game.revote_count = 1
 
-        with patch('engine.phases.night.start_night', new_callable=AsyncMock) as mock_night:
+        with patch(
+            "engine.phases.night.start_night", new_callable=AsyncMock
+        ) as mock_night:
             await finish_voting(mock_bus, game)
 
             response = mock_bus.emit.call_args[0][0]
@@ -264,7 +287,9 @@ class TestResolveBalance:
     async def test_acquit_wins(self, mock_bus, game):
         game.current_votes = {"acquit": 5, "kill": 2, "revote": 1}
 
-        with patch('engine.phases.night.start_night', new_callable=AsyncMock) as mock_night:
+        with patch(
+            "engine.phases.night.start_night", new_callable=AsyncMock
+        ) as mock_night:
             await resolve_balance(mock_bus, game)
 
             response = mock_bus.emit.call_args[0][0]
@@ -290,8 +315,12 @@ class TestResolveBalance:
     async def test_kill_wins(self, mock_bus, game):
         game.current_votes = {"acquit": 1, "kill": 5, "revote": 2}
 
-        with patch('engine.phases.night.start_night', new_callable=AsyncMock) as mock_night:
-            with patch('engine.phases.voting.check_victory', new_callable=AsyncMock) as mock_victory:
+        with patch(
+            "engine.phases.night.start_night", new_callable=AsyncMock
+        ) as mock_night:
+            with patch(
+                "engine.phases.voting.check_victory", new_callable=AsyncMock
+            ) as mock_victory:
                 mock_victory.return_value = False
 
                 await resolve_balance(mock_bus, game)
@@ -310,8 +339,12 @@ class TestResolveBalance:
         game.players[3].has_alibi = True
         game.current_votes = {"acquit": 1, "kill": 5, "revote": 2}
 
-        with patch('engine.phases.night.start_night', new_callable=AsyncMock) as mock_night:
-            with patch('engine.phases.voting.check_victory', new_callable=AsyncMock) as mock_victory:
+        with patch(
+            "engine.phases.night.start_night", new_callable=AsyncMock
+        ) as mock_night:
+            with patch(
+                "engine.phases.voting.check_victory", new_callable=AsyncMock
+            ) as mock_victory:
                 mock_victory.return_value = False
 
                 await resolve_balance(mock_bus, game)
@@ -333,8 +366,12 @@ class TestResolveBalance:
 
         game.current_votes = {"acquit": 1, "kill": 5, "revote": 2}
 
-        with patch('engine.phases.night.start_night', new_callable=AsyncMock) as mock_night:
-            with patch('engine.phases.voting.check_victory', new_callable=AsyncMock) as mock_victory:
+        with patch(
+            "engine.phases.night.start_night", new_callable=AsyncMock
+        ) as mock_night:
+            with patch(
+                "engine.phases.voting.check_victory", new_callable=AsyncMock
+            ) as mock_victory:
                 mock_victory.return_value = False
 
                 await resolve_balance(mock_bus, game)
@@ -351,8 +388,12 @@ class TestResolveBalance:
     async def test_trigger_victory(self, mock_bus, game):
         game.current_votes = {"acquit": 1, "kill": 5, "revote": 2}
 
-        with patch('engine.phases.night.start_night', new_callable=AsyncMock) as mock_night:
-            with patch('engine.phases.voting.check_victory', new_callable=AsyncMock) as mock_victory:
+        with patch(
+            "engine.phases.night.start_night", new_callable=AsyncMock
+        ) as mock_night:
+            with patch(
+                "engine.phases.voting.check_victory", new_callable=AsyncMock
+            ) as mock_victory:
                 mock_victory.return_value = True
 
                 await resolve_balance(mock_bus, game)
@@ -386,8 +427,10 @@ class TestIntegrationVotingPhases:
 
         game.current_votes = {2: 4, 3: 1, 4: 2}
 
-        with patch('engine.phases.voting.eliminate', new_callable=AsyncMock) as mock_eliminate:
-            with patch('engine.phases.night.start_night', new_callable=AsyncMock):
+        with patch(
+            "engine.phases.voting.eliminate", new_callable=AsyncMock
+        ) as mock_eliminate:
+            with patch("engine.phases.night.start_night", new_callable=AsyncMock):
                 await finish_voting(mock_bus, game)
                 mock_eliminate.assert_called_once_with(mock_bus, game, 2)
 
@@ -401,8 +444,12 @@ class TestIntegrationVotingPhases:
 
         game.current_votes = {"acquit": 2, "kill": 4, "revote": 1}
 
-        with patch('engine.phases.night.start_night', new_callable=AsyncMock) as mock_night:
-            with patch('engine.phases.voting.check_victory', new_callable=AsyncMock) as mock_victory:
+        with patch(
+            "engine.phases.night.start_night", new_callable=AsyncMock
+        ) as mock_night:
+            with patch(
+                "engine.phases.voting.check_victory", new_callable=AsyncMock
+            ) as mock_victory:
                 mock_victory.return_value = False
 
                 await resolve_balance(mock_bus, game)
@@ -430,7 +477,9 @@ class TestIntegrationVotingPhases:
 
         game.current_votes = {2: 2, 3: 2, 4: 2}
 
-        with patch('engine.phases.night.start_night', new_callable=AsyncMock) as mock_night:
+        with patch(
+            "engine.phases.night.start_night", new_callable=AsyncMock
+        ) as mock_night:
             await finish_voting(mock_bus, game)
 
             response = mock_bus.emit.call_args[0][0]

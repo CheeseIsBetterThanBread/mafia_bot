@@ -8,7 +8,7 @@ from engine.phases.defense import (
     next_defense_speaker,
     EventBus,
     Game,
-    GameState
+    GameState,
 )
 
 
@@ -33,7 +33,9 @@ class TestStartDefense:
     async def test_without_nominated(self, mock_bus, game):
         game.nominated = []
 
-        with patch('engine.phases.night.start_night', new_callable=AsyncMock) as mock_night:
+        with patch(
+            "engine.phases.night.start_night", new_callable=AsyncMock
+        ) as mock_night:
             await start_defense(mock_bus, game)
 
             mock_bus.emit.assert_called_once()
@@ -50,7 +52,9 @@ class TestStartDefense:
     async def test_with_nominated_players(self, mock_bus, game):
         game.nominated = [2, 4]
 
-        with patch('engine.phases.night.start_night', new_callable=AsyncMock) as mock_night:
+        with patch(
+            "engine.phases.night.start_night", new_callable=AsyncMock
+        ) as mock_night:
             await start_defense(mock_bus, game)
             mock_night.assert_not_called()
 
@@ -69,7 +73,9 @@ class TestStartDefense:
     async def test_with_single_nominated(self, mock_bus, game):
         game.nominated = [3]
 
-        with patch('engine.phases.night.start_night', new_callable=AsyncMock) as mock_night:
+        with patch(
+            "engine.phases.night.start_night", new_callable=AsyncMock
+        ) as mock_night:
             await start_defense(mock_bus, game)
             mock_night.assert_not_called()
 
@@ -85,7 +91,9 @@ class TestStartDefense:
     async def test_preserve_order(self, mock_bus, game):
         game.nominated = [5, 1, 3, 2, 4]
 
-        with patch('engine.phases.night.start_night', new_callable=AsyncMock) as mock_night:
+        with patch(
+            "engine.phases.night.start_night", new_callable=AsyncMock
+        ) as mock_night:
             await start_defense(mock_bus, game)
             mock_night.assert_not_called()
 
@@ -112,10 +120,7 @@ class TestNextDefenseSpeaker:
 
         game.nominated = [2, 3, 4]
         game.state = GameState.DEFENSE
-        game.defense_queue = deque([
-            game.players_by_number[n]
-            for n in game.nominated
-        ])
+        game.defense_queue = deque([game.players_by_number[n] for n in game.nominated])
 
         return game
 
@@ -124,7 +129,9 @@ class TestNextDefenseSpeaker:
         initial_queue = list(game.defense_queue)
         first_speaker = game.defense_queue[0]
 
-        with patch('engine.phases.voting.start_voting', new_callable=AsyncMock) as mock_voting:
+        with patch(
+            "engine.phases.voting.start_voting", new_callable=AsyncMock
+        ) as mock_voting:
             await next_defense_speaker(mock_bus, game)
             mock_voting.assert_not_called()
 
@@ -133,27 +140,37 @@ class TestNextDefenseSpeaker:
 
         mock_bus.emit.assert_called_once()
         response = mock_bus.emit.call_args[0][0]
-        assert f"Очередь оправдываться Игрока №{game.defense_queue[0].number}" in response.text
+        assert (
+            f"Очередь оправдываться Игрока №{game.defense_queue[0].number}"
+            in response.text
+        )
 
     @pytest.mark.asyncio
     async def test_skip_glued_players(self, mock_bus, game):
         second_player = game.defense_queue[1]
         second_player.is_glued = True
 
-        with patch('engine.phases.voting.start_voting', new_callable=AsyncMock) as mock_voting:
+        with patch(
+            "engine.phases.voting.start_voting", new_callable=AsyncMock
+        ) as mock_voting:
             await next_defense_speaker(mock_bus, game)
             mock_voting.assert_not_called()
 
         assert mock_bus.emit.call_count >= 2
 
         first_call = mock_bus.emit.call_args_list[0][0][0]
-        assert f"{second_player.number} заклеен Вором и пропускает свою оправдательную речь" in first_call.text
+        assert (
+            f"{second_player.number} заклеен Вором и пропускает свою оправдательную речь"
+            in first_call.text
+        )
 
     @pytest.mark.asyncio
     async def test_no_defense_queue(self, mock_bus, game):
         game.defense_queue = deque()
 
-        with patch('engine.phases.voting.start_voting', new_callable=AsyncMock) as mock_voting:
+        with patch(
+            "engine.phases.voting.start_voting", new_callable=AsyncMock
+        ) as mock_voting:
             await next_defense_speaker(mock_bus, game)
             mock_voting.assert_not_called()
 
@@ -163,7 +180,9 @@ class TestNextDefenseSpeaker:
     async def test_last_speaker_starts_voting(self, mock_bus, game):
         game.defense_queue = deque([list(game.players.values())[2]])
 
-        with patch('engine.phases.voting.start_voting', new_callable=AsyncMock) as mock_voting:
+        with patch(
+            "engine.phases.voting.start_voting", new_callable=AsyncMock
+        ) as mock_voting:
             await next_defense_speaker(mock_bus, game)
 
             mock_bus.emit.assert_called_once()
@@ -179,7 +198,9 @@ class TestNextDefenseSpeaker:
 
         defense_length = len(game.defense_queue)
 
-        with patch('engine.phases.voting.start_voting', new_callable=AsyncMock) as mock_voting:
+        with patch(
+            "engine.phases.voting.start_voting", new_callable=AsyncMock
+        ) as mock_voting:
             await next_defense_speaker(mock_bus, game)
 
             assert mock_bus.emit.call_count == defense_length
@@ -193,7 +214,9 @@ class TestNextDefenseSpeaker:
     async def test_maintain_order(self, mock_bus, game):
         original_order = [p.number for p in game.defense_queue]
 
-        with patch('engine.phases.voting.start_voting', new_callable=AsyncMock) as mock_voting:
+        with patch(
+            "engine.phases.voting.start_voting", new_callable=AsyncMock
+        ) as mock_voting:
             await next_defense_speaker(mock_bus, game)
             mock_voting.assert_not_called()
 
@@ -204,18 +227,24 @@ class TestNextDefenseSpeaker:
     async def test_announce_correctly(self, mock_bus, game):
         second_speaker = game.defense_queue[1]
 
-        with patch('engine.phases.voting.start_voting', new_callable=AsyncMock) as mock_voting:
+        with patch(
+            "engine.phases.voting.start_voting", new_callable=AsyncMock
+        ) as mock_voting:
             await next_defense_speaker(mock_bus, game)
             mock_voting.assert_not_called()
 
         response = mock_bus.emit.call_args[0][0]
-        assert f"🗣 Очередь оправдываться Игрока №{second_speaker.number}" in response.text
+        assert (
+            f"🗣 Очередь оправдываться Игрока №{second_speaker.number}" in response.text
+        )
 
     @pytest.mark.asyncio
     async def test_multiple_calls(self, mock_bus, game):
         initial_length = len(game.defense_queue)
 
-        with patch('engine.phases.voting.start_voting', new_callable=AsyncMock) as mock_voting:
+        with patch(
+            "engine.phases.voting.start_voting", new_callable=AsyncMock
+        ) as mock_voting:
             for i in range(initial_length):
                 await next_defense_speaker(mock_bus, game)
 
@@ -228,7 +257,9 @@ class TestNextDefenseSpeaker:
         glued_player = game.defense_queue[1]
         glued_player.is_glued = True
 
-        with patch('engine.phases.voting.start_voting', new_callable=AsyncMock) as mock_voting:
+        with patch(
+            "engine.phases.voting.start_voting", new_callable=AsyncMock
+        ) as mock_voting:
             await next_defense_speaker(mock_bus, game)
             mock_voting.assert_not_called()
 
@@ -258,14 +289,18 @@ class TestIntegrationDefensePhases:
 
     @pytest.mark.asyncio
     async def test_full_defense_cycle(self, mock_bus, game):
-        with patch('engine.phases.night.start_night', new_callable=AsyncMock) as mock_night:
+        with patch(
+            "engine.phases.night.start_night", new_callable=AsyncMock
+        ) as mock_night:
             await start_defense(mock_bus, game)
             mock_night.assert_not_called()
 
         assert game.state == GameState.DEFENSE
         assert len(game.defense_queue) == 2
 
-        with patch('engine.phases.voting.start_voting', new_callable=AsyncMock) as mock_voting:
+        with patch(
+            "engine.phases.voting.start_voting", new_callable=AsyncMock
+        ) as mock_voting:
             initial_queue_length = len(game.defense_queue)
 
             for i in range(initial_queue_length):
@@ -277,11 +312,15 @@ class TestIntegrationDefensePhases:
     async def test_defense_cycle_with_glued_players(self, mock_bus, game):
         game.players[2].is_glued = True
 
-        with patch('engine.phases.night.start_night', new_callable=AsyncMock) as mock_night:
+        with patch(
+            "engine.phases.night.start_night", new_callable=AsyncMock
+        ) as mock_night:
             await start_defense(mock_bus, game)
             mock_night.assert_not_called()
 
-        with patch('engine.phases.voting.start_voting', new_callable=AsyncMock) as mock_voting:
+        with patch(
+            "engine.phases.voting.start_voting", new_callable=AsyncMock
+        ) as mock_voting:
             required_calls = len(game.defense_queue)
             for i in range(required_calls - 1):
                 await next_defense_speaker(mock_bus, game)
@@ -292,7 +331,9 @@ class TestIntegrationDefensePhases:
     async def test_no_defense_when_no_nominated(self, mock_bus, game):
         game.nominated = []
 
-        with patch('engine.phases.night.start_night', new_callable=AsyncMock) as mock_night:
+        with patch(
+            "engine.phases.night.start_night", new_callable=AsyncMock
+        ) as mock_night:
             await start_defense(mock_bus, game)
 
             mock_night.assert_called_once_with(mock_bus, game)
