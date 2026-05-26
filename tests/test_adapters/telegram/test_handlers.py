@@ -342,7 +342,7 @@ class TestTelegramHandlers:
         router, mock_bus = setup_router
 
         chat_id = -100123456789
-        action = 'rek'
+        action = NightAction.ROB
         target = 5
         mock_callback.data = NIGHT_CALLBACK_TEMPLATE.format(
             chat_id=chat_id,
