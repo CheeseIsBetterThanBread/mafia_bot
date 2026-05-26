@@ -11,6 +11,7 @@ omit =
     connection/queries.py
     engine/presets.py
     */config/*
+    */deprecated/*
     */tests/*
     */__init__.py
     */bot.py
