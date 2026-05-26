@@ -17,6 +17,23 @@ run:
 test:
 	pytest
 
+test-infra:
+	pytest tests/test_connection
+	pytest tests/test_utils
+
+test-frontend:
+	pytest tests/test_adapters
+
+test-backend:
+	pytest tests/test_dispatcher
+	pytest tests/test_engine
+
+test-core:
+	pytest tests/test_dispatcher/test_night_action.py
+	pytest tests/test_engine/test_phases/test_night.py
+	pytest tests/test_engine/test_services/test_night_resolution.py
+	pytest tests/test_engine/test_services/test_victory.py
+
 # ---- Coverage (всё сразу) ----
 coverage:
 	coverage run -m pytest
