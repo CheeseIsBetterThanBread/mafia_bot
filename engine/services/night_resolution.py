@@ -23,12 +23,14 @@ async def generate_random_moves(bus: EventBus, game: Game):
 
         if p.role == "Ниндзя":
             target = random.choice(alive_players)
-            game.night_actions.setdefault(p.user_id, {})[NightAction.SHURIKEN] = target.number
+            game.night_actions.setdefault(p.user_id, {})[
+                NightAction.SHURIKEN
+            ] = target.number
 
             response = ResponseBase(
                 p.user_id,
                 f"⚠️ Вы проспали ход! Бот случайно бросил ваш сюрикен в Игрока №{target.number}.",
-                valid=True
+                valid=True,
             )
             asyncio.create_task(bus.emit(response))
             continue
@@ -37,12 +39,14 @@ async def generate_random_moves(bus: EventBus, game: Game):
             valid_targets = [t for t in alive_players if t.number != p.last_healed]
             if valid_targets:
                 target = random.choice(valid_targets)
-                game.night_actions.setdefault(p.user_id, {})[NightAction.TULA] = target.number
+                game.night_actions.setdefault(p.user_id, {})[
+                    NightAction.TULA
+                ] = target.number
 
                 response = ResponseBase(
                     p.user_id,
                     f"⚠️ Вы проспали ход! Бот случайно отправил вас к Игроку №{target.number}.",
-                    valid=True
+                    valid=True,
                 )
                 asyncio.create_task(bus.emit(response))
             else:
@@ -55,24 +59,28 @@ async def generate_random_moves(bus: EventBus, game: Game):
                 p.last_man_heal = False
 
             target = random.choice(alive_players)
-            game.night_actions.setdefault(p.user_id, {})[NightAction.MANIAC_KILL] = target.number
+            game.night_actions.setdefault(p.user_id, {})[
+                NightAction.MANIAC_KILL
+            ] = target.number
 
             response = ResponseBase(
                 p.user_id,
                 f"⚠️ Вы проспали ход! Бот случайно отправил вас убивать Игрока №{target.number}.",
-                valid=True
+                valid=True,
             )
             asyncio.create_task(bus.emit(response))
             continue
 
-        if p.role == "Двуликий" and getattr(p, 'found_mafia', False):
+        if p.role == "Двуликий" and getattr(p, "found_mafia", False):
             target = random.choice(alive_players)
-            game.night_actions.setdefault(p.user_id, {})[NightAction.TWO_FACE_KILL] = target.number
+            game.night_actions.setdefault(p.user_id, {})[
+                NightAction.TWO_FACE_KILL
+            ] = target.number
 
             response = ResponseBase(
                 p.user_id,
                 f"⚠️ Вы проспали ход! Бот случайно отправил вас убивать Игрока №{target.number}.",
-                valid=True
+                valid=True,
             )
             asyncio.create_task(bus.emit(response))
             continue
@@ -93,13 +101,24 @@ async def resolve_night(bus: EventBus, game: Game):
     putana_client = None
 
     shurikens_before = {p.number for p in game.get_alive_players() if p.shurikens > 0}
-    mafia_dead = not any(p.is_alive for p in game.get_alive_players() if p.role in game.mafia_team)
-    mafia_blocked = any(p.is_glued for p in game.get_alive_players() if p.role in game.mafia_team) or mafia_dead
+    mafia_dead = not any(
+        p.is_alive for p in game.get_alive_players() if p.role in game.mafia_team
+    )
+    mafia_blocked = (
+        any(p.is_glued for p in game.get_alive_players() if p.role in game.mafia_team)
+        or mafia_dead
+    )
 
     actions = []
     for uid, acts in game.night_actions.items():
         for code, target in acts.items():
-            actions.append({"actor": game.players[uid], "code": code, "target": game.players_by_number[target]})
+            actions.append(
+                {
+                    "actor": game.players[uid],
+                    "code": code,
+                    "target": game.players_by_number[target],
+                }
+            )
 
     for a in actions:
         if a["actor"].is_glued:
@@ -139,7 +158,9 @@ async def resolve_night(bus: EventBus, game: Game):
         for a in actions:
             if a["code"] == NightAction.VOTE and not a["actor"].is_glued:
                 weight = 2 if a["actor"].role == "Дон" else 1
-                mafia_votes[a["target"].number] = mafia_votes.get(a["target"].number, 0) + weight
+                mafia_votes[a["target"].number] = (
+                    mafia_votes.get(a["target"].number, 0) + weight
+                )
         if mafia_votes:
             max_v = max(mafia_votes.values())
             leaders = [t for t, v in mafia_votes.items() if v == max_v]
@@ -185,12 +206,18 @@ async def resolve_night(bus: EventBus, game: Game):
     if killed_this_night:
         for num in killed_this_night:
             game.players_by_number[num].is_alive = False
-        announcement += f"💀 Этой ночью были убиты: {', '.join(map(str, killed_this_night))}.\n"
+        announcement += (
+            f"💀 Этой ночью были убиты: {', '.join(map(str, killed_this_night))}.\n"
+        )
     else:
         announcement += "🕊 Этой ночью никто не умер!\n"
 
-    lost_shurikens = [num for num in shurikens_before if
-                      game.players_by_number[num].is_alive and game.players_by_number[num].shurikens == 0]
+    lost_shurikens = [
+        num
+        for num in shurikens_before
+        if game.players_by_number[num].is_alive
+        and game.players_by_number[num].shurikens == 0
+    ]
     if lost_shurikens:
         announcement += f"🩹 Сюрикены были успешно извлечены (сброшены) у игроков: {', '.join(map(str, lost_shurikens))}\n"
 
@@ -198,11 +225,7 @@ async def resolve_night(bus: EventBus, game: Game):
     if current_shurikens:
         announcement += f"🥷 Внимание! По 1 сюрикену сейчас висит на игроках: {', '.join(map(str, current_shurikens))}\n"
 
-    response = ResponseBase(
-        game.chat_id,
-        announcement,
-        valid=True
-    )
+    response = ResponseBase(game.chat_id, announcement, valid=True)
     await bus.emit(response)
 
     if await check_victory(bus, game):

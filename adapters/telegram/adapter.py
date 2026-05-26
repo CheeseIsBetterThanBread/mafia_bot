@@ -4,11 +4,7 @@ from adapters.base import Adapter
 from aiogram.client.default import Default
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-from connection.events import (
-    ResponseBase,
-    ResponseWithAlert,
-    ResponseWithOptions
-)
+from connection.events import ResponseBase, ResponseWithAlert, ResponseWithOptions
 from connection.event_bus import EventBus
 
 
@@ -35,7 +31,7 @@ class TelegramAdapter(Adapter):
             await self.bot.send_message(
                 response.chat_id,
                 response.text,
-                parse_mode=get_parse_mode(response.parse_mode)
+                parse_mode=get_parse_mode(response.parse_mode),
             )
 
         @self.bus.on(ResponseWithAlert)
@@ -47,14 +43,14 @@ class TelegramAdapter(Adapter):
                 await response.callback.message.edit_text(
                     response.text,
                     reply_markup=response.callback.message.reply_markup,
-                    parse_mode=get_parse_mode(response.parse_mode)
+                    parse_mode=get_parse_mode(response.parse_mode),
                 )
                 return
 
             await response.callback.answer(
                 response.text,
                 show_alert=True,
-                parse_mode=get_parse_mode(response.parse_mode)
+                parse_mode=get_parse_mode(response.parse_mode),
             )
 
         @self.bus.on(ResponseWithOptions)
@@ -63,13 +59,15 @@ class TelegramAdapter(Adapter):
                 return
 
             buttons = []
-            for (text, callback_redirect) in response.candidates:
-                buttons.append([InlineKeyboardButton(text=text, callback_data=callback_redirect)])
+            for text, callback_redirect in response.candidates:
+                buttons.append(
+                    [InlineKeyboardButton(text=text, callback_data=callback_redirect)]
+                )
 
             keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
             await self.bot.send_message(
                 response.chat_id,
                 response.text,
                 reply_markup=keyboard,
-                parse_mode=get_parse_mode(response.parse_mode)
+                parse_mode=get_parse_mode(response.parse_mode),
             )

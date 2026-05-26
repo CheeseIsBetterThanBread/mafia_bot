@@ -12,7 +12,7 @@ from config.settings import (
     BALANCE_CALLBACK_TEMPLATE,
     BALANCE_TYPES,
     NIGHT_CALLBACK_TEMPLATE,
-    NIGHT_TYPES
+    NIGHT_TYPES,
 )
 
 from connection.events import (
@@ -30,7 +30,7 @@ from connection.events import (
     StartNightQuery,
     SkipNightQuery,
     NightActionQuery,
-    MafiaChatQuery
+    MafiaChatQuery,
 )
 from connection.event_bus import EventBus
 from connection.queries import QueryType
@@ -39,7 +39,6 @@ from config.help import HELP_TEXT
 
 from utils.logger import LOGGER
 from utils.parser import TemplateParser
-
 
 router = Router()
 
@@ -57,9 +56,11 @@ class FallBack:
     async def emit(_):
         raise ValueError("Failed to connect to EventBus")
 
+
 fallback_bus = FallBack()
 
 # --- START / HELP ---
+
 
 @router.message(Command("start"))
 async def cmd_start(message: Message):
@@ -75,7 +76,9 @@ async def cmd_start(message: Message):
 async def cmd_help(message: Message):
     await message.answer(HELP_TEXT, parse_mode="HTML")
 
+
 # --- СОЗДАНИЕ ИГРЫ ---
+
 
 @router.message(Command("start_game"))
 async def cmd_start_game(message: Message):
@@ -84,12 +87,13 @@ async def cmd_start_game(message: Message):
         TELEGRAM_ADMINS,
         message.chat.id,
         message.from_user.id,
-        message.chat.type
+        message.chat.type,
     )
     await getattr(router, "bus", fallback_bus).emit(query)
 
 
 # --- JOIN (кнопка) ---
+
 
 @router.callback_query(F.data == "join_game")
 async def handle_join_game(callback: CallbackQuery):
@@ -99,31 +103,29 @@ async def handle_join_game(callback: CallbackQuery):
         callback.message.chat.id,
         callback.from_user.id,
         callback,
-        callback.from_user.username
+        callback.from_user.username,
     )
     await getattr(router, "bus", fallback_bus).emit(query)
 
+
 # --- НАЧАЛО ИГРЫ ---
+
 
 @router.message(Command("run"))
 async def cmd_run(message: Message):
     query = RunQuery(
-        QueryType.RUN,
-        TELEGRAM_ADMINS,
-        message.chat.id,
-        message.from_user.id
+        QueryType.RUN, TELEGRAM_ADMINS, message.chat.id, message.from_user.id
     )
     await getattr(router, "bus", fallback_bus).emit(query)
 
+
 # --- ЗАПРОС ИНФОРМАЦИИ ---
+
 
 @router.message(Command("alive"))
 async def cmd_alive(message: Message):
     query = InfoQuery(
-        QueryType.ALIVE,
-        TELEGRAM_ADMINS,
-        message.chat.id,
-        message.from_user.id
+        QueryType.ALIVE, TELEGRAM_ADMINS, message.chat.id, message.from_user.id
     )
     await getattr(router, "bus", fallback_bus).emit(query)
 
@@ -131,10 +133,7 @@ async def cmd_alive(message: Message):
 @router.message(Command("description"))
 async def cmd_description(message: Message):
     query = InfoQuery(
-        QueryType.DESCRIPTION,
-        TELEGRAM_ADMINS,
-        message.chat.id,
-        message.from_user.id
+        QueryType.DESCRIPTION, TELEGRAM_ADMINS, message.chat.id, message.from_user.id
     )
     await getattr(router, "bus", fallback_bus).emit(query)
 
@@ -142,10 +141,7 @@ async def cmd_description(message: Message):
 @router.message(Command("roles"))
 async def cmd_roles(message: Message):
     query = InfoQuery(
-        QueryType.ROLES,
-        TELEGRAM_ADMINS,
-        message.chat.id,
-        message.from_user.id
+        QueryType.ROLES, TELEGRAM_ADMINS, message.chat.id, message.from_user.id
     )
     await getattr(router, "bus", fallback_bus).emit(query)
 
@@ -153,10 +149,7 @@ async def cmd_roles(message: Message):
 @router.message(Command("nominated"))
 async def cmd_nominated(message: Message):
     query = InfoQuery(
-        QueryType.NOMINATED,
-        TELEGRAM_ADMINS,
-        message.chat.id,
-        message.from_user.id
+        QueryType.NOMINATED, TELEGRAM_ADMINS, message.chat.id, message.from_user.id
     )
     await getattr(router, "bus", fallback_bus).emit(query)
 
@@ -164,10 +157,7 @@ async def cmd_nominated(message: Message):
 @router.message(Command("voted"))
 async def cmd_voted(message: Message):
     query = InfoQuery(
-        QueryType.VOTED,
-        TELEGRAM_ADMINS,
-        message.chat.id,
-        message.from_user.id
+        QueryType.VOTED, TELEGRAM_ADMINS, message.chat.id, message.from_user.id
     )
     await getattr(router, "bus", fallback_bus).emit(query)
 
@@ -175,22 +165,18 @@ async def cmd_voted(message: Message):
 @router.message(Command("status"))
 async def cmd_status(message: Message):
     query = InfoQuery(
-        QueryType.STATUS,
-        TELEGRAM_ADMINS,
-        message.chat.id,
-        message.from_user.id
+        QueryType.STATUS, TELEGRAM_ADMINS, message.chat.id, message.from_user.id
     )
     await getattr(router, "bus", fallback_bus).emit(query)
 
+
 # --- РЕЧИ ---
+
 
 @router.message(Command("speech"))
 async def cmd_speech(message: Message):
     query = SpeechRelatedQuery(
-        QueryType.SPEECH,
-        TELEGRAM_ADMINS,
-        message.chat.id,
-        message.from_user.id
+        QueryType.SPEECH, TELEGRAM_ADMINS, message.chat.id, message.from_user.id
     )
     await getattr(router, "bus", fallback_bus).emit(query)
 
@@ -198,31 +184,29 @@ async def cmd_speech(message: Message):
 @router.message(Command("end_speech"))
 async def cmd_end_speech(message: Message):
     query = SpeechRelatedQuery(
-        QueryType.END_SPEECH,
-        TELEGRAM_ADMINS,
-        message.chat.id,
-        message.from_user.id
+        QueryType.END_SPEECH, TELEGRAM_ADMINS, message.chat.id, message.from_user.id
     )
     await getattr(router, "bus", fallback_bus).emit(query)
 
+
 # --- ВЫСТАВЛЕНИЕ ---
+
 
 @router.message(Command("nominate"))
 async def cmd_nominate(message: Message):
     query = PreNominateQuery(
-        QueryType.PRE_NOMINATE,
-        TELEGRAM_ADMINS,
-        message.chat.id,
-        message.from_user.id
+        QueryType.PRE_NOMINATE, TELEGRAM_ADMINS, message.chat.id, message.from_user.id
     )
     await getattr(router, "bus", fallback_bus).emit(query)
 
 
-@router.callback_query(F.data.startswith(NOMINATE_CALLBACK_TEMPLATE.split('|')[0] + '|'))
+@router.callback_query(
+    F.data.startswith(NOMINATE_CALLBACK_TEMPLATE.split("|")[0] + "|")
+)
 async def handle_nominate(callback: CallbackQuery):
     parser = TemplateParser(NOMINATE_CALLBACK_TEMPLATE, NOMINATE_TYPES)
     args = parser.parse(callback.data)
-    chat_id, target = args['chat_id'], args['player_number']
+    chat_id, target = args["chat_id"], args["player_number"]
 
     query = NominateQuery(
         QueryType.NOMINATE,
@@ -230,28 +214,27 @@ async def handle_nominate(callback: CallbackQuery):
         chat_id,
         callback.from_user.id,
         callback,
-        target
+        target,
     )
     await getattr(router, "bus", fallback_bus).emit(query)
 
+
 # --- ГОЛОСОВАНИЕ ---
+
 
 @router.message(Command("vote"))
 async def cmd_vote(message: Message):
     query = PreVoteQuery(
-        QueryType.PRE_VOTE,
-        TELEGRAM_ADMINS,
-        message.chat.id,
-        message.from_user.id
+        QueryType.PRE_VOTE, TELEGRAM_ADMINS, message.chat.id, message.from_user.id
     )
     await getattr(router, "bus", fallback_bus).emit(query)
 
 
-@router.callback_query(F.data.startswith(VOTE_CALLBACK_TEMPLATE.split('|')[0] + '|'))
+@router.callback_query(F.data.startswith(VOTE_CALLBACK_TEMPLATE.split("|")[0] + "|"))
 async def handle_vote(callback: CallbackQuery):
     parser = TemplateParser(VOTE_CALLBACK_TEMPLATE, VOTE_TYPES)
     args = parser.parse(callback.data)
-    chat_id, target = args['chat_id'], args['player_number']
+    chat_id, target = args["chat_id"], args["player_number"]
 
     query = VoteQuery(
         QueryType.VOTE,
@@ -259,7 +242,7 @@ async def handle_vote(callback: CallbackQuery):
         chat_id,
         callback.from_user.id,
         callback,
-        target
+        target,
     )
     await getattr(router, "bus", fallback_bus).emit(query)
 
@@ -267,19 +250,16 @@ async def handle_vote(callback: CallbackQuery):
 @router.message(Command("balance"))
 async def cmd_balance(message: Message):
     query = PreBalanceQuery(
-        QueryType.PRE_BALANCE,
-        TELEGRAM_ADMINS,
-        message.chat.id,
-        message.from_user.id
+        QueryType.PRE_BALANCE, TELEGRAM_ADMINS, message.chat.id, message.from_user.id
     )
     await getattr(router, "bus", fallback_bus).emit(query)
 
 
-@router.callback_query(F.data.startswith(BALANCE_CALLBACK_TEMPLATE.split('|')[0] + '|'))
+@router.callback_query(F.data.startswith(BALANCE_CALLBACK_TEMPLATE.split("|")[0] + "|"))
 async def handle_balance(callback: CallbackQuery):
     parser = TemplateParser(BALANCE_CALLBACK_TEMPLATE, BALANCE_TYPES)
     args = parser.parse(callback.data)
-    chat_id, target = args['chat_id'], args['number']
+    chat_id, target = args["chat_id"], args["number"]
 
     query = BalanceQuery(
         QueryType.BALANCE,
@@ -287,19 +267,18 @@ async def handle_balance(callback: CallbackQuery):
         chat_id,
         callback.from_user.id,
         callback,
-        target
+        target,
     )
     await getattr(router, "bus", fallback_bus).emit(query)
 
+
 # --- ФОРСИРОВАНИЕ НОЧИ ---
+
 
 @router.message(Command("start_night"))
 async def cmd_start_night(message: Message):
     query = StartNightQuery(
-        QueryType.START_NIGHT,
-        TELEGRAM_ADMINS,
-        message.chat.id,
-        message.from_user.id
+        QueryType.START_NIGHT, TELEGRAM_ADMINS, message.chat.id, message.from_user.id
     )
     await getattr(router, "bus", fallback_bus).emit(query)
 
@@ -307,20 +286,19 @@ async def cmd_start_night(message: Message):
 @router.message(Command("skip_night"))
 async def cmd_skip_night(message: Message):
     query = SkipNightQuery(
-        QueryType.SKIP_NIGHT,
-        TELEGRAM_ADMINS,
-        message.chat.id,
-        message.from_user.id
+        QueryType.SKIP_NIGHT, TELEGRAM_ADMINS, message.chat.id, message.from_user.id
     )
     await getattr(router, "bus", fallback_bus).emit(query)
 
+
 # --- НОЧНЫЕ ДЕЙСТВИЯ ---
 
-@router.callback_query(F.data.startswith(NIGHT_CALLBACK_TEMPLATE.split('|')[0] + '|'))
+
+@router.callback_query(F.data.startswith(NIGHT_CALLBACK_TEMPLATE.split("|")[0] + "|"))
 async def handle_night_action(callback: CallbackQuery):
     parser = TemplateParser(NIGHT_CALLBACK_TEMPLATE, NIGHT_TYPES)
     args = parser.parse(callback.data)
-    chat_id, action, target = args['chat_id'], args['action'], args['target']
+    chat_id, action, target = args["chat_id"], args["action"], args["target"]
 
     query = NightActionQuery(
         QueryType.NIGHT_ACTION,
@@ -329,11 +307,13 @@ async def handle_night_action(callback: CallbackQuery):
         callback.from_user.id,
         callback,
         NightAction(action),
-        target
+        target,
     )
     await getattr(router, "bus", fallback_bus).emit(query)
 
+
 # --- ЧАТ МАФИИ (ЛС) ---
+
 
 @router.message(F.chat.type == "private")
 async def mafia_chat(message: Message):
@@ -347,6 +327,6 @@ async def mafia_chat(message: Message):
         TELEGRAM_ADMINS,
         message.chat.id,
         message.from_user.id,
-        str(message.text)
+        str(message.text),
     )
     await getattr(router, "bus", fallback_bus).emit(query)

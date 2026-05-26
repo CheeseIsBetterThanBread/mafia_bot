@@ -3,7 +3,9 @@ from typing import Dict, Any, Optional, Pattern as RegexPattern
 
 
 class TemplateParser:
-    def __init__(self, template: str, types: Dict[str, type] = None, delimiter: str = '|'):
+    def __init__(
+        self, template: str, types: Dict[str, type] = None, delimiter: str = "|"
+    ):
         self.template = template
         self.types = types or {}
         self.delimiter = delimiter
@@ -55,7 +57,7 @@ class TemplateParser:
         if last_end < len(self.template):
             tokens.append(re.escape(self.template[last_end:]))
 
-        pattern_str = ''.join(tokens)
+        pattern_str = "".join(tokens)
         return re.compile(f"^{pattern_str}$")
 
     def parse(self, text: str) -> Optional[Dict[str, Any]]:
@@ -77,7 +79,7 @@ class TemplateParser:
                 elif ph_type == float:
                     value = float(value)
                 elif ph_type == bool:
-                    value = value.lower() in ('true', '1', 'yes')
+                    value = value.lower() in ("true", "1", "yes")
 
             result[placeholder] = value
 

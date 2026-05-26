@@ -33,7 +33,7 @@ async def start_day(bus: EventBus, game: Game):
     response = ResponseBase(
         game.chat_id,
         f"☀️ Наступает День {game.day_count}.\nПервым говорит Игрок №{first.number}. Напишите /speech.",
-        valid=True
+        valid=True,
     )
     await bus.emit(response)
 
@@ -48,7 +48,7 @@ async def next_speaker(bus: EventBus, game: Game):
         response = ResponseBase(
             game.chat_id,
             f"🤐 Игрок №{glued.number} заклеен Вором и пропускает свою речь.",
-            valid=True
+            valid=True,
         )
         await bus.emit(response)
 
@@ -57,17 +57,14 @@ async def next_speaker(bus: EventBus, game: Game):
         response = ResponseBase(
             game.chat_id,
             f"🗣 Очередь Игрока №{current.number}. Напишите /speech для начала речи.",
-            valid=True
+            valid=True,
         )
         await bus.emit(response)
         return
 
-    response = ResponseBase(
-        game.chat_id,
-        "🎙 Все речи окончены!",
-        valid=True
-    )
+    response = ResponseBase(game.chat_id, "🎙 Все речи окончены!", valid=True)
     await bus.emit(response)
 
     from engine.phases.defense import start_defense
+
     await start_defense(bus, game)

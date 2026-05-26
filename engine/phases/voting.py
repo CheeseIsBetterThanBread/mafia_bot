@@ -13,29 +13,24 @@ async def eliminate(bus: EventBus, game: Game, killed: int):
         response = ResponseBase(
             game.chat_id,
             f"🛡 Игрок №{killed} должен был покинуть стол, но у него оказалось АЛИБИ! Он выживает.",
-            valid=True
+            valid=True,
         )
         await bus.emit(response)
     else:
         player.is_alive = False
         response = ResponseBase(
-            game.chat_id,
-            f"💀 Игрок №{killed} покидает стол!",
-            valid=True
+            game.chat_id, f"💀 Игрок №{killed} покидает стол!", valid=True
         )
         await bus.emit(response)
 
         if await check_victory(bus, game):
             return
 
-    response = ResponseBase(
-        game.chat_id,
-        "Город засыпает...",
-        valid=True
-    )
+    response = ResponseBase(game.chat_id, "Город засыпает...", valid=True)
     await bus.emit(response)
 
     from engine.phases.night import start_night
+
     await start_night(bus, game)
 
 
@@ -49,7 +44,7 @@ async def start_voting(bus: EventBus, game: Game):
         response = ResponseBase(
             game.chat_id,
             f"🗳 Начинаем голосование! Выставлены: {game.nominated}.\nПервым голосует Игрок №{game.voting_queue[0].number}. Пишите /vote",
-            valid=True
+            valid=True,
         )
         await bus.emit(response)
         return
@@ -58,7 +53,7 @@ async def start_voting(bus: EventBus, game: Game):
     response = ResponseBase(
         game.chat_id,
         f"⚡️ Так как выставлен всего 1 игрок, голосование не проводится. Срабатывает АВТОКИК!",
-        valid=True
+        valid=True,
     )
     await bus.emit(response)
 
@@ -80,11 +75,12 @@ async def finish_voting(bus: EventBus, game: Game):
     response = ResponseBase(
         game.chat_id,
         "⚖️ Голоса снова разделились! Автоматическое оправдание. Город засыпает...",
-        valid=True
+        valid=True,
     )
     await bus.emit(response)
 
     from engine.phases.night import start_night
+
     await start_night(bus, game)
 
 
@@ -98,7 +94,7 @@ async def start_balance(bus: EventBus, game: Game, players):
     response = ResponseBase(
         game.chat_id,
         f"⚖️ Баланс между: {players}.\nПервым голосует Игрок №{game.voting_queue[0].number}. Пишите /balance",
-        valid=True
+        valid=True,
     )
     await bus.emit(response)
 
@@ -109,13 +105,12 @@ async def resolve_balance(bus: EventBus, game: Game):
 
     if v["acquit"] == max_v:
         response = ResponseBase(
-            game.chat_id,
-            "🕊 Все ОПРАВДАНЫ.\nГород засыпает...",
-            valid=True
+            game.chat_id, "🕊 Все ОПРАВДАНЫ.\nГород засыпает...", valid=True
         )
         await bus.emit(response)
 
         from engine.phases.night import start_night
+
         await start_night(bus, game)
         return
 
@@ -129,7 +124,7 @@ async def resolve_balance(bus: EventBus, game: Game):
         response = ResponseBase(
             game.chat_id,
             "🔄 ПЕРЕГОЛОСОВАНИЕ! Пишите /vote за игроков на балансе.",
-            valid=True
+            valid=True,
         )
         await bus.emit(response)
         return
@@ -149,22 +144,15 @@ async def resolve_balance(bus: EventBus, game: Game):
         saved_str = ", ".join(map(str, saved))
         msg += f"\n🛡 Спасены алиби: {saved_str}."
 
-    response = ResponseBase(
-        game.chat_id,
-        msg,
-        valid=True
-    )
+    response = ResponseBase(game.chat_id, msg, valid=True)
     await bus.emit(response)
 
     if await check_victory(bus, game):
         return
 
-    response = ResponseBase(
-        game.chat_id,
-        "Город засыпает...",
-        valid=True
-    )
+    response = ResponseBase(game.chat_id, "Город засыпает...", valid=True)
     await bus.emit(response)
 
     from engine.phases.night import start_night
+
     await start_night(bus, game)

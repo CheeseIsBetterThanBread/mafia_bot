@@ -14,7 +14,9 @@ from adapters.telegram.adapter import TelegramAdapter
 async def set_commands(bot: Bot):
     commands = [
         BotCommand(command="alive", description="Показать живых игроков"),
-        BotCommand(command="status", description="Вывести живых игроков и число сюрикенов"),
+        BotCommand(
+            command="status", description="Вывести живых игроков и число сюрикенов"
+        ),
         BotCommand(command="roles", description="Список ролей в игре"),
         BotCommand(command="description", description="Полное описание ролей"),
         BotCommand(command="nominated", description="Кого уже выставили"),
@@ -24,7 +26,7 @@ async def set_commands(bot: Bot):
         BotCommand(command="nominate", description="Выставить на голосование"),
         BotCommand(command="vote", description="Проголосовать на суде"),
         BotCommand(command="balance", description="Голосовать при балансе"),
-        BotCommand(command="help", description="Справка по боту")
+        BotCommand(command="help", description="Справка по боту"),
     ]
 
     await bot.set_my_commands(commands)

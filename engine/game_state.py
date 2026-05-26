@@ -27,7 +27,7 @@ class Game:
     def __init__(self, chat_id: int, game_counter: int):
         self.chat_id = chat_id
 
-        self.players = {}          # user_id -> Player
+        self.players = {}  # user_id -> Player
         self.players_by_number = {}
 
         self.state = GameState.LOBBY
@@ -90,7 +90,7 @@ class Game:
         self.current_preset = choice(ROOM_PRESETS[min(count, max_count)]).copy()
 
         if count > max_count:
-            self.current_preset += ['Мирный житель'] * (count - max_count)
+            self.current_preset += ["Мирный житель"] * (count - max_count)
 
         return self.current_preset
 

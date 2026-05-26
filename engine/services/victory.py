@@ -11,23 +11,19 @@ async def check_victory(bus: EventBus, game: Game):
 
     if not alive:
         response = ResponseBase(
-            game.chat_id,
-            "💀 Все умерли — победа мафии",
-            valid=True
+            game.chat_id, "💀 Все умерли — победа мафии", valid=True
         )
         await bus.emit(response)
         game.state = GameState.FINISHED
         return True
 
     mafia = sum(
-        1 for p in alive
+        1
+        for p in alive
         if p.role in MAFIA_TEAM or (p.role == "Двуликий" and p.found_mafia)
     )
 
-    maniac = sum(
-        1 for p in alive
-        if p.role.startswith("Маньяк")
-    )
+    maniac = sum(1 for p in alive if p.role.startswith("Маньяк"))
 
     town = len(alive) - mafia - maniac
 
@@ -35,7 +31,7 @@ async def check_victory(bus: EventBus, game: Game):
         response = ResponseBase(
             game.chat_id,
             "🔪 Маньяк остался один на один с жертвой! ПОБЕДА МАНЬЯКА!",
-            valid=True
+            valid=True,
         )
         await bus.emit(response)
         game.state = GameState.FINISHED
@@ -45,7 +41,7 @@ async def check_victory(bus: EventBus, game: Game):
         response = ResponseBase(
             game.chat_id,
             "🕊 Вся мафия и маньяки уничтожены! ПОБЕДА МИРНОГО ГОРОДА!",
-            valid=True
+            valid=True,
         )
         await bus.emit(response)
         game.state = GameState.FINISHED
@@ -55,7 +51,7 @@ async def check_victory(bus: EventBus, game: Game):
         response = ResponseBase(
             game.chat_id,
             "🕴 Мафий за столом стало не меньше, чем мирных! ПОБЕДА МАФИИ!",
-            valid=True
+            valid=True,
         )
         await bus.emit(response)
         game.state = GameState.FINISHED

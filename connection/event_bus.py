@@ -26,6 +26,7 @@ class EventBus:
         def wrapper(func):
             self.subscribe(event_type, func)
             return func
+
         return wrapper
 
     # ---------------- MIDDLEWARE ----------------

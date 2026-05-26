@@ -6,6 +6,7 @@ async def logging_middleware(event, next_handler):
     await next_handler(event)
     LOGGER.debug(f"[END] {event.get_log_string()}")
 
+
 async def error_middleware(event, next_handler):
     try:
         await next_handler(event)

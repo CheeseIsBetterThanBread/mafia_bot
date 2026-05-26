@@ -1,5 +1,5 @@
 class Event:
-    def get_log_string(self):...
+    def get_log_string(self): ...
 
 
 # Базовые классы
@@ -13,15 +13,15 @@ class QueryBase(Event):
     def get_log_string(self):
         template_string = "[{query}]: {chat_id} - {user_id}"
         return template_string.format(
-            query=self.cmd,
-            chat_id=self.chat_id,
-            user_id=self.user_id
+            query=self.cmd, chat_id=self.chat_id, user_id=self.user_id
         )
+
 
 class QueryWithCallback(QueryBase):
     def __init__(self, cmd, admin_ids, chat_id, user_id, callback):
         super().__init__(cmd, admin_ids, chat_id, user_id)
         self.callback = callback
+
 
 class QueryWithTarget(QueryWithCallback):
     def __init__(self, cmd, admin_ids, chat_id, user_id, callback, target_id):
@@ -34,11 +34,12 @@ class QueryWithTarget(QueryWithCallback):
             query=self.cmd,
             chat_id=self.chat_id,
             user_id=self.user_id,
-            target_id = self.target_id
+            target_id=self.target_id,
         )
 
+
 class ResponseBase(Event):
-    def __init__(self, chat_id, text, parse_mode = None, valid = False):
+    def __init__(self, chat_id, text, parse_mode=None, valid=False):
         self.chat_id = chat_id
         self.text = text
         self.parse_mode = parse_mode
@@ -48,25 +49,29 @@ class ResponseBase(Event):
         template_string = "[Response]: {chat_id} - {parse_mode} - {text_head}"
         return template_string.format(
             chat_id=self.chat_id,
-            parse_mode = self.parse_mode if self.parse_mode else "default",
-            text_head = self.text.split('\n')[0]
+            parse_mode=self.parse_mode if self.parse_mode else "default",
+            text_head=self.text.split("\n")[0],
         )
+
 
 class ResponseWithAlert(ResponseBase):
     def __init__(self, callback, valid, chat_id, text, parse_mode=None):
         super().__init__(chat_id, text, parse_mode, valid)
         self.callback = callback
 
+
 class ResponseWithOptions(ResponseBase):
-    def __init__(self, candidates, chat_id, text, parse_mode = None, valid=False):
+    def __init__(self, candidates, chat_id, text, parse_mode=None, valid=False):
         super().__init__(chat_id, text, parse_mode, valid)
         self.candidates = candidates
+
 
 # Обработка /start_game
 class StartGameQuery(QueryBase):
     def __init__(self, cmd, admin_ids, chat_id, user_id, chat_type):
         super().__init__(cmd, admin_ids, chat_id, user_id)
         self.chat_type = chat_type
+
 
 # Обработка /join_game
 class JoinQuery(QueryWithCallback):
@@ -81,8 +86,9 @@ class JoinQuery(QueryWithCallback):
             chat_id=self.chat_id,
             user_id=self.user_id,
             username=self.username,
-            count=len(self.admin_ids)
+            count=len(self.admin_ids),
         )
+
 
 # Обработка /run
 RunQuery = QueryBase
@@ -111,6 +117,7 @@ StartNightQuery = QueryBase
 # Обработка /skip_night
 SkipNightQuery = QueryBase
 
+
 # Обработка ночных событий
 class NightActionQuery(QueryWithCallback):
     def __init__(self, cmd, admin_ids, chat_id, user_id, callback, action, target):
@@ -121,10 +128,9 @@ class NightActionQuery(QueryWithCallback):
     def get_log_string(self):
         template_string = "[{query}]: {chat_id} - {action}"
         return template_string.format(
-            query=self.cmd,
-            chat_id=self.chat_id,
-            action=self.action
+            query=self.cmd, chat_id=self.chat_id, action=self.action
         )
+
 
 # Обработка чата мафии
 class MafiaChatQuery(QueryBase):
@@ -135,7 +141,5 @@ class MafiaChatQuery(QueryBase):
     def get_log_string(self):
         template_string = "[{query}]: {chat_id} - {text_head}"
         return template_string.format(
-            query=self.cmd,
-            chat_id=self.chat_id,
-            text_head=self.text.split('\n')[0]
+            query=self.cmd, chat_id=self.chat_id, text_head=self.text.split("\n")[0]
         )
