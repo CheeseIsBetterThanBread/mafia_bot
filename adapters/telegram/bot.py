@@ -38,7 +38,6 @@ async def run():
     bus = prepare_bus()
 
     adapter = TelegramAdapter(bot, bus)
-    adapter.register()
     validate_adapter(bus, adapter)
 
     engine = GameEngine(bus)
