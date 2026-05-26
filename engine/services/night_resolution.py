@@ -4,6 +4,8 @@ import random
 from connection.events import ResponseBase
 from connection.event_bus import EventBus
 
+from config.role_actions import NightAction
+
 from engine.game_state import Game
 from engine.phases.day import start_day
 from engine.services.victory import check_victory
@@ -21,7 +23,7 @@ async def generate_random_moves(bus: EventBus, game: Game):
 
         if p.role == "Ниндзя":
             target = random.choice(alive_players)
-            game.night_actions.setdefault(p.user_id, {})["sur"] = target.number
+            game.night_actions.setdefault(p.user_id, {})[NightAction.SHURIKEN] = target.number
 
             response = ResponseBase(
                 p.user_id,
@@ -35,7 +37,7 @@ async def generate_random_moves(bus: EventBus, game: Game):
             valid_targets = [t for t in alive_players if t.number != p.last_healed]
             if valid_targets:
                 target = random.choice(valid_targets)
-                game.night_actions.setdefault(p.user_id, {})["tula"] = target.number
+                game.night_actions.setdefault(p.user_id, {})[NightAction.TULA] = target.number
 
                 response = ResponseBase(
                     p.user_id,
@@ -53,7 +55,7 @@ async def generate_random_moves(bus: EventBus, game: Game):
                 p.last_man_heal = False
 
             target = random.choice(alive_players)
-            game.night_actions.setdefault(p.user_id, {})["man_k"] = target.number
+            game.night_actions.setdefault(p.user_id, {})[NightAction.MANIAC_KILL] = target.number
 
             response = ResponseBase(
                 p.user_id,
@@ -65,7 +67,7 @@ async def generate_random_moves(bus: EventBus, game: Game):
 
         if p.role == "Двуликий" and getattr(p, 'found_mafia', False):
             target = random.choice(alive_players)
-            game.night_actions.setdefault(p.user_id, {})["dvul_k"] = target.number
+            game.night_actions.setdefault(p.user_id, {})[NightAction.TWO_FACE_KILL] = target.number
 
             response = ResponseBase(
                 p.user_id,
@@ -102,16 +104,16 @@ async def resolve_night(bus: EventBus, game: Game):
     for a in actions:
         if a["actor"].is_glued:
             continue
-        if a["code"] == "heal":
+        if a["code"] == NightAction.HEAL:
             healed.add(a["target"].number)
             a["actor"].last_healed = a["target"].number
             a["target"].shurikens = 0
-        elif a["code"] == "tula":
+        elif a["code"] == NightAction.TULA:
             a["target"].has_alibi = True
             a["actor"].last_healed = a["target"].number
             a["target"].shurikens = 0
             putana_client = a["target"]
-        elif a["code"] == "man_h":
+        elif a["code"] == NightAction.MANIAC_HEAL:
             healed.add(a["target"].number)
             a["target"].shurikens = 0
 
@@ -123,19 +125,19 @@ async def resolve_night(bus: EventBus, game: Game):
         return putana_client is not None and number == putana_client.number
 
     for a in actions:
-        if a["code"] == "alibi" and not a["actor"].is_glued:
+        if a["code"] == NightAction.ALIBI and not a["actor"].is_glued:
             a["target"].has_alibi = True
             a["actor"].last_alibi = a["target"].number
 
     for a in actions:
-        if a["code"] == "sur" and not a["actor"].is_glued:
+        if a["code"] == NightAction.SHURIKEN and not a["actor"].is_glued:
             if not is_healed(a["target"].number):
                 a["target"].shurikens += 1
 
     mafia_victim = None
     if not mafia_blocked:
         for a in actions:
-            if a["code"] == "vote" and not a["actor"].is_glued:
+            if a["code"] == NightAction.VOTE and not a["actor"].is_glued:
                 weight = 2 if a["actor"].role == "Дон" else 1
                 mafia_votes[a["target"].number] = mafia_votes.get(a["target"].number, 0) + weight
         if mafia_votes:
@@ -153,7 +155,7 @@ async def resolve_night(bus: EventBus, game: Game):
     for a in actions:
         if a["actor"].is_glued:
             continue
-        if a["code"] in ["man_k", "dvul_k"]:
+        if a["code"] in [NightAction.MANIAC_KILL, NightAction.TWO_FACE_KILL]:
             solo_victims.append(a["target"])
 
     if mafia_victim:

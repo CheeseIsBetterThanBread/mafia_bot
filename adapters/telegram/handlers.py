@@ -2,6 +2,7 @@ from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command
 
+from config.role_actions import NightAction
 from config.settings import (
     TELEGRAM_ADMINS,
     NOMINATE_CALLBACK_TEMPLATE,
@@ -327,7 +328,7 @@ async def handle_night_action(callback: CallbackQuery):
         chat_id,
         callback.from_user.id,
         callback,
-        action,
+        NightAction(action),
         target
     )
     await getattr(router, "bus", fallback_bus).emit(query)

@@ -2,6 +2,7 @@ import asyncio
 from random import shuffle
 
 from config.roles import ROLE_DESCRIPTIONS
+from config.role_actions import NightAction
 from config.settings import (
     NULL_OPTION,
     NOMINATE_CALLBACK_TEMPLATE,
@@ -848,7 +849,7 @@ class EventDispatcher:
     # --- NIGHT ACTION ---
 
     async def __repeated_guard(self, query: NightActionQuery, player: Player):
-        if query.action not in ["rek", "heal", "tula", "alibi", "man_h"]:
+        if query.action not in [NightAction.ROB, NightAction.HEAL, NightAction.TULA, NightAction.ALIBI, NightAction.MANIAC_HEAL]:
             return False
 
         invalid_response = ResponseWithAlert(
@@ -857,16 +858,16 @@ class EventDispatcher:
             query.user_id,
             "Нельзя делать это две ночи подряд"
         )
-        if query.action == "rek" and player.last_rek == query.target:
+        if query.action == NightAction.ROB and player.last_rek == query.target:
             await self.__send_response(invalid_response)
             return True
-        if query.action in ["heal", "tula"] and player.last_healed == query.target:
+        if query.action in [NightAction.HEAL, NightAction.TULA] and player.last_healed == query.target:
             await self.__send_response(invalid_response)
             return True
-        if query.action == "alibi" and player.last_alibi == query.target:
+        if query.action == NightAction.ALIBI and player.last_alibi == query.target:
             await self.__send_response(invalid_response)
             return True
-        if query.action == "man_h" and player.last_man_heal:
+        if query.action == NightAction.MANIAC_HEAL and player.last_man_heal:
             await self.__send_response(invalid_response)
             return True
 
@@ -881,7 +882,7 @@ class EventDispatcher:
             ""
         )
 
-        game.expected_night_actors[query.user_id].remove("rek")
+        game.expected_night_actors[query.user_id].remove(NightAction.ROB)
 
         if query.target == NULL_OPTION:
             player.last_rek = NULL_OPTION
@@ -973,12 +974,12 @@ class EventDispatcher:
 
     def __handle_maniac(self, query: NightActionQuery, game: Game):
         player = game.players[query.user_id]
-        player.last_man_heal = query.action == "man_h"
+        player.last_man_heal = query.action == NightAction.MANIAC_HEAL
 
-        if query.action == "man_k" and "man_h" in game.expected_night_actors[player.user_id]:
-            game.expected_night_actors[player.user_id].remove("man_h")
-        elif query.action == "man_h" and "man_k" in game.expected_night_actors[player.user_id]:
-            game.expected_night_actors[player.user_id].remove("man_k")
+        if query.action == NightAction.MANIAC_KILL and NightAction.MANIAC_HEAL in game.expected_night_actors[player.user_id]:
+            game.expected_night_actors[player.user_id].remove(NightAction.MANIAC_HEAL)
+        if query.action == NightAction.MANIAC_HEAL and NightAction.MANIAC_KILL in game.expected_night_actors[player.user_id]:
+            game.expected_night_actors[player.user_id].remove(NightAction.MANIAC_KILL)
 
     async def _handle_night_action(self, query: NightActionQuery):
         invalid_response = ResponseWithAlert(
@@ -1014,21 +1015,21 @@ class EventDispatcher:
         if await self.__repeated_guard(query, player):
             return
 
-        if act_code == "rek":
+        if act_code == NightAction.ROB:
             await self.__handle_thief(query, game)
             return
 
         game.night_actions[user_id][act_code] = target_num
 
         match act_code:
-            case "check_d":
+            case NightAction.DON_CHECK:
                 await self.__handle_don_check(query, game)
-            case "check_s":
+            case NightAction.SHERIFF_CHECK:
                 await self.__handle_sheriff_check(query, game)
-            case "dvul_j":
+            case NightAction.TWO_FACE_CHECK:
                 await self.__handle_two_face_check(query, game)
 
-        if act_code in ["man_k", "man_h"]:
+        if act_code in [NightAction.MANIAC_KILL, NightAction.MANIAC_HEAL]:
             self.__handle_maniac(query, game)
 
         game.expected_night_actors[user_id].remove(act_code)

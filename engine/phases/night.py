@@ -1,6 +1,7 @@
 from asyncio import create_task, sleep
 import random
 
+from config.role_actions import NightAction, ROLE_NIGHT_ACTIONS
 from config.settings import (
     NIGHT_CALLBACK_TEMPLATE,
     NULL_OPTION,
@@ -61,16 +62,17 @@ async def start_night(bus: EventBus, game: Game):
         return
 
 
-    game.expected_night_actors[thief.user_id] = ["rek"]
+    thief_action_info = ROLE_NIGHT_ACTIONS["Вор"]
+    game.expected_night_actors[thief.user_id] = [thief_action_info[0]]
 
-    generate_callback = lambda number: NIGHT_CALLBACK_TEMPLATE.format(chat_id=game.chat_id, action="rek", target=number)
+    generate_callback = lambda number: NIGHT_CALLBACK_TEMPLATE.format(chat_id=game.chat_id, action=thief_action_info[0], target=number)
     thief_options = [(f"№{t.number} ({t.name})", generate_callback(t.number)) for t in alive_players]
     thief_options.append(("Никого не клеить", generate_callback(NULL_OPTION)))
 
     response = ResponseWithOptions(
         thief_options,
         thief.user_id,
-        "Кого будем клеить?",
+        thief_action_info[1],
         valid=True
     )
     try:
@@ -106,42 +108,39 @@ async def start_night_others(bus: EventBus, game: Game):
     create_task(night_timeout_logic(bus, game, game.day_count))
 
     for p in alive_players:
-        if p.role == "Вор" or p.is_glued: continue
+        if p.role == "Вор" or p.is_glued:
+            continue
 
-        actions = []
-        if p.role in game.mafia_team: actions.append(("vote", "Кого убиваем?"))
-        if p.role == "Доктор": actions.append(("heal", "Кого будем лечить? (нельзя того же, что и вчера)"))
-        if p.role == "Тула": actions.append(("tula", "К кому идем? (хил + алиби)"))
-        if p.role == "Шериф": actions.append(("check_s", "Кого проверим на мафию?"))
-        if p.role == "Дон": actions.append(("check_d", "Кого проверим на Шерифа?"))
-        if p.role == "Адвокат": actions.append(("alibi", "Кому даем алиби на день?"))
-        if p.role == "Ниндзя": actions.append(("sur", "В кого кидаем сюрикен?"))
-        if p.role == "Маньяк без бинтов": actions.append(("man_k", "Кого убиваем?"))
-        if p.role == "Маньяк с бинтами":
-            actions.append(("man_k", "Кого убиваем? (ИЛИ выберите лечение себя)"))
-            actions.append(("man_h", "Вылечить себя?"))
-        if p.role == "Двуликий":
-            if getattr(p, 'found_mafia', False):
-                actions.append(("dvul_k", "Кого убиваем?"))
-            else:
-                actions.append(("dvul_j", "Ищем мафию (проверка):"))
+        actions = ROLE_NIGHT_ACTIONS[p.role]
+        if not actions:
+            continue
 
-        generate_callback = lambda action, number: NIGHT_CALLBACK_TEMPLATE.format(chat_id=game.chat_id, action=action, target=number)
-        if actions:
-            game.expected_night_actors[p.user_id] = [act[0] for act in actions]
-            game.night_actions.setdefault(p.user_id, {})
-            for act_code, text in actions:
-                action_options = [(f"№{t.number} ({t.name})", generate_callback(act_code, t.number)) for t in alive_players]
-                if act_code == "man_h":
-                    action_options = [("Лечить себя", generate_callback(act_code, p.number))]
+        generate_callback = lambda action, number: NIGHT_CALLBACK_TEMPLATE.format(chat_id=game.chat_id, action=action.value, target=number)
+        game.expected_night_actors[p.user_id] = [act[0] for act in actions]
+        game.night_actions.setdefault(p.user_id, {})
 
-                response = ResponseWithOptions(
-                    action_options,
-                    p.user_id,
-                    text,
-                    valid=True
-                )
-                await bus.emit(response)
+        for act_code, text in actions:
+            action_options = []
+            match act_code:
+                case NightAction.MANIAC_HEAL:
+                    button_text = ROLE_NIGHT_ACTIONS[p.role][1][1]
+                    action_options = [(button_text, generate_callback(act_code, p.number))]
+                case NightAction.TWO_FACE_CHECK:
+                    if p.found_mafia:
+                        continue
+                case NightAction.TWO_FACE_KILL:
+                    if not p.found_mafia:
+                        continue
+                case other:
+                    action_options = [(f"№{t.number} ({t.name})", generate_callback(other, t.number)) for t in alive_players]
+
+            response = ResponseWithOptions(
+                action_options,
+                p.user_id,
+                text,
+                valid=True
+            )
+            await bus.emit(response)
 
     if not game.expected_night_actors:
         await resolve_night(bus, game)
