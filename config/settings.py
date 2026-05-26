@@ -7,7 +7,6 @@ load_dotenv()
 
 # --- telegram ---
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
-TELEGRAM_ADMIN_ID = os.getenv("TELEGRAM_ADMIN_ID", 0)
 TELEGRAM_ADMINS = [
     int(admin_id)
     for admin_id in os.getenv("TELEGRAM_ADMINS", "").split(",")
