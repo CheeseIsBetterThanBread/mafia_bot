@@ -14,7 +14,7 @@ cd <project>
 Скопируйте пример:
 
 ```bash
-cp .env.example .env
+cp .env_example .env
 ```
 
 Заполните вашими данными:
