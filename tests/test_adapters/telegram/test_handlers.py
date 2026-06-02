@@ -142,6 +142,18 @@ class TestTelegramHandlers:
         assert query.cmd == QueryType.RUN
 
     @pytest.mark.asyncio
+    async def test_cmd_terminate(self, mock_message, setup_router):
+        router, mock_bus = setup_router
+
+        await cmd_terminate(mock_message)
+
+        mock_bus.emit.assert_called_once()
+        query = mock_bus.emit.call_args[0][0]
+
+        assert isinstance(query, TerminateQuery)
+        assert query.cmd == QueryType.TERMINATE
+
+    @pytest.mark.asyncio
     @pytest.mark.parametrize(
         "command,expected_type",
         [
