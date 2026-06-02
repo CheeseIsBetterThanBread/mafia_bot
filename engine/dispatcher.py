@@ -242,11 +242,9 @@ class EventDispatcher:
     async def _handle_terminate(self, query: TerminateQuery):
         if await self.__not_admin(query):
             return
-        if query.chat_id not in self.engine.games:
-            return
 
-        game = self.engine.games[query.chat_id]
-        if game.state == GameState.FINISHED:
+        game: Game = self.engine.get_game(query.chat_id)
+        if not game or game.state == GameState.FINISHED:
             return
 
         game.state = GameState.FINISHED
