@@ -55,6 +55,19 @@ class TestGameHandlers:
         assert "только создателю" in response.text.lower()
 
     @pytest.mark.asyncio
+    async def test_start_game_private(self, dispatcher, mock_engine):
+        query = StartGameQuery(QueryType.START_GAME, [1, 2], -100, 1, "private")
+
+        await dispatcher._handle_start_game(query)
+
+        mock_engine.create_game.assert_not_called()
+        assert mock_engine.games == {}
+
+        dispatcher.bus.emit.assert_called_once()
+        response = dispatcher.bus.emit.call_args[0][0]
+        assert "нужно в группе" in response.text.lower()
+
+    @pytest.mark.asyncio
     async def test_start_game_already_running(self, dispatcher, mock_engine, game):
         query = StartGameQuery(QueryType.START_GAME, [1, 2], -100, 1, "group")
 
