@@ -70,9 +70,10 @@ class ResponseWithAlert(ResponseBase):
 
 
 class ResponseWithOptions(ResponseBase):
-    def __init__(self, candidates, chat_id, text, parse_mode=None, valid=False):
+    def __init__(self, candidates, chat_id, text, parse_mode=None, valid=False, cmd=None):
         super().__init__(chat_id, text, parse_mode, valid)
         self.candidates = candidates
+        self.cmd = cmd
 
     @property
     def response_type(self):
