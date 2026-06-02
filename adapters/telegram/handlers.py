@@ -2,6 +2,8 @@ from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command
 
+from adapters.base import fallback_bus
+
 from config.role_actions import NightAction
 from config.settings import (
     TELEGRAM_ADMINS,
@@ -50,14 +52,6 @@ def setup_bus(bus: EventBus):
     router.bus = bus
     return router
 
-
-class FallBack:
-    @staticmethod
-    async def emit(_):
-        raise ValueError("Failed to connect to EventBus")
-
-
-fallback_bus = FallBack()
 
 # --- START / HELP ---
 
