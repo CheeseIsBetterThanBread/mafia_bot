@@ -258,6 +258,50 @@ class TestGameHandlers:
         assert len(mafia_messages) == 2
 
     @pytest.mark.asyncio
+    async def test_terminate_success(self, dispatcher, mock_engine, game):
+        game.state = GameState.LOBBY
+        game.game_number = 1
+
+        query = RunQuery(QueryType.TERMINATE, [1], -100, 1)
+        mock_engine.get_game.return_value = game
+
+        await dispatcher._handle_terminate(query)
+        dispatcher.bus.emit.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_terminate_non_admin(self, dispatcher, mock_engine, game):
+        game.state = GameState.LOBBY
+
+        query = RunQuery(QueryType.TERMINATE, [1, 2], -100, 10)
+        mock_engine.get_game.return_value = game
+
+        await dispatcher._handle_terminate(query)
+
+        dispatcher.bus.emit.assert_called_once()
+        response = dispatcher.bus.emit.call_args[0][0]
+        assert "только создателю" in response.text.lower()
+
+    @pytest.mark.asyncio
+    async def test_terminate_no_game(self, dispatcher, mock_engine):
+        query = RunQuery(QueryType.TERMINATE, [1, 2], -100, 1)
+        mock_engine.get_game.return_value = None
+
+        await dispatcher._handle_terminate(query)
+
+        dispatcher.bus.emit.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_terminate_wrong_state(self, dispatcher, mock_engine, game):
+        game.state = GameState.FINISHED
+
+        query = RunQuery(QueryType.TERMINATE, [1, 2], -100, 1)
+        mock_engine.get_game.return_value = game
+
+        await dispatcher._handle_terminate(query)
+
+        dispatcher.bus.emit.assert_not_called()
+
+    @pytest.mark.asyncio
     async def test_start_night_success(self, dispatcher, mock_engine, game):
         game.state = GameState.DAY
         game.current_speech_task = None
