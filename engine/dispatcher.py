@@ -155,16 +155,26 @@ class EventDispatcher:
         await self.__send_response(response)
 
     async def __send_response_with_options(
-        self, candidates, chat_id: int, text: str, parse_mode=None, valid=False
+        self,
+        candidates,
+        chat_id: int,
+        text: str,
+        parse_mode=None,
+        valid=False,
+        cmd=None,
     ):
-        response = ResponseWithOptions(candidates, chat_id, text, parse_mode, valid)
+        response = ResponseWithOptions(
+            candidates, chat_id, text, parse_mode, valid, cmd
+        )
         await self.__send_response(response)
 
     # --- GAME ---
 
     async def _handle_start_game(self, query: StartGameQuery):
         if query.chat_type == "private":
-            await self.__send_response_base(query.chat_id, "Играть нужно в группе", valid=False)
+            await self.__send_response_base(
+                query.chat_id, "Играть нужно в группе", valid=False
+            )
             return
         if await self.__not_admin(query):
             return
@@ -185,6 +195,7 @@ class EventDispatcher:
             query.chat_id,
             "Регистрация на Мафию открыта! Нажмите кнопку ниже.",
             valid=True,
+            cmd=query.cmd,
         )
 
     async def _handle_join_game(self, query: JoinQuery):
@@ -652,6 +663,7 @@ class EventDispatcher:
             query.chat_id,
             "Кого вы хотите выставить на голосование?",
             valid=True,
+            cmd=query.cmd,
         )
 
     async def _handle_nominate(self, query: NominateQuery):
@@ -731,7 +743,11 @@ class EventDispatcher:
             for num in allowed
         ]
         await self.__send_response_with_options(
-            vote_options, query.chat_id, "Против кого вы голосуете?", valid=True
+            vote_options,
+            query.chat_id,
+            "Против кого вы голосуете?",
+            valid=True,
+            cmd=query.cmd,
         )
 
     async def _handle_vote(self, query: VoteQuery):
@@ -820,7 +836,11 @@ class EventDispatcher:
         )
 
         await self.__send_response_with_options(
-            balance_options, query.chat_id, "Ваш выбор на балансе?", valid=True
+            balance_options,
+            query.chat_id,
+            "Ваш выбор на балансе?",
+            valid=True,
+            cmd=query.cmd,
         )
 
     async def _handle_balance(self, query: BalanceQuery):
