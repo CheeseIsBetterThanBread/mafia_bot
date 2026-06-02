@@ -224,8 +224,7 @@ async def cmd_nominate(message: Message):
 async def handle_nominate(event: MessageEvent):
     parser = TemplateParser(NOMINATE_CALLBACK_TEMPLATE, NOMINATE_TYPES)
     args = parser.parse(event.object.payload.get("data", ""))
-    chat_id = args.get("chat_id", event.object.peer_id)
-    target = args["player_number"]
+    chat_id, target = args["chat_id"], args["player_number"]
 
     query = NominateQuery(
         QueryType.NOMINATE,
@@ -258,8 +257,7 @@ async def cmd_vote(message: Message):
 async def handle_vote(event: MessageEvent):
     parser = TemplateParser(VOTE_CALLBACK_TEMPLATE, VOTE_TYPES)
     args = parser.parse(event.object.payload.get("data", ""))
-    chat_id = args.get("chat_id", event.object.peer_id)
-    target = args["player_number"]
+    chat_id, target = args["chat_id"], args["player_number"]
 
     query = VoteQuery(
         QueryType.VOTE,
@@ -289,8 +287,7 @@ async def cmd_balance(message: Message):
 async def handle_balance(event: MessageEvent):
     parser = TemplateParser(BALANCE_CALLBACK_TEMPLATE, BALANCE_TYPES)
     args = parser.parse(event.object.payload.get("data", ""))
-    chat_id = args.get("chat_id", event.object.peer_id)
-    target = args["number"]
+    chat_id, target = args["chat_id"], args["number"]
 
     query = BalanceQuery(
         QueryType.BALANCE,
@@ -337,9 +334,7 @@ async def cmd_skip_night(message: Message):
 async def handle_night_action(event: MessageEvent):
     parser = TemplateParser(NIGHT_CALLBACK_TEMPLATE, NIGHT_TYPES)
     args = parser.parse(event.object.payload.get("data", ""))
-    chat_id = args.get("chat_id", event.object.peer_id)
-    action = args["action"]
-    target = args["target"]
+    chat_id, action, target = args["chat_id"], args["action"], args["target"]
 
     query = NightActionQuery(
         QueryType.NIGHT_ACTION,
