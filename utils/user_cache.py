@@ -3,11 +3,13 @@ from typing import Dict
 
 from vkbottle.api import API
 
+from config.settings import USERNAME_TTL_SECONDS
+
 from utils.logger import LOGGER
 
 
 class UserNameCache:
-    def __init__(self, ttl_seconds: int = 3600):
+    def __init__(self, ttl_seconds: int = USERNAME_TTL_SECONDS):
         self.cache: Dict[int, tuple[str, datetime]] = {}
         self.ttl = timedelta(seconds=ttl_seconds)
 

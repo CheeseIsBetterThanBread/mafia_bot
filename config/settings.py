@@ -21,6 +21,8 @@ VK_ADMINS = [
     int(admin_id) for admin_id in os.getenv("VK_ADMINS", "").split(",") if admin_id
 ]
 
+USERNAME_TTL_SECONDS = 3600
+
 # --- day timers ---
 SECONDS_PER_PLAYER = 8
 SPEECH_LOWER_BOUND = 60
