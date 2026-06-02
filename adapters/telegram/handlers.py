@@ -21,6 +21,7 @@ from connection.events import (
     StartGameQuery,
     JoinQuery,
     RunQuery,
+    TerminateQuery,
     InfoQuery,
     SpeechRelatedQuery,
     PreNominateQuery,
@@ -109,6 +110,17 @@ async def handle_join_game(callback: CallbackQuery):
 async def cmd_run(message: Message):
     query = RunQuery(
         QueryType.RUN, TELEGRAM_ADMINS, message.chat.id, message.from_user.id
+    )
+    await getattr(router, "bus", fallback_bus).emit(query)
+
+
+# --- ЗАВЕРШЕНИЕ ИГРЫ ---
+
+
+@router.message(Command("terminate"))
+async def cmd_terminate(message: Message):
+    query = TerminateQuery(
+        QueryType.TERMINATE, TELEGRAM_ADMINS, message.chat.id, message.from_user.id
     )
     await getattr(router, "bus", fallback_bus).emit(query)
 

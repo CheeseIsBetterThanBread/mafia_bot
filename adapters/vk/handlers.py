@@ -22,6 +22,7 @@ from connection.events import (
     StartGameQuery,
     JoinQuery,
     RunQuery,
+    TerminateQuery,
     InfoQuery,
     SpeechRelatedQuery,
     PreNominateQuery,
@@ -120,6 +121,20 @@ async def handle_join_game(event: MessageEvent):
 async def cmd_run(message: Message):
     query = RunQuery(
         QueryType.RUN, VK_ADMINS, message.chat_id or message.peer_id, message.from_id
+    )
+    await getattr(message.ctx_api, "bus", fallback_bus).emit(query)
+
+
+# --- ЗАВРЕШЕНИЕ ИГРЫ ---
+
+
+@labeler.message(CommandRule("terminate", ["/"]))
+async def cmd_terminate(message: Message):
+    query = TerminateQuery(
+        QueryType.TERMINATE,
+        VK_ADMINS,
+        message.chat_id or message.peer_id,
+        message.from_id,
     )
     await getattr(message.ctx_api, "bus", fallback_bus).emit(query)
 
