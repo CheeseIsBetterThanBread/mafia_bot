@@ -16,6 +16,7 @@ format:
 	black connection
 	black engine
 	black utils
+	black tools
 	black tests
 
 # ---- Запуск ----
