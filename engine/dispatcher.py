@@ -44,6 +44,8 @@ class EventDispatcher:
                 await self._handle_join_game(query)
             case QueryType.RUN:
                 await self._handle_run(query)
+            case QueryType.TERMINATE:
+                await self._handle_terminate(query)
             case QueryType.START_NIGHT:
                 await self._handle_start_night(query)
             case QueryType.SKIP_NIGHT:
@@ -236,6 +238,21 @@ class EventDispatcher:
         )
 
         await start_day(self.bus, game)
+
+    async def _handle_terminate(self, query: TerminateQuery):
+        if await self.__not_admin(query):
+            return
+        if query.chat_id not in self.engine.games:
+            return
+
+        game = self.engine.games[query.chat_id]
+        if game.state == GameState.FINISHED:
+            return
+
+        game.state = GameState.FINISHED
+        await self.__send_response_base(
+            query.chat_id, "Игра прервана администратором", valid=True
+        )
 
     # --- NIGHT ENFORCEMENT ---
 
