@@ -7,6 +7,9 @@ from engine.game_state import Game, GameState
 
 
 async def check_victory(bus: EventBus, game: Game):
+    if game.simulation:
+        return False
+
     alive = game.get_alive_players()
 
     if not alive:

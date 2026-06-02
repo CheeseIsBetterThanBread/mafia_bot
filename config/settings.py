@@ -14,7 +14,6 @@ TELEGRAM_ADMINS = [
 ]
 
 # --- vk ---
-
 VK_BOT_TOKEN = os.getenv("VK_BOT_TOKEN", "")
 VK_GROUP_ID = int(os.getenv("VK_GROUP_ID", "0"))
 VK_ADMINS = [
@@ -62,3 +61,8 @@ NIGHT_CALLBACK_TEMPLATE = "n|{chat_id}|{action}|{target}"
 NIGHT_TYPES = {"chat_id": int, "target": int}
 
 NULL_OPTION = 0
+
+# --- magic numbers ---
+PROBABILITY_THRESHOLD = 0.05
+NIGHT_LOWER = 40
+NIGHT_UPPER = 70

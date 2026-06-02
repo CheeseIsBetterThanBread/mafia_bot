@@ -1,14 +1,19 @@
 from collections import deque
 from enum import Enum
-from random import choice
+from random import choice, random
 
 from config.roles import MAFIA_TEAM
-from config.settings import SECONDS_PER_PLAYER, SPEECH_LOWER_BOUND, SPEECH_UPPER_BOUND
+from config.settings import (
+    SECONDS_PER_PLAYER,
+    SPEECH_LOWER_BOUND,
+    SPEECH_UPPER_BOUND,
+    PROBABILITY_THRESHOLD,
+)
 
 from utils.helpers import alive_sorted, rotate_queue
 
 from engine.models import Player
-from engine.presets import ROOM_PRESETS
+from engine.presets import ROOM_PRESETS, SPECIAL_PRESETS
 
 
 class GameState(Enum):
@@ -56,6 +61,8 @@ class Game:
 
         self.mafia_team = MAFIA_TEAM
 
+        self.simulation = random() < PROBABILITY_THRESHOLD
+
     # --- PLAYERS ---
 
     def add_player(self, user_id: int, name: str):
@@ -88,6 +95,9 @@ class Game:
     def set_preset(self, count: int):
         max_count = max(ROOM_PRESETS.keys())
         self.current_preset = choice(ROOM_PRESETS[min(count, max_count)]).copy()
+
+        if self.simulation:
+            self.current_preset = SPECIAL_PRESETS[min(count, max_count)].copy()
 
         if count > max_count:
             self.current_preset += ["Мирный житель"] * (count - max_count)

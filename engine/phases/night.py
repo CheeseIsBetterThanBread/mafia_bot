@@ -10,6 +10,8 @@ from config.settings import (
     THIEF_UPPER,
     NIGHT_TIME,
     REMINDER_OFFSET,
+    NIGHT_LOWER,
+    NIGHT_UPPER,
 )
 
 from connection.events import ResponseBase, ResponseWithOptions
@@ -145,6 +147,8 @@ async def start_night_others(bus: EventBus, game: Game):
             await bus.emit(response)
 
     if not game.expected_night_actors:
+        if game.simulation:
+            await sleep(random.randint(NIGHT_LOWER, NIGHT_UPPER))
         await resolve_night(bus, game)
 
 

@@ -169,7 +169,7 @@ async def resolve_night(bus: EventBus, game: Game):
         else:
             # --- ВСЯ МАФИЯ ПРОСПАЛА - СЛУЧАЙНЫЙ ВЫСТРЕЛ ---
             alive_players = game.get_alive_players()
-            if alive_players:
+            if alive_players and not game.simulation:
                 mafia_victim = random.choice(alive_players)
 
     solo_victims = []

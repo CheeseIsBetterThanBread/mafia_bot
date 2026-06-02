@@ -243,7 +243,7 @@ class EventDispatcher:
         game.day_starter_num = ((game.game_number - 1) % player_count) + 1
 
         for i, player in enumerate(game.players.values()):
-            player.role = roles[i]
+            player.role = "Мирный житель" if game.simulation else roles[i]
 
         mafia_members = [p for p in game.players.values() if p.role in game.mafia_team]
         mafia_text = "\n".join(
