@@ -128,7 +128,7 @@ class TestResponseBase:
         )
 
         log_string = response.get_log_string()
-        assert "[Response]" in log_string
+        assert "[ResponseBase]" in log_string
         assert "-777" in log_string
         assert "Markdown" in log_string
         assert "First line" in log_string
@@ -185,7 +185,7 @@ class TestResponseWithAlert:
         )
 
         log_string = response.get_log_string()
-        assert "[Response]" in log_string
+        assert "[ResponseWithAlert]" in log_string
         assert "-500" in log_string
         assert "Alert text" in log_string
 
