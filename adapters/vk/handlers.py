@@ -1,6 +1,5 @@
 from vkbottle import Bot, GroupEventType
 from vkbottle.bot import BotLabeler, Message, MessageEvent
-from vkbottle import Keyboard, KeyboardButtonColor, Callback
 from vkbottle.dispatch.rules.base import CommandRule, PayloadRule, FuncRule
 
 from adapters.base import fallback_bus
