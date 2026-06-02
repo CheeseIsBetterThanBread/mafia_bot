@@ -109,6 +109,9 @@ class JoinQuery(QueryWithCallback):
 # Обработка /run
 RunQuery = QueryBase
 
+# Обработка /terminate
+TerminateQuery = QueryBase
+
 # Обработка /alive, /description, /roles, /nominated, /voted, /status (wip)
 InfoQuery = QueryBase
 

@@ -5,6 +5,7 @@ class QueryType(Enum):
     START_GAME = "start_game"
     JOIN_GAME = "join_game"
     RUN = "run"
+    TERMINATE = "terminate"
     ALIVE = "alive"
     DESCRIPTION = "description"
     ROLES = "roles"
