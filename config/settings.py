@@ -5,6 +5,8 @@ import os
 
 load_dotenv()
 
+CACHE_TTL_SECONDS = 3600
+
 # --- telegram ---
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_ADMINS = [
@@ -19,8 +21,6 @@ VK_GROUP_ID = int(os.getenv("VK_GROUP_ID", "0"))
 VK_ADMINS = [
     int(admin_id) for admin_id in os.getenv("VK_ADMINS", "").split(",") if admin_id
 ]
-
-USERNAME_TTL_SECONDS = 3600
 
 # --- day timers ---
 SECONDS_PER_PLAYER = 8

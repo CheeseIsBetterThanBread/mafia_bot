@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 from vkbottle.api import API
 
-from config.settings import USERNAME_TTL_SECONDS
+from config.settings import CACHE_TTL_SECONDS
 
 from utils.user_cache import UserNameCache
 
@@ -217,7 +217,7 @@ class TestUserNameCache:
 
     def test_initialization_with_default_ttl(self):
         cache = UserNameCache()
-        assert cache.ttl == timedelta(seconds=USERNAME_TTL_SECONDS)
+        assert cache.ttl == timedelta(seconds=CACHE_TTL_SECONDS)
 
     def test_initialization_with_custom_ttl(self):
         cache = UserNameCache(ttl_seconds=120)
