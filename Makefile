@@ -9,6 +9,15 @@ BADGE_FILE=coverage_badge.md
 generate:
 	$(PYTHON) tools/generate_roles.py
 
+# ---- Форматирование ----
+format:
+	black adapters
+	black config
+	black connection
+	black engine
+	black utils
+	black tests
+
 # ---- Запуск ----
 run:
 	$(PYTHON) -m main
