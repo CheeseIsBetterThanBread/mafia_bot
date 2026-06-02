@@ -163,6 +163,9 @@ class EventDispatcher:
     # --- GAME ---
 
     async def _handle_start_game(self, query: StartGameQuery):
+        if query.chat_type == "private":
+            await self.__send_response_base(query.chat_id, "Играть нужно в группе", valid=False)
+            return
         if await self.__not_admin(query):
             return
 
