@@ -219,7 +219,7 @@ class TestGameHandlers:
             GameState.FINISHED,
         ],
     )
-    async def test_run_no_game(self, dispatcher, mock_engine, game, state):
+    async def test_run_wrong_state(self, dispatcher, mock_engine, game, state):
         game.state = state
 
         query = RunQuery(QueryType.RUN, [1, 2], -100, 1)
