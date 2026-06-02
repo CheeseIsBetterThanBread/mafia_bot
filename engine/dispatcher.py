@@ -37,91 +37,51 @@ class EventDispatcher:
         if not issubclass(type(query), QueryBase):
             raise ValueError(f"{type(query)} has to be a subclass of QueryBase")
 
-        if query.cmd == QueryType.START_GAME:
-            await self._handle_start_game(query)
-            return
-
-        if query.cmd == QueryType.JOIN_GAME:
-            await self._handle_join_game(query)
-            return
-
-        if query.cmd == QueryType.RUN:
-            await self._handle_run(query)
-            return
-
-        if query.cmd == QueryType.START_NIGHT:
-            await self._handle_start_night(query)
-            return
-
-        if query.cmd == QueryType.SKIP_NIGHT:
-            await self._handle_skip_night(query)
-            return
-
-        if query.cmd == QueryType.ALIVE:
-            await self._handle_alive(query)
-            return
-
-        if query.cmd == QueryType.DESCRIPTION:
-            await self._handle_description(query)
-            return
-
-        if query.cmd == QueryType.ROLES:
-            await self._handle_roles(query)
-            return
-
-        if query.cmd == QueryType.NOMINATED:
-            await self._handle_nominated(query)
-            return
-
-        if query.cmd == QueryType.VOTED:
-            await self._handle_voted(query)
-            return
-
-        if query.cmd == QueryType.STATUS:
-            await self._handle_status(query)
-            return
-
-        if query.cmd == QueryType.SPEECH:
-            await self._handle_speech(query)
-            return
-
-        if query.cmd == QueryType.END_SPEECH:
-            await self._handle_end_speech(query)
-            return
-
-        if query.cmd == QueryType.MAFIA_CHAT:
-            await self._handle_mafia_chat(query)
-            return
-
-        if query.cmd == QueryType.PRE_NOMINATE:
-            await self._handle_pre_nominate(query)
-            return
-
-        if query.cmd == QueryType.NOMINATE:
-            await self._handle_nominate(query)
-            return
-
-        if query.cmd == QueryType.PRE_VOTE:
-            await self._handle_pre_vote(query)
-            return
-
-        if query.cmd == QueryType.VOTE:
-            await self._handle_vote(query)
-            return
-
-        if query.cmd == QueryType.PRE_BALANCE:
-            await self._handle_pre_balance(query)
-            return
-
-        if query.cmd == QueryType.BALANCE:
-            await self._handle_balance(query)
-            return
-
-        if query.cmd == QueryType.NIGHT_ACTION:
-            await self._handle_night_action(query)
-            return
-
-        raise ValueError(f"Unknown query type: {query.cmd}")
+        match query.cmd:
+            case QueryType.START_GAME:
+                await self._handle_start_game(query)
+            case QueryType.JOIN_GAME:
+                await self._handle_join_game(query)
+            case QueryType.RUN:
+                await self._handle_run(query)
+            case QueryType.START_NIGHT:
+                await self._handle_start_night(query)
+            case QueryType.SKIP_NIGHT:
+                await self._handle_skip_night(query)
+            case QueryType.ALIVE:
+                await self._handle_alive(query)
+            case QueryType.DESCRIPTION:
+                await self._handle_description(query)
+            case QueryType.ROLES:
+                await self._handle_roles(query)
+            case QueryType.NOMINATED:
+                await self._handle_nominated(query)
+            case QueryType.VOTED:
+                await self._handle_voted(query)
+            case QueryType.STATUS:
+                await self._handle_status(query)
+            case QueryType.SPEECH:
+                await self._handle_speech(query)
+            case QueryType.END_SPEECH:
+                await self._handle_end_speech(query)
+            case QueryType.MAFIA_CHAT:
+                await self._handle_mafia_chat(query)
+            case QueryType.PRE_NOMINATE:
+                await self._handle_pre_nominate(query)
+            case QueryType.NOMINATE:
+                await self._handle_nominate(query)
+            case QueryType.PRE_VOTE:
+                await self._handle_pre_vote(query)
+            case QueryType.VOTE:
+                await self._handle_vote(query)
+            case QueryType.PRE_BALANCE:
+                await self._handle_pre_balance(query)
+            case QueryType.BALANCE:
+                await self._handle_balance(query)
+            case QueryType.NIGHT_ACTION:
+                await self._handle_night_action(query)
+            case _:
+                raise ValueError(f"Unknown query type: {query.cmd}")
 
     async def __not_admin(self, query):
         if query.user_id in query.admin_ids:
