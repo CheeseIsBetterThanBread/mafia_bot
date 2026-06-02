@@ -10,6 +10,7 @@
 
 * [Роли и правила игры](docs/gameplay.md)
 * [Запуск проекта](docs/setup.md)
+* [Настройка конфига](docs/config.md)
 * [Работа с Makefile на Windows](docs/windows_make.md)
 * [Добавление новой роли](docs/roles.md)
 * [Добавление новой команды](docs/commands.md)
