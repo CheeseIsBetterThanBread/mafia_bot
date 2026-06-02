@@ -14,6 +14,7 @@ from config.settings import (
 
 from connection.events import ResponseBase, ResponseWithOptions
 from connection.event_bus import EventBus
+from connection.queries import QueryType
 
 from utils.logger import LOGGER
 
@@ -69,7 +70,7 @@ async def start_night(bus: EventBus, game: Game):
     thief_options.append(("Никого не клеить", generate_callback(NULL_OPTION)))
 
     response = ResponseWithOptions(
-        thief_options, thief.user_id, thief_action_info[1], valid=True
+        thief_options, thief.user_id, thief_action_info[1], valid=True, cmd=QueryType.NIGHT_ACTION
     )
     try:
         await bus.emit(response)
@@ -134,7 +135,7 @@ async def start_night_others(bus: EventBus, game: Game):
                         for t in alive_players
                     ]
 
-            response = ResponseWithOptions(action_options, p.user_id, text, valid=True)
+            response = ResponseWithOptions(action_options, p.user_id, text, valid=True, cmd=QueryType.NIGHT_ACTION)
             await bus.emit(response)
 
     if not game.expected_night_actors:
