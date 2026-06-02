@@ -1,7 +1,7 @@
 [run]
 source =
-    adapters
     adapters/telegram
+    adapters/vk
     connection
     engine
     engine/phases
