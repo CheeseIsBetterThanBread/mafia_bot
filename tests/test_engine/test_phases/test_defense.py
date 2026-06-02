@@ -22,6 +22,7 @@ class TestStartDefense:
     @pytest.fixture
     def game(self):
         game = Game(chat_id=-100123456789, game_counter=1)
+        game.simulation = False
 
         for i in range(1, 6):
             game.add_player(i, f"Player {i}")
@@ -112,6 +113,7 @@ class TestNextDefenseSpeaker:
     @pytest.fixture
     def game(self):
         game = Game(chat_id=-100123456789, game_counter=1)
+        game.simulation = False
 
         for i in range(1, 6):
             game.add_player(i, f"Player {i}")
@@ -278,6 +280,7 @@ class TestIntegrationDefensePhases:
     @pytest.fixture
     def game(self):
         game = Game(chat_id=-100123456789, game_counter=1)
+        game.simulation = False
 
         for i in range(1, 4):
             game.add_player(i, f"Player {i}")

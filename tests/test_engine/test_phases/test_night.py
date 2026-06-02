@@ -32,6 +32,7 @@ class TestStartNight:
     @pytest.fixture
     def game(self):
         game = Game(chat_id=-100123456789, game_counter=1)
+        game.simulation = False
 
         for i in range(1, 6):
             game.add_player(i, f"Player {i}")
@@ -156,6 +157,7 @@ class TestStartNightOthers:
     @pytest.fixture
     def game(self):
         game = Game(chat_id=-100123456789, game_counter=1)
+        game.simulation = False
 
         roles = {
             1: "Мафия",
@@ -480,6 +482,7 @@ class TestThiefTimeoutLogic:
     @pytest.fixture
     def game(self):
         game = Game(chat_id=-100123456789, game_counter=1)
+        game.simulation = False
 
         for i in range(1, 4):
             game.add_player(i, f"Player {i}")
@@ -545,6 +548,7 @@ class TestNightTimeoutLogic:
     @pytest.fixture
     def game(self):
         game = Game(chat_id=-100123456789, game_counter=1)
+        game.simulation = False
 
         for i in range(1, 4):
             game.add_player(i, f"Player {i}")
@@ -644,6 +648,7 @@ class TestIntegrationNightPhases:
     @pytest.fixture
     def game(self):
         game = Game(chat_id=-100123456789, game_counter=1)
+        game.simulation = False
 
         game.add_player(1, "Thief")
         game.add_player(2, "Mafia")

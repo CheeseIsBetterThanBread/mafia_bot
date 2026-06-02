@@ -19,6 +19,8 @@ class TestNominateHandlers:
     @pytest.fixture
     def game(self):
         game = Game(chat_id=-100123456789, game_counter=1)
+        game.simulation = False
+
         for i in range(1, 6):
             game.add_player(i, f"Player {i}")
             game.players[i].is_alive = True

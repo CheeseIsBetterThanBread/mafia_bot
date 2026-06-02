@@ -20,6 +20,7 @@ class TestCheckVictory:
     @pytest.fixture
     def game(self):
         game = Game(chat_id=-100123456789, game_counter=1)
+        game.simulation = False
 
         game.add_player(1, "Player 1")
         game.add_player(2, "Player 2")

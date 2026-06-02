@@ -20,6 +20,8 @@ class TestSpeechHandlers:
     @pytest.fixture
     def game(self):
         game = Game(chat_id=-100123456789, game_counter=1)
+        game.simulation = False
+
         for i in range(1, 4):
             game.add_player(i, f"Player {i}")
             game.players[i].is_alive = True
@@ -271,6 +273,8 @@ class TestMafiaChatHandlers:
     @pytest.fixture
     def game(self):
         game = Game(chat_id=-100123456789, game_counter=1)
+        game.simulation = False
+
         for i in range(1, 5):
             game.add_player(i, f"Player {i}")
             game.players[i].is_alive = True

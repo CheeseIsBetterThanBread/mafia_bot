@@ -191,7 +191,9 @@ class TestQueueBuilding:
 class TestRolePreset:
     @pytest.fixture
     def game(self):
-        return Game(-100, 1)
+        game = Game(-100, 1)
+        game.simulation = False
+        return game
 
     @patch("engine.game_state.choice")
     def test_set_preset_with_valid_count(self, mock_choice, game):
@@ -249,6 +251,7 @@ class TestSpeechTime:
     @pytest.fixture
     def game_with_players(self):
         game = Game(-100, 1)
+        game.simulation = False
         for i in range(1, 11):
             game.add_player(i, f"Player {i}")
         return game
@@ -364,7 +367,9 @@ class TestGameStateTransitions:
 class TestGameAttributes:
     @pytest.fixture
     def game(self):
-        return Game(-100, 1)
+        game = Game(-100, 1)
+        game.simulation = False
+        return game
 
     def test_night_actions_initialization(self, game):
         assert game.night_actions == {}
@@ -403,6 +408,7 @@ class TestGameAttributes:
 class TestEdgeCases:
     def test_get_alive_players_when_all_dead(self):
         game = Game(-100, 1)
+        game.simulation = False
 
         game.add_player(1, "Player 1")
         game.add_player(2, "Player 2")
@@ -417,6 +423,7 @@ class TestEdgeCases:
 
     def test_build_daily_queue_after_all_dead(self):
         game = Game(-100, 1)
+        game.simulation = False
 
         game.add_player(1, "Player 1")
         game.players[1].is_alive = False
@@ -428,6 +435,7 @@ class TestEdgeCases:
     @patch("engine.game_state.ROOM_PRESETS", {5: ["preset1", "preset2"]})
     def test_set_preset_random_selection(self):
         game = Game(-100, 1)
+        game.simulation = False
 
         results = set()
         with patch("engine.game_state.choice") as mock_choice:
@@ -441,6 +449,7 @@ class TestEdgeCases:
 
     def test_large_number_of_players(self):
         game = Game(-100, 1)
+        game.simulation = False
 
         for i in range(1, 101):
             game.add_player(i, f"Player {i}")
@@ -455,6 +464,7 @@ class TestEdgeCases:
 class TestIntegration:
     def test_full_player_lifecycle(self):
         game = Game(-100, 1)
+        game.simulation = False
 
         for i in range(1, 6):
             game.add_player(i, f"Player {i}")
@@ -475,7 +485,9 @@ class TestIntegration:
 
     def test_multiple_games_independent(self):
         game1 = Game(-100, 1)
+        game1.simulation = False
         game2 = Game(-200, 2)
+        game2.simulation = False
 
         assert game1.add_player(1, "Game1 Player")
         assert game2.add_player(1, "Game2 Player")

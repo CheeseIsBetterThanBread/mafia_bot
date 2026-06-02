@@ -25,6 +25,7 @@ class TestEliminate:
     @pytest.fixture
     def game(self):
         game = Game(chat_id=-100123456789, game_counter=1)
+        game.simulation = False
 
         for i in range(1, 4):
             game.add_player(i, f"Player {i}")
@@ -113,6 +114,7 @@ class TestStartVoting:
     @pytest.fixture
     def game(self):
         game = Game(chat_id=-100123456789, game_counter=1)
+        game.simulation = False
 
         for i in range(1, 6):
             game.add_player(i, f"Player {i}")
@@ -172,6 +174,7 @@ class TestFinishVoting:
     @pytest.fixture
     def game(self):
         game = Game(chat_id=-100123456789, game_counter=1)
+        game.simulation = False
 
         for i in range(1, 6):
             game.add_player(i, f"Player {i}")
@@ -231,6 +234,7 @@ class TestStartBalance:
     @pytest.fixture
     def game(self):
         game = Game(chat_id=-100123456789, game_counter=1)
+        game.simulation = False
 
         for i in range(1, 6):
             game.add_player(i, f"Player {i}")
@@ -273,6 +277,7 @@ class TestResolveBalance:
     @pytest.fixture
     def game(self):
         game = Game(chat_id=-100123456789, game_counter=1)
+        game.simulation = False
 
         for i in range(1, 6):
             game.add_player(i, f"Player {i}")
@@ -411,6 +416,7 @@ class TestIntegrationVotingPhases:
     @pytest.fixture
     def game(self):
         game = Game(chat_id=-100123456789, game_counter=1)
+        game.simulation = False
 
         for i in range(1, 6):
             game.add_player(i, f"Player {i}")

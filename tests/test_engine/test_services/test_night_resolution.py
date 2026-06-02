@@ -22,6 +22,7 @@ class TestGenerateRandomMoves:
     @pytest.fixture
     def game(self):
         game = Game(chat_id=-100123456789, game_counter=1)
+        game.simulation = False
 
         players_data = [
             (1, "Player 1", "Мирный житель"),
@@ -261,6 +262,7 @@ class TestResolveNight:
     @staticmethod
     def create_game(players_data):
         game = Game(chat_id=-100123456789, game_counter=1)
+        game.simulation = False
 
         for uid, name, role in players_data:
             game.add_player(uid, name)
