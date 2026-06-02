@@ -7,12 +7,15 @@ annotated-types==0.7.0
 attrs==26.1.0
 black==26.5.1
 certifi==2026.4.22
+choicelib==0.1.5
 click==8.4.1
+colorama==0.4.6
 coverage==7.13.5
 frozenlist==1.8.0
 idna==3.13
 iniconfig==2.3.0
 magic-filter==1.0.12
+msgspec==0.21.1
 multidict==6.7.1
 mypy_extensions==1.1.0
 packaging==26.2
@@ -30,4 +33,7 @@ pytokens==0.4.1
 PyYAML==6.0.3
 typing-inspection==0.4.2
 typing_extensions==4.15.0
+vbml==1.1.post1
+vkbottle==4.8.2
+vkbottle-types==5.199.99.20
 yarl==1.23.0

@@ -13,6 +13,14 @@ TELEGRAM_ADMINS = [
     if admin_id
 ]
 
+# --- vk ---
+
+VK_BOT_TOKEN = os.getenv("VK_BOT_TOKEN", "")
+VK_GROUP_ID = int(os.getenv("VK_GROUP_ID", "0"))
+VK_ADMINS = [
+    int(admin_id) for admin_id in os.getenv("VK_ADMINS", "").split(",") if admin_id
+]
+
 # --- day timers ---
 SECONDS_PER_PLAYER = 8
 SPEECH_LOWER_BOUND = 60
