@@ -190,7 +190,9 @@ class TestTelegramAdapter:
         mock_callback.message.edit_text.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_telegram_alert_handler_without_parse_mode(self, mock_bot, mock_callback):
+    async def test_telegram_alert_handler_without_parse_mode(
+        self, mock_bot, mock_callback
+    ):
         mock_bus = Mock(spec=EventBus)
         handlers = {}
 
@@ -327,7 +329,9 @@ class TestTelegramAdapter:
         assert call_args[1]["parse_mode"] == "Markdown"
 
     @pytest.mark.asyncio
-    async def test_telegram_adapter_handles_all_event_types(self, mock_bot, mock_callback):
+    async def test_telegram_adapter_handles_all_event_types(
+        self, mock_bot, mock_callback
+    ):
         mock_bus = Mock(spec=EventBus)
         handlers = {}
 
