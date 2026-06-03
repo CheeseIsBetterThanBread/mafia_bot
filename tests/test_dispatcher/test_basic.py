@@ -40,6 +40,7 @@ class TestEventDispatcher:
             (QueryType.START_GAME, "_handle_start_game"),
             (QueryType.JOIN_GAME, "_handle_join_game"),
             (QueryType.RUN, "_handle_run"),
+            (QueryType.TERMINATE, "_handle_terminate"),
             (QueryType.ALIVE, "_handle_alive"),
             (QueryType.DESCRIPTION, "_handle_description"),
             (QueryType.ROLES, "_handle_roles"),
