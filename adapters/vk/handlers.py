@@ -82,7 +82,7 @@ def setup_labeler(bus: EventBus):
             VK_ADMINS,
             message.peer_id,
             message.from_id,
-            "group_chat" if message.chat_id else "private",
+            "group_chat" if message.chat_id > 0 else "private",
         )
         await getattr(labeler, "bus", fallback_bus).emit(query)
 
