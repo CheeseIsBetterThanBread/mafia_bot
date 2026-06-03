@@ -59,7 +59,7 @@ class MockText:
 
 
 class TestTelegramHandlers:
-    def test_setup_bus(self, mock_bus):
+    def test_telegram_setup_bus(self, mock_bus):
         result = setup_bus(mock_bus)
         from adapters.telegram.handlers import router as actual_router
 
@@ -68,7 +68,7 @@ class TestTelegramHandlers:
         assert result == actual_router
 
     @pytest.mark.asyncio
-    async def test_cmd_start_private_chat(self, mock_message):
+    async def test_telegram_cmd_start_private_chat(self, mock_message):
         mock_message.chat.type = "private"
 
         with capture_logger_output() as log_output:
@@ -82,7 +82,7 @@ class TestTelegramHandlers:
         assert mock_message.answer.call_count == 2
 
     @pytest.mark.asyncio
-    async def test_cmd_start_group_chat(self, mock_message):
+    async def test_telegram_cmd_start_group_chat(self, mock_message):
         mock_message.chat.type = "group"
 
         with capture_logger_output() as log_output:
@@ -92,7 +92,7 @@ class TestTelegramHandlers:
         assert mock_message.answer.call_count == 0
 
     @pytest.mark.asyncio
-    async def test_cmd_help(self, mock_message):
+    async def test_telegram_cmd_help(self, mock_message):
         await cmd_help(mock_message)
 
         mock_message.answer.assert_called_once()
@@ -100,7 +100,7 @@ class TestTelegramHandlers:
         assert "Список команд бота" in str(args)
 
     @pytest.mark.asyncio
-    async def test_cmd_start_game(self, mock_message, setup_router):
+    async def test_telegram_cmd_start_game(self, mock_message, setup_router):
         router, mock_bus = setup_router
 
         await cmd_start_game(mock_message)
@@ -114,7 +114,7 @@ class TestTelegramHandlers:
         assert query.user_id == mock_message.from_user.id
 
     @pytest.mark.asyncio
-    async def test_handle_join_game(self, mock_callback, setup_router):
+    async def test_telegram_handle_join_game(self, mock_callback, setup_router):
         router, mock_bus = setup_router
         mock_callback.data = "join_game"
 
@@ -130,7 +130,7 @@ class TestTelegramHandlers:
         assert query.callback == mock_callback
 
     @pytest.mark.asyncio
-    async def test_cmd_run(self, mock_message, setup_router):
+    async def test_telegram_cmd_run(self, mock_message, setup_router):
         router, mock_bus = setup_router
 
         await cmd_run(mock_message)
@@ -142,7 +142,7 @@ class TestTelegramHandlers:
         assert query.cmd == QueryType.RUN
 
     @pytest.mark.asyncio
-    async def test_cmd_terminate(self, mock_message, setup_router):
+    async def test_telegram_cmd_terminate(self, mock_message, setup_router):
         router, mock_bus = setup_router
 
         await cmd_terminate(mock_message)
@@ -165,7 +165,7 @@ class TestTelegramHandlers:
             ("status", QueryType.STATUS),
         ],
     )
-    async def test_info_commands(
+    async def test_telegram_info_commands(
         self, mock_message, setup_router, command, expected_type
     ):
         router, mock_bus = setup_router
@@ -195,7 +195,7 @@ class TestTelegramHandlers:
             ("end_speech", QueryType.END_SPEECH),
         ],
     )
-    async def test_speech_commands(
+    async def test_telegram_speech_commands(
         self, mock_message, setup_router, command, expected_type
     ):
         router, mock_bus = setup_router
@@ -214,7 +214,7 @@ class TestTelegramHandlers:
         assert query.cmd == expected_type
 
     @pytest.mark.asyncio
-    async def test_cmd_nominate(self, mock_message, setup_router):
+    async def test_telegram_cmd_nominate(self, mock_message, setup_router):
         router, mock_bus = setup_router
 
         await cmd_nominate(mock_message)
@@ -226,7 +226,7 @@ class TestTelegramHandlers:
         assert query.cmd == QueryType.PRE_NOMINATE
 
     @pytest.mark.asyncio
-    async def test_handle_nominate(self, mock_callback, setup_router):
+    async def test_telegram_handle_nominate(self, mock_callback, setup_router):
         router, mock_bus = setup_router
 
         chat_id = -100123456789
@@ -258,7 +258,7 @@ class TestTelegramHandlers:
             assert query.target_id == player_number
 
     @pytest.mark.asyncio
-    async def test_cmd_vote(self, mock_message, setup_router):
+    async def test_telegram_cmd_vote(self, mock_message, setup_router):
         router, mock_bus = setup_router
 
         await cmd_vote(mock_message)
@@ -270,7 +270,7 @@ class TestTelegramHandlers:
         assert query.cmd == QueryType.PRE_VOTE
 
     @pytest.mark.asyncio
-    async def test_handle_vote(self, mock_callback, setup_router):
+    async def test_telegram_handle_vote(self, mock_callback, setup_router):
         router, mock_bus = setup_router
 
         chat_id = -100123456789
@@ -300,7 +300,7 @@ class TestTelegramHandlers:
             assert query.target_id == player_number
 
     @pytest.mark.asyncio
-    async def test_cmd_balance(self, mock_message, setup_router):
+    async def test_telegram_cmd_balance(self, mock_message, setup_router):
         router, mock_bus = setup_router
 
         await cmd_balance(mock_message)
@@ -312,7 +312,7 @@ class TestTelegramHandlers:
         assert query.cmd == QueryType.PRE_BALANCE
 
     @pytest.mark.asyncio
-    async def test_handle_balance(self, mock_callback, setup_router):
+    async def test_telegram_handle_balance(self, mock_callback, setup_router):
         router, mock_bus = setup_router
 
         chat_id = -100123456789
@@ -339,7 +339,7 @@ class TestTelegramHandlers:
             assert query.target_id == number
 
     @pytest.mark.asyncio
-    async def test_cmd_start_night(self, mock_message, setup_router):
+    async def test_telegram_cmd_start_night(self, mock_message, setup_router):
         router, mock_bus = setup_router
 
         await cmd_start_night(mock_message)
@@ -351,7 +351,7 @@ class TestTelegramHandlers:
         assert query.cmd == QueryType.START_NIGHT
 
     @pytest.mark.asyncio
-    async def test_cmd_skip_night(self, mock_message, setup_router):
+    async def test_telegram_cmd_skip_night(self, mock_message, setup_router):
         router, mock_bus = setup_router
 
         await cmd_skip_night(mock_message)
@@ -363,7 +363,7 @@ class TestTelegramHandlers:
         assert query.cmd == QueryType.SKIP_NIGHT
 
     @pytest.mark.asyncio
-    async def test_handle_night_action(self, mock_callback, setup_router):
+    async def test_telegram_handle_night_action(self, mock_callback, setup_router):
         router, mock_bus = setup_router
 
         chat_id = -100123456789
@@ -396,7 +396,7 @@ class TestTelegramHandlers:
             assert query.target == target
 
     @pytest.mark.asyncio
-    async def test_mafia_chat_valid_message(self, mock_message, setup_router):
+    async def test_telegram_mafia_chat_valid_message(self, mock_message, setup_router):
         router, mock_bus = setup_router
         mock_message.chat.type = "private"
         mock_message.text = MockText("Hello from mafia")
@@ -411,7 +411,7 @@ class TestTelegramHandlers:
         assert query.text == "Hello from mafia"
 
     @pytest.mark.asyncio
-    async def test_mafia_chat_empty_message(self, mock_message, setup_router):
+    async def test_telegram_mafia_chat_empty_message(self, mock_message, setup_router):
         router, mock_bus = setup_router
         mock_message.chat.type = "private"
         mock_message.text = None
@@ -421,7 +421,7 @@ class TestTelegramHandlers:
         mock_bus.emit.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_mafia_chat_command(self, mock_message, setup_router):
+    async def test_telegram_mafia_chat_command(self, mock_message, setup_router):
         router, mock_bus = setup_router
         mock_message.chat.type = "private"
         mock_message.text = MockText("/start", True)
@@ -431,12 +431,12 @@ class TestTelegramHandlers:
         mock_bus.emit.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_fallback_emit_raises_error(self):
+    async def test_telegram_fallback_emit_raises_error(self):
         with pytest.raises(ValueError, match="Failed to connect to EventBus"):
             await fallback_bus.emit(None)
 
     @pytest.mark.asyncio
-    async def test_router_without_bus(self, mock_message):
+    async def test_telegram_router_without_bus(self, mock_message):
         from adapters.telegram.handlers import router as clean_router
 
         if hasattr(clean_router, "bus"):
@@ -446,7 +446,7 @@ class TestTelegramHandlers:
             await cmd_start_game(mock_message)
 
     @pytest.mark.asyncio
-    async def test_full_workflow_start_game_to_join(
+    async def test_telegram_full_workflow_start_game_to_join(
         self, setup_router, mock_message, mock_callback
     ):
         router, mock_bus = setup_router
@@ -467,7 +467,7 @@ class TestTelegramHandlers:
 
 class TestEdgeCases:
     @pytest.mark.asyncio
-    async def test_callback_with_malformed_data(self, mock_callback):
+    async def test_telegram_callback_with_malformed_data(self, mock_callback):
         mock_callback.data = "invalid_format"
 
         with patch("utils.parser.TemplateParser") as MockParser:
@@ -487,7 +487,7 @@ class TestEdgeCases:
                 await handle_night_action(mock_callback)
 
     @pytest.mark.asyncio
-    async def test_mafia_chat_with_unicode(self, mock_message, setup_router):
+    async def test_telegram_mafia_chat_with_unicode(self, mock_message, setup_router):
         router, mock_bus = setup_router
         mock_message.chat.type = "private"
         mock_message.text = MockText("Привет, мафия! 🎭")

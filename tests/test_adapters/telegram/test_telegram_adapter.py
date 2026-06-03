@@ -59,13 +59,13 @@ def adapter(mock_bot, mock_bus):
 
 
 class TestTelegramAdapter:
-    def test_adapter_initialization(self, mock_bot, mock_bus):
+    def test_telegram_adapter_initialization(self, mock_bot, mock_bus):
         adapter = TelegramAdapter(mock_bot, mock_bus)
 
         assert adapter.bot == mock_bot
         assert adapter.bus == mock_bus
 
-    def test_register_sets_handlers(self, mock_bot, mock_bus):
+    def test_telegram_register_sets_handlers(self, mock_bot, mock_bus):
         TelegramAdapter(mock_bot, mock_bus)
 
         assert mock_bus.on.call_count == 3
@@ -79,7 +79,7 @@ class TestTelegramAdapter:
         assert ResponseWithOptions in called_types
 
     @pytest.mark.asyncio
-    async def test_base_handler_sends_message(self, adapter, mock_bot):
+    async def test_telegram_base_handler_sends_message(self, adapter, mock_bot):
         mock_bus = Mock(spec=EventBus)
         handlers = {}
 
@@ -103,7 +103,7 @@ class TestTelegramAdapter:
         )
 
     @pytest.mark.asyncio
-    async def test_base_handler_without_parse_mode(self, adapter, mock_bot):
+    async def test_telegram_base_handler_without_parse_mode(self, adapter, mock_bot):
         mock_bus = Mock(spec=EventBus)
         handlers = {}
 
@@ -125,7 +125,7 @@ class TestTelegramAdapter:
         assert isinstance(call_args["parse_mode"], Default)
 
     @pytest.mark.asyncio
-    async def test_alert_handler_valid_response_edits_message(
+    async def test_telegram_alert_handler_valid_response_edits_message(
         self, mock_bot, mock_callback
     ):
         mock_bus = Mock(spec=EventBus)
@@ -159,7 +159,7 @@ class TestTelegramAdapter:
         mock_callback.answer.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_alert_handler_invalid_response_shows_alert(
+    async def test_telegram_alert_handler_invalid_response_shows_alert(
         self, mock_bot, mock_callback
     ):
         mock_bus = Mock(spec=EventBus)
@@ -190,7 +190,7 @@ class TestTelegramAdapter:
         mock_callback.message.edit_text.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_alert_handler_without_parse_mode(self, mock_bot, mock_callback):
+    async def test_telegram_alert_handler_without_parse_mode(self, mock_bot, mock_callback):
         mock_bus = Mock(spec=EventBus)
         handlers = {}
 
@@ -217,7 +217,7 @@ class TestTelegramAdapter:
         assert isinstance(call_args[1]["parse_mode"], Default)
 
     @pytest.mark.asyncio
-    async def test_options_handler_creates_keyboard(self, mock_bot):
+    async def test_telegram_options_handler_creates_keyboard(self, mock_bot):
         mock_bus = Mock(spec=EventBus)
         handlers = {}
 
@@ -268,7 +268,7 @@ class TestTelegramAdapter:
         assert kwargs["parse_mode"] == "HTML"
 
     @pytest.mark.asyncio
-    async def test_options_handler_empty_candidates(self, mock_bot):
+    async def test_telegram_options_handler_empty_candidates(self, mock_bot):
         mock_bus = Mock(spec=EventBus)
         handlers = {}
 
@@ -293,7 +293,7 @@ class TestTelegramAdapter:
         assert len(reply_markup.inline_keyboard) == 0
 
     @pytest.mark.asyncio
-    async def test_options_handler_single_candidate(self, mock_bot):
+    async def test_telegram_options_handler_single_candidate(self, mock_bot):
         mock_bus = Mock(spec=EventBus)
         handlers = {}
 
@@ -327,7 +327,7 @@ class TestTelegramAdapter:
         assert call_args[1]["parse_mode"] == "Markdown"
 
     @pytest.mark.asyncio
-    async def test_adapter_handles_all_event_types(self, mock_bot, mock_callback):
+    async def test_telegram_adapter_handles_all_event_types(self, mock_bot, mock_callback):
         mock_bus = Mock(spec=EventBus)
         handlers = {}
 
@@ -359,7 +359,7 @@ class TestIntegrationWithEventBus:
         return AsyncMock(spec=Bot)
 
     @pytest.mark.asyncio
-    async def test_adapter_registers_with_real_bus(self, mock_bot, real_bus):
+    async def test_telegram_adapter_registers_with_real_bus(self, mock_bot, real_bus):
         TelegramAdapter(mock_bot, real_bus)
 
         assert ResponseBase in real_bus.subscribers
@@ -371,7 +371,7 @@ class TestIntegrationWithEventBus:
         assert len(real_bus.subscribers[ResponseWithOptions]) == 1
 
     @pytest.mark.asyncio
-    async def test_end_to_end_response_flow(self, mock_bot, real_bus):
+    async def test_telegram_end_to_end_response_flow(self, mock_bot, real_bus):
         adapter = TelegramAdapter(mock_bot, real_bus)
 
         response = ResponseBase(
@@ -384,7 +384,7 @@ class TestIntegrationWithEventBus:
         )
 
     @pytest.mark.asyncio
-    async def test_end_to_end_with_alert_response(
+    async def test_telegram_end_to_end_with_alert_response(
         self, mock_bot, real_bus, mock_callback
     ):
         adapter = TelegramAdapter(mock_bot, real_bus)
@@ -401,7 +401,7 @@ class TestIntegrationWithEventBus:
         mock_callback.message.edit_text.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_multiple_adapters_on_same_bus(self, mock_bot, real_bus):
+    async def test_telegram_multiple_adapters_on_same_bus(self, mock_bot, real_bus):
         mock_bot2 = AsyncMock(spec=Bot)
 
         TelegramAdapter(mock_bot, real_bus)
