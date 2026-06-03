@@ -1,7 +1,7 @@
 # Mafia Bot
 
 <!-- COVERAGE_BADGE_START -->
-![Coverage](https://img.shields.io/badge/coverage-86%25-yellowgreen)
+![Coverage](https://img.shields.io/badge/coverage-87%25-yellowgreen)
 <!-- COVERAGE_BADGE_END -->
 
 Бот-ведущий для мафии
