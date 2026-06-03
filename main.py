@@ -1,4 +1,4 @@
-from adapters.vk.bot import run_bot
+from adapters.telegram.bot import run_bot
 
 if __name__ == "__main__":
     print("Launching bot")
