@@ -49,9 +49,9 @@ class MockBotLabeler:
 
         return decorator
 
-    def raw_event(self, event_type, event_class, rule):
+    def raw_event(self, event_type, event_class):
         def decorator(func):
-            self.raw_event_handlers.append((event_type, event_class, rule, func))
+            self.raw_event_handlers.append((event_type, event_class, func))
             return func
 
         return decorator
@@ -123,24 +123,7 @@ class TestSetupLabelerStructure:
     def test_callback_handlers_registered(self, mock_bus):
         with patch("adapters.vk.handlers.BotLabeler", MockBotLabeler):
             labeler = setup_labeler(mock_bus)
-
-            expected_payload_types = [
-                "join_game",
-                "nominate",
-                "vote",
-                "balance",
-                "night_action",
-            ]
-
-            registered_types = []
-            for event_type, event_class, rule, _ in labeler.raw_event_handlers:
-                if isinstance(rule, PayloadRule):
-                    registered_types.append(rule.payload[0].get("type"))
-
-            for payload_type in expected_payload_types:
-                assert (
-                    payload_type in registered_types
-                ), f"Payload {payload_type} not registered"
+            assert len(labeler.raw_event_handlers) == 1
 
     def test_mafia_chat_handler_registered(self, mock_bus):
         with patch("adapters.vk.handlers.BotLabeler", MockBotLabeler):
@@ -365,13 +348,9 @@ class TestCallbackHandlers:
         labeler, mock_bus = labeler_with_handlers
 
         handler = None
-        for event_type, event_class, rule, h in labeler.raw_event_handlers:
-            if (
-                isinstance(rule, PayloadRule)
-                and rule.payload[0].get("type") == "join_game"
-            ):
-                handler = h
-                break
+        for event_type, event_class, h in labeler.raw_event_handlers:
+            handler = h
+            break
 
         assert handler is not None
 
@@ -400,13 +379,9 @@ class TestCallbackHandlers:
             MockParser.return_value = mock_parser
 
             handler = None
-            for event_type, event_class, rule, h in labeler.raw_event_handlers:
-                if (
-                    isinstance(rule, PayloadRule)
-                    and rule.payload[0].get("type") == "nominate"
-                ):
-                    handler = h
-                    break
+            for event_type, event_class, h in labeler.raw_event_handlers:
+                handler = h
+                break
 
             assert handler is not None
 
@@ -434,13 +409,9 @@ class TestCallbackHandlers:
             MockParser.return_value = mock_parser
 
             handler = None
-            for event_type, event_class, rule, h in labeler.raw_event_handlers:
-                if (
-                    isinstance(rule, PayloadRule)
-                    and rule.payload[0].get("type") == "vote"
-                ):
-                    handler = h
-                    break
+            for event_type, event_class, h in labeler.raw_event_handlers:
+                handler = h
+                break
 
             assert handler is not None
 
@@ -464,13 +435,9 @@ class TestCallbackHandlers:
             MockParser.return_value = mock_parser
 
             handler = None
-            for event_type, event_class, rule, h in labeler.raw_event_handlers:
-                if (
-                    isinstance(rule, PayloadRule)
-                    and rule.payload[0].get("type") == "balance"
-                ):
-                    handler = h
-                    break
+            for event_type, event_class, h in labeler.raw_event_handlers:
+                handler = h
+                break
 
             assert handler is not None
 
@@ -500,13 +467,9 @@ class TestCallbackHandlers:
             MockParser.return_value = mock_parser
 
             handler = None
-            for event_type, event_class, rule, h in labeler.raw_event_handlers:
-                if (
-                    isinstance(rule, PayloadRule)
-                    and rule.payload[0].get("type") == "night_action"
-                ):
-                    handler = h
-                    break
+            for event_type, event_class, h in labeler.raw_event_handlers:
+                handler = h
+                break
 
             assert handler is not None
 
