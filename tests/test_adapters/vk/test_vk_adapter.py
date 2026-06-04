@@ -8,6 +8,7 @@ from vkbottle import Bot, Keyboard
 from adapters.vk.adapter import (
     create_inline_keyboard,
     format_text,
+    rebuild_simple_inline_keyboard,
     EventBus,
     ResponseBase,
     ResponseWithAlert,
@@ -170,7 +171,9 @@ class TestVkAdapter:
         )
 
     @pytest.mark.asyncio
-    async def test_vk_alert_handler_valid_response_edits_message(self, mock_bot):
+    async def test_vk_alert_handler_valid_response_no_keyboard_edits_message(
+        self, mock_bot
+    ):
         mock_bus = Mock(spec=EventBus)
         handlers = {}
 
@@ -199,9 +202,56 @@ class TestVkAdapter:
 
         mock_bot.api.messages.edit.assert_called_once_with(
             peer_id=123,
-            message_id=456,
+            conversation_message_id=456,
             message="Updated message",
             random_id=0,
+        )
+        mock_callback.show_snackbar.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_vk_alert_handler_valid_response_with_keyboard_edits_message(
+        self, mock_bot
+    ):
+        mock_bus = Mock(spec=EventBus)
+        handlers = {}
+
+        def on_side_effect(event_type):
+            def decorator(handler):
+                handlers[event_type] = handler
+                return handler
+
+            return decorator
+
+        mock_bus.on.side_effect = on_side_effect
+        VkAdapter(mock_bot, mock_bus)
+
+        mock_callback = Mock()
+        mock_callback.peer_id = 123
+        mock_callback.conversation_message_id = 456
+        mock_callback.object.payload = {
+            "label": "random_text",
+            "type": "balance",
+            "data": "data holder",
+        }
+
+        keyboard = rebuild_simple_inline_keyboard(mock_callback.object.payload)
+
+        response = ResponseWithAlert(
+            chat_id=123456789,
+            valid=True,
+            text="Updated message",
+            callback=mock_callback,
+            parse_mode="HTML",
+            regenerate_keyboard=True,
+        )
+        await handlers[ResponseWithAlert](response)
+
+        mock_bot.api.messages.edit.assert_called_once_with(
+            peer_id=123,
+            conversation_message_id=456,
+            message="Updated message",
+            random_id=0,
+            keyboard=keyboard.get_json(),
         )
         mock_callback.show_snackbar.assert_not_called()
 
