@@ -60,9 +60,10 @@ class ResponseBase(Event):
 
 
 class ResponseWithAlert(ResponseBase):
-    def __init__(self, callback, valid, chat_id, text, parse_mode=None):
+    def __init__(self, callback, valid, chat_id, text, regenerate_keyboard=False, parse_mode=None):
         super().__init__(chat_id, text, parse_mode, valid)
         self.callback = callback
+        self.regenerate_keyboard = regenerate_keyboard
 
     @property
     def response_type(self):
