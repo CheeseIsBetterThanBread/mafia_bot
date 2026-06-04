@@ -48,13 +48,22 @@ def create_inline_keyboard(candidates: list, cmd: QueryType) -> Optional[Keyboar
 
     for text, callback_redirect in candidates:
         keyboard.add(
-            Callback(label=text, payload={"type": cmd_type, "data": callback_redirect}),
+            Callback(label=text, payload={"type": cmd_type, "data": callback_redirect, "label": text}),
             color=KeyboardButtonColor.PRIMARY,
         )
         keyboard.row()
 
     return keyboard
 
+def rebuild_simple_inline_keyboard(payload: dict[str, str]) -> Keyboard:
+    keyboard = Keyboard(inline=True)
+
+    keyboard.add(
+        Callback(label=payload["label"], payload=payload), color=KeyboardButtonColor.PRIMARY
+    )
+    keyboard.row()
+
+    return keyboard
 
 class VkAdapter(Adapter):
     def __init__(self, bot: Bot, bus: EventBus):
@@ -81,12 +90,17 @@ class VkAdapter(Adapter):
                 return
 
             if response.is_valid:
-                await self.bot.api.messages.edit(
-                    peer_id=response.callback.peer_id,
-                    message_id=response.callback.conversation_message_id,
-                    message=format_text(response.text, response.parse_mode),
-                    random_id=0,
-                )
+                kwargs = {
+                    "peer_id": response.callback.peer_id,
+                    "conversation_message_id": response.callback.conversation_message_id,
+                    "message": format_text(response.text, response.parse_mode),
+                    "random_id": 0
+                }
+                if response.regenerate_keyboard:
+                    event = response.callback
+                    keyboard = rebuild_simple_inline_keyboard(event.object.payload)
+                    kwargs["keyboard"] = keyboard.get_json()
+                await self.bot.api.messages.edit(**kwargs)
                 return
 
             await response.callback.show_snackbar(response.text)

@@ -1,6 +1,6 @@
 from vkbottle import GroupEventType
 from vkbottle.bot import BotLabeler, Message, MessageEvent
-from vkbottle.dispatch.rules.base import CommandRule, PayloadRule, FuncRule
+from vkbottle.dispatch.rules.base import CommandRule, FuncRule
 
 from adapters.base import fallback_bus
 
@@ -86,11 +86,8 @@ def setup_labeler(bus: EventBus):
         )
         await getattr(labeler, "bus", fallback_bus).emit(query)
 
-    # --- JOIN (кнопка) ---
+    # --- ОБРАБОТКА КНОПОК ---
 
-    @labeler.raw_event(
-        GroupEventType.MESSAGE_EVENT, MessageEvent, PayloadRule({"type": "join_game"})
-    )
     async def handle_join_game(event: MessageEvent):
         user_name = await user_name_cache.get_user_name(
             event.ctx_api, event.object.user_id
@@ -105,6 +102,85 @@ def setup_labeler(bus: EventBus):
             user_name,
         )
         await getattr(labeler, "bus", fallback_bus).emit(query)
+
+    async def handle_nominate(event: MessageEvent):
+        parser = TemplateParser(NOMINATE_CALLBACK_TEMPLATE, NOMINATE_TYPES)
+        args = parser.parse(event.object.payload.get("data", ""))
+        chat_id, target = args["chat_id"], args["player_number"]
+
+        query = NominateQuery(
+            QueryType.NOMINATE,
+            VK_ADMINS,
+            chat_id,
+            event.object.user_id,
+            event,
+            target,
+        )
+        await getattr(labeler, "bus", fallback_bus).emit(query)
+
+    async def handle_vote(event: MessageEvent):
+        parser = TemplateParser(VOTE_CALLBACK_TEMPLATE, VOTE_TYPES)
+        args = parser.parse(event.object.payload.get("data", ""))
+        chat_id, target = args["chat_id"], args["player_number"]
+
+        query = VoteQuery(
+            QueryType.VOTE,
+            VK_ADMINS,
+            chat_id,
+            event.object.user_id,
+            event,
+            target,
+        )
+        await getattr(labeler, "bus", fallback_bus).emit(query)
+
+    async def handle_balance(event: MessageEvent):
+        parser = TemplateParser(BALANCE_CALLBACK_TEMPLATE, BALANCE_TYPES)
+        args = parser.parse(event.object.payload.get("data", ""))
+        chat_id, target = args["chat_id"], args["number"]
+
+        query = BalanceQuery(
+            QueryType.BALANCE,
+            VK_ADMINS,
+            chat_id,
+            event.object.user_id,
+            event,
+            target,
+        )
+        await getattr(labeler, "bus", fallback_bus).emit(query)
+
+    async def handle_night_action(event: MessageEvent):
+        parser = TemplateParser(NIGHT_CALLBACK_TEMPLATE, NIGHT_TYPES)
+        args = parser.parse(event.object.payload.get("data", ""))
+        chat_id, action, target = args["chat_id"], args["action"], args["target"]
+
+        query = NightActionQuery(
+            QueryType.NIGHT_ACTION,
+            VK_ADMINS,
+            chat_id,
+            event.object.user_id,
+            event,
+            NightAction(action),
+            target,
+        )
+        await getattr(labeler, "bus", fallback_bus).emit(query)
+
+    @labeler.raw_event(GroupEventType.MESSAGE_EVENT, MessageEvent)
+    async def handle_callbacks(event: MessageEvent):
+        callback_command = event.object.payload.get("type")
+
+        match callback_command:
+            case "join_game":
+                await handle_join_game(event)
+            case "nominate":
+                await handle_nominate(event)
+            case "vote":
+                await handle_vote(event)
+            case "balance":
+                await handle_balance(event)
+            case "night_action":
+                await handle_night_action(event)
+            case _:
+                LOGGER.error(event)
 
     # --- НАЧАЛО ИГРЫ ---
 
@@ -226,24 +302,6 @@ def setup_labeler(bus: EventBus):
         )
         await getattr(labeler, "bus", fallback_bus).emit(query)
 
-    @labeler.raw_event(
-        GroupEventType.MESSAGE_EVENT, MessageEvent, PayloadRule({"type": "nominate"})
-    )
-    async def handle_nominate(event: MessageEvent):
-        parser = TemplateParser(NOMINATE_CALLBACK_TEMPLATE, NOMINATE_TYPES)
-        args = parser.parse(event.object.payload.get("data", ""))
-        chat_id, target = args["chat_id"], args["player_number"]
-
-        query = NominateQuery(
-            QueryType.NOMINATE,
-            VK_ADMINS,
-            chat_id,
-            event.object.user_id,
-            event,
-            target,
-        )
-        await getattr(labeler, "bus", fallback_bus).emit(query)
-
     # --- ГОЛОСОВАНИЕ ---
 
     @labeler.message(CommandRule("vote", ["/"]))
@@ -256,24 +314,6 @@ def setup_labeler(bus: EventBus):
         )
         await getattr(labeler, "bus", fallback_bus).emit(query)
 
-    @labeler.raw_event(
-        GroupEventType.MESSAGE_EVENT, MessageEvent, PayloadRule({"type": "vote"})
-    )
-    async def handle_vote(event: MessageEvent):
-        parser = TemplateParser(VOTE_CALLBACK_TEMPLATE, VOTE_TYPES)
-        args = parser.parse(event.object.payload.get("data", ""))
-        chat_id, target = args["chat_id"], args["player_number"]
-
-        query = VoteQuery(
-            QueryType.VOTE,
-            VK_ADMINS,
-            chat_id,
-            event.object.user_id,
-            event,
-            target,
-        )
-        await getattr(labeler, "bus", fallback_bus).emit(query)
-
     @labeler.message(CommandRule("balance", ["/"]))
     async def cmd_balance(message: Message):
         query = PreBalanceQuery(
@@ -281,24 +321,6 @@ def setup_labeler(bus: EventBus):
             VK_ADMINS,
             message.peer_id,
             message.from_id,
-        )
-        await getattr(labeler, "bus", fallback_bus).emit(query)
-
-    @labeler.raw_event(
-        GroupEventType.MESSAGE_EVENT, MessageEvent, PayloadRule({"type": "balance"})
-    )
-    async def handle_balance(event: MessageEvent):
-        parser = TemplateParser(BALANCE_CALLBACK_TEMPLATE, BALANCE_TYPES)
-        args = parser.parse(event.object.payload.get("data", ""))
-        chat_id, target = args["chat_id"], args["number"]
-
-        query = BalanceQuery(
-            QueryType.BALANCE,
-            VK_ADMINS,
-            chat_id,
-            event.object.user_id,
-            event,
-            target,
         )
         await getattr(labeler, "bus", fallback_bus).emit(query)
 
@@ -321,29 +343,6 @@ def setup_labeler(bus: EventBus):
             VK_ADMINS,
             message.peer_id,
             message.from_id,
-        )
-        await getattr(labeler, "bus", fallback_bus).emit(query)
-
-    # --- НОЧНЫЕ ДЕЙСТВИЯ ---
-
-    @labeler.raw_event(
-        GroupEventType.MESSAGE_EVENT,
-        MessageEvent,
-        PayloadRule({"type": "night_action"}),
-    )
-    async def handle_night_action(event: MessageEvent):
-        parser = TemplateParser(NIGHT_CALLBACK_TEMPLATE, NIGHT_TYPES)
-        args = parser.parse(event.object.payload.get("data", ""))
-        chat_id, action, target = args["chat_id"], args["action"], args["target"]
-
-        query = NightActionQuery(
-            QueryType.NIGHT_ACTION,
-            VK_ADMINS,
-            chat_id,
-            event.object.user_id,
-            event,
-            NightAction(action),
-            target,
         )
         await getattr(labeler, "bus", fallback_bus).emit(query)
 
