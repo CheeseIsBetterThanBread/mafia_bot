@@ -162,7 +162,9 @@ class EventDispatcher:
 
     async def _handle_join_game(self, query: JoinQuery):
         invalid_response = ResponseWithAlert(query.callback, False, query.chat_id, "")
-        valid_response = ResponseWithAlert(query.callback, True, query.chat_id, "", regenerate_keyboard=True)
+        valid_response = ResponseWithAlert(
+            query.callback, True, query.chat_id, "", regenerate_keyboard=True
+        )
 
         game: Game = self.engine.get_game(query.chat_id)
         if not game or game.state != GameState.LOBBY:

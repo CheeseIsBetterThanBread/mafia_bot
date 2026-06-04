@@ -48,22 +48,28 @@ def create_inline_keyboard(candidates: list, cmd: QueryType) -> Optional[Keyboar
 
     for text, callback_redirect in candidates:
         keyboard.add(
-            Callback(label=text, payload={"type": cmd_type, "data": callback_redirect, "label": text}),
+            Callback(
+                label=text,
+                payload={"type": cmd_type, "data": callback_redirect, "label": text},
+            ),
             color=KeyboardButtonColor.PRIMARY,
         )
         keyboard.row()
 
     return keyboard
 
+
 def rebuild_simple_inline_keyboard(payload: dict[str, str]) -> Keyboard:
     keyboard = Keyboard(inline=True)
 
     keyboard.add(
-        Callback(label=payload["label"], payload=payload), color=KeyboardButtonColor.PRIMARY
+        Callback(label=payload["label"], payload=payload),
+        color=KeyboardButtonColor.PRIMARY,
     )
     keyboard.row()
 
     return keyboard
+
 
 class VkAdapter(Adapter):
     def __init__(self, bot: Bot, bus: EventBus):
@@ -94,7 +100,7 @@ class VkAdapter(Adapter):
                     "peer_id": response.callback.peer_id,
                     "conversation_message_id": response.callback.conversation_message_id,
                     "message": format_text(response.text, response.parse_mode),
-                    "random_id": 0
+                    "random_id": 0,
                 }
                 if response.regenerate_keyboard:
                     event = response.callback
