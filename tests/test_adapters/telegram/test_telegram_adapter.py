@@ -125,7 +125,7 @@ class TestTelegramAdapter:
         assert isinstance(call_args["parse_mode"], Default)
 
     @pytest.mark.asyncio
-    async def test_telegram_alert_handler_valid_response_edits_message(
+    async def test_telegram_alert_handler_valid_response_no_keyboard_edits_message(
         self, mock_bot, mock_callback
     ):
         mock_bus = Mock(spec=EventBus)
@@ -147,6 +147,40 @@ class TestTelegramAdapter:
             text="Updated message",
             callback=mock_callback,
             parse_mode="HTML",
+        )
+        response.is_valid = Mock(return_value=True)
+        await handlers[ResponseWithAlert](response)
+
+        mock_callback.message.edit_text.assert_called_once_with(
+            "Updated message",
+            parse_mode="HTML",
+        )
+        mock_callback.answer.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_telegram_alert_handler_valid_response_with_keyboard_edits_message(
+        self, mock_bot, mock_callback
+    ):
+        mock_bus = Mock(spec=EventBus)
+        handlers = {}
+
+        def on_side_effect(event_type):
+            def decorator(handler):
+                handlers[event_type] = handler
+                return handler
+
+            return decorator
+
+        mock_bus.on.side_effect = on_side_effect
+        TelegramAdapter(mock_bot, mock_bus)
+
+        response = ResponseWithAlert(
+            chat_id=123456789,
+            valid=True,
+            text="Updated message",
+            callback=mock_callback,
+            parse_mode="HTML",
+            regenerate_keyboard=True,
         )
         response.is_valid = Mock(return_value=True)
         await handlers[ResponseWithAlert](response)
