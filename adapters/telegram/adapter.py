@@ -40,11 +40,10 @@ class TelegramAdapter(Adapter):
                 return
 
             if response.is_valid:
-                await response.callback.message.edit_text(
-                    response.text,
-                    reply_markup=response.callback.message.reply_markup,
-                    parse_mode=get_parse_mode(response.parse_mode),
-                )
+                kwargs = {"parse_mode": get_parse_mode(response.parse_mode)}
+                if response.regenerate_keyboard:
+                    kwargs["reply_markup"] = response.callback.message.reply_markup
+                await response.callback.message.edit_text(response.text, **kwargs)
                 return
 
             await response.callback.answer(
