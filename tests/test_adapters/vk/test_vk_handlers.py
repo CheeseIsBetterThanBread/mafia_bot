@@ -2,13 +2,10 @@ import pytest
 from unittest.mock import AsyncMock, Mock, patch
 from types import SimpleNamespace
 
-from vkbottle import GroupEventType
-from vkbottle.bot import Message, MessageEvent
-from vkbottle.dispatch.rules.base import CommandRule, PayloadRule, FuncRule
+from vkbottle.dispatch.rules.base import CommandRule, FuncRule
 
 from adapters.vk.handlers import (
     setup_labeler,
-    user_name_cache,
     EventBus,
     QueryType,
     NightAction,
