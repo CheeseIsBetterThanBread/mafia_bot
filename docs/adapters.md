@@ -65,9 +65,10 @@ async def base_handler(response: ResponseType):
 ## Использование нового адаптера
 
 Чтобы переключиться на новый адаптер нужно написать его запуск
-подобно функции `run` из [bot.by](../adapters/telegram/bot.py).
+подобно функции `run` из [bot.by](../adapters/telegram/bot.py). 
+Также нужно добавить новое значение для enum `AdapterType` в [settings.py](../config/settings.py)
 
-Её потом можно будет импортировать в main, где она и запустится
+Потом надо переключить `ADAPTER_TYPE` на новый enum и в main дописать `run_adapter`
 
 ---
 
