@@ -26,6 +26,7 @@ from engine.phases.night import start_night, start_night_others
 from engine.phases.voting import finish_voting, resolve_balance
 
 from engine.services.night_resolution import resolve_night
+from engine.services.role_balancer import RoleBalancer
 
 
 class EventDispatcher:
@@ -202,12 +203,9 @@ class EventDispatcher:
             return
 
         roles = game.set_preset(player_count)
-        shuffle(roles)
+        game.simulation = RoleBalancer.assign_roles(list(game.players.values()), roles)
 
         game.day_starter_num = ((game.game_number - 1) % player_count) + 1
-
-        for i, player in enumerate(game.players.values()):
-            player.role = "Мирный житель" if game.simulation else roles[i]
 
         mafia_members = [p for p in game.players.values() if p.role in game.mafia_team]
         mafia_text = "\n".join(

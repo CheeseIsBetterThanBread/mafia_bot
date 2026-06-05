@@ -1,13 +1,12 @@
 from collections import deque
 from enum import Enum
-from random import choice, random
+from random import choice
 
 from config.roles import MAFIA_TEAM
 from config.settings import (
     SECONDS_PER_PLAYER,
     SPEECH_LOWER_BOUND,
     SPEECH_UPPER_BOUND,
-    PROBABILITY_THRESHOLD,
 )
 
 from utils.helpers import alive_sorted, rotate_queue
@@ -61,7 +60,7 @@ class Game:
 
         self.mafia_team = MAFIA_TEAM
 
-        self.simulation = random() < PROBABILITY_THRESHOLD
+        self.simulation = False
 
     # --- PLAYERS ---
 
