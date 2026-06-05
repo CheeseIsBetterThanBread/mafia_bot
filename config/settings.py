@@ -8,10 +8,12 @@ load_dotenv()
 
 CACHE_TTL_SECONDS = 3600
 
+
 # --- adapters ---
 class AdapterType(Enum):
     TELEGRAM = "telegram"
     VK = "vk"
+
 
 ADAPTER_TYPE = AdapterType.TELEGRAM
 
