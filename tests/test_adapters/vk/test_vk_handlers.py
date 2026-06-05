@@ -2,6 +2,8 @@ import pytest
 from unittest.mock import AsyncMock, Mock, patch
 from types import SimpleNamespace
 
+from tests.conftest import capture_logger_output
+
 from vkbottle.dispatch.rules.base import CommandRule, FuncRule
 
 from adapters.vk.handlers import (
@@ -155,7 +157,9 @@ class TestStartCommand:
         message = MockMessage(peer_id=123, from_id=123, ctx_api=AsyncMock())
 
         assert start_handler
-        await start_handler(message)
+
+        with capture_logger_output():
+            await start_handler(message)
 
         mock_user_cache.get_user_name.assert_called_once_with(message.ctx_api, 123)
 
