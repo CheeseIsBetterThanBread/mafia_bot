@@ -6,6 +6,10 @@ import os
 
 load_dotenv()
 
+CONFIG_DIR = Path(__file__).parent.resolve()
+ROOT_DIR = CONFIG_DIR.parent
+DATABASE_DIR = ROOT_DIR / "database"
+
 CACHE_TTL_SECONDS = 3600
 
 
@@ -24,12 +28,14 @@ TELEGRAM_ADMINS = [
     for admin_id in os.getenv("TELEGRAM_ADMINS", "").split(",")
     if admin_id
 ]
+TELEGRAM_DB_PATH = DATABASE_DIR / "telegram.db"
 
 # --- vk ---
 VK_BOT_TOKEN = os.getenv("VK_BOT_TOKEN", "")
 VK_ADMINS = [
     int(admin_id) for admin_id in os.getenv("VK_ADMINS", "").split(",") if admin_id
 ]
+VK_DB_PATH = DATABASE_DIR / "vk.db"
 
 # --- day timers ---
 SECONDS_PER_PLAYER = 8
@@ -45,9 +51,6 @@ NIGHT_TIME = 180
 REMINDER_OFFSET = 60
 
 # --- logging ---
-CONFIG_DIR = Path(__file__).parent.resolve()
-ROOT_DIR = CONFIG_DIR.parent
-
 LOGS_DIR = ROOT_DIR / "logs"
 LOGS_DIR.mkdir(exist_ok=True)
 

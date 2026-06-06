@@ -3,18 +3,29 @@ import random
 
 from config.player_stats import PlayerRoleStats
 from config.settings import (
+    ADAPTER_TYPE,
+    TELEGRAM_DB_PATH,
+    VK_DB_PATH,
     PLAIN_ASSIGNMENT,
     BALANCE_ASSIGNMENT,
     SIMULATION_ASSIGNMENT,
     CURRENT_ASSIGNMENT,
     BALANCE_CUT_OFF,
     PROBABILITY_THRESHOLD,
+    AdapterType,
 )
 
 from engine.models import Player
 
-from utils.stats_db import load_player_stats
+from utils.stats_db import PlayerStatsDatabase
 from utils.user_confirmation import confirm
+
+match ADAPTER_TYPE:
+    case AdapterType.TELEGRAM:
+        db_path = TELEGRAM_DB_PATH
+    case AdapterType.VK:
+        db_path = VK_DB_PATH
+stats_database = PlayerStatsDatabase(db_path)
 
 
 class RoleBalancer:
@@ -30,7 +41,8 @@ class RoleBalancer:
         if simulation_allowed and random.random() < PROBABILITY_THRESHOLD:
             return cls._assign_roles_simulation(players)
 
-        stats: dict[int, PlayerRoleStats] = load_player_stats()
+        player_ids: list[int] = [player.user_id for player in players]
+        stats: dict[int, PlayerRoleStats] = stats_database.load_player_stats(player_ids)
 
         if not balance_allowed:
             assert plain_allowed
@@ -123,6 +135,8 @@ class RoleBalancer:
             current_balance -= 1.0
 
             stats[player_id].role_balance[role] = cls._clamp(current_balance)
+
+        stats_database.save_player_stats(stats)
 
     @staticmethod
     def _calculate_probabilities(roles: list[str]) -> dict[str, float]:
