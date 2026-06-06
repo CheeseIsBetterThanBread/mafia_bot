@@ -4,7 +4,6 @@ from aiogram.filters import Command
 
 from adapters.base import fallback_bus
 
-from config.role_actions import NightAction
 from config.settings import (
     TELEGRAM_ADMINS,
     NOMINATE_CALLBACK_TEMPLATE,
@@ -16,6 +15,8 @@ from config.settings import (
     NIGHT_CALLBACK_TEMPLATE,
     NIGHT_TYPES,
 )
+
+from game_info.role_actions import NightAction
 
 from connection.events import (
     StartGameQuery,

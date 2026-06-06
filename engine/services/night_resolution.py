@@ -4,7 +4,7 @@ import random
 from connection.events import ResponseBase
 from connection.event_bus import EventBus
 
-from config.role_actions import NightAction
+from game_info.role_actions import NightAction
 
 from engine.game_state import Game
 from engine.phases.day import start_day

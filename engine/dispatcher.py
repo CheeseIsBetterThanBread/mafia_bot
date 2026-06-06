@@ -1,6 +1,5 @@
 import asyncio
 
-from config.role_actions import NightAction
 from config.settings import (
     NULL_OPTION,
     NOMINATE_CALLBACK_TEMPLATE,
@@ -13,6 +12,7 @@ from connection.events import *
 from connection.queries import QueryType
 
 from game_info.roles import ROLE_DESCRIPTIONS
+from game_info.role_actions import NightAction
 
 from utils.helpers import alive_sorted
 

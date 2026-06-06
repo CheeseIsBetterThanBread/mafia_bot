@@ -1,7 +1,6 @@
 from asyncio import create_task, sleep
 import random
 
-from config.role_actions import NightAction, ROLE_NIGHT_ACTIONS
 from config.settings import (
     NIGHT_CALLBACK_TEMPLATE,
     NULL_OPTION,
@@ -13,6 +12,8 @@ from config.settings import (
     NIGHT_LOWER,
     NIGHT_UPPER,
 )
+
+from game_info.role_actions import NightAction, ROLE_NIGHT_ACTIONS
 
 from connection.events import ResponseBase, ResponseWithOptions
 from connection.event_bus import EventBus
