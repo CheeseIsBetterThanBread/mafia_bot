@@ -11,6 +11,7 @@ from config.settings import (
 from connection.events import *
 from connection.queries import QueryType
 
+from game_info.presets import ROOM_PRESETS
 from game_info.roles import ROLE_DESCRIPTIONS
 from game_info.role_actions import NightAction
 
@@ -18,7 +19,6 @@ from utils.helpers import alive_sorted
 
 from engine.game_state import Game, GameState
 from engine.models import Player
-from engine.presets import ROOM_PRESETS
 
 from engine.phases.day import start_day, next_speaker
 from engine.phases.defense import next_defense_speaker

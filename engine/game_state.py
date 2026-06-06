@@ -8,12 +8,12 @@ from config.settings import (
     SPEECH_UPPER_BOUND,
 )
 
+from game_info.presets import ROOM_PRESETS, SPECIAL_PRESETS
 from game_info.roles import MAFIA_TEAM
 
 from utils.helpers import alive_sorted, rotate_queue
 
 from engine.models import Player
-from engine.presets import ROOM_PRESETS, SPECIAL_PRESETS
 
 
 class GameState(Enum):
