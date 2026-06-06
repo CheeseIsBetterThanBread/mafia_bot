@@ -39,7 +39,7 @@ from connection.events import (
 from connection.event_bus import EventBus
 from connection.queries import QueryType
 
-from config.help import HELP_TEXT
+from game_info.help import HELP_TEXT
 
 from utils.logger import LOGGER
 from utils.parser import TemplateParser

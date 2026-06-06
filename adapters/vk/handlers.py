@@ -4,7 +4,6 @@ from vkbottle.dispatch.rules.base import CommandRule, FuncRule
 
 from adapters.base import fallback_bus
 
-from config.help import HELP_TEXT
 from config.settings import (
     VK_ADMINS,
     NOMINATE_CALLBACK_TEMPLATE,
@@ -16,6 +15,8 @@ from config.settings import (
     NIGHT_CALLBACK_TEMPLATE,
     NIGHT_TYPES,
 )
+
+from game_info.help import HELP_TEXT
 
 from game_info.role_actions import NightAction
 
