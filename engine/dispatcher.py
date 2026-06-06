@@ -1,5 +1,4 @@
 import asyncio
-from random import shuffle
 
 from config.roles import ROLE_DESCRIPTIONS
 from config.role_actions import NightAction
