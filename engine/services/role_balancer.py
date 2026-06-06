@@ -29,18 +29,25 @@ class RoleBalancer:
         if simulation_allowed and random.random() < PROBABILITY_THRESHOLD:
             return cls._assign_roles_simulation(players)
 
+        stats: dict[int, PlayerRoleStats] = load_player_stats()
+
         if not balance_allowed:
             assert plain_allowed
-            return cls._assign_roles_plain(players, roles)
+            return cls._assign_roles_plain(players, roles, stats)
 
-        stats: dict[int, PlayerRoleStats] = load_player_stats()
         return cls._assign_roles_balance(players, roles, stats)
 
-    @staticmethod
-    def _assign_roles_plain(players: list[Player], roles: list[str]) -> bool:
+    @classmethod
+    def _assign_roles_plain(
+        cls, players: list[Player], roles: list[str], stats: dict[int, PlayerRoleStats]
+    ) -> bool:
         random.shuffle(roles)
+        assignments: dict[int, str] = {}
         for i, player in enumerate(players):
             player.role = roles[i]
+            assignments[player.user_id] = player.role
+
+        cls._update_balances(stats, assignments)
 
         return False
 
