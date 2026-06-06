@@ -3,7 +3,7 @@ from typing import Union
 import os
 import sqlite3
 
-from config.player_stats import PlayerRoleStats
+from game_info.player_stats import PlayerRoleStats
 
 
 class PlayerStatsDatabase:

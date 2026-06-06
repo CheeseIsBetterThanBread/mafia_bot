@@ -1,7 +1,6 @@
 from collections import Counter
 import random
 
-from config.player_stats import PlayerRoleStats
 from config.settings import (
     ADAPTER_TYPE,
     TELEGRAM_DB_PATH,
@@ -14,6 +13,8 @@ from config.settings import (
     PROBABILITY_THRESHOLD,
     AdapterType,
 )
+
+from game_info.player_stats import PlayerRoleStats
 
 from engine.models import Player
 
