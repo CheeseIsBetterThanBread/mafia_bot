@@ -9,7 +9,7 @@ source =
     utils
 omit =
     connection/queries.py
-    engine/presets.py
+    */game_info/*
     */config/*
     */deprecated/*
     */tests/*
