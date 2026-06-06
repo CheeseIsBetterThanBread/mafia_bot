@@ -12,5 +12,8 @@
 # logs
 **/logs
 
+# databases
+**/database
+
 # environment
 **/.env
