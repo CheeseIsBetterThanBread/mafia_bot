@@ -1,6 +1,7 @@
 import pytest
 from unittest.mock import AsyncMock, Mock, patch
 
+import engine.services.role_balancer
 from engine.dispatcher import *
 
 
@@ -158,14 +159,16 @@ class TestGameHandlers:
         query = RunQuery(QueryType.RUN, [1], -100, 1)
         mock_engine.get_game.return_value = game
 
-        with patch("engine.dispatcher.shuffle", return_value=None) as mock_shuffle:
+        with patch(
+            "engine.services.role_balancer.RoleBalancer._update_balances",
+            return_value=None,
+        ):
             with patch(
                 "engine.dispatcher.start_day", new_callable=AsyncMock
             ) as mock_start_day:
                 await dispatcher._handle_run(query)
 
                 assert game.current_preset is not None
-                mock_shuffle.assert_called_once()
                 mock_start_day.assert_called_once_with(dispatcher.bus, game)
 
                 assert dispatcher.bus.emit.call_count >= len(game.players) + 2
@@ -245,7 +248,10 @@ class TestGameHandlers:
         game.set_preset = Mock()
         game.set_preset.return_value = roles
 
-        with patch("engine.dispatcher.shuffle"):
+        with patch(
+            "engine.services.role_balancer.RoleBalancer.assign_roles",
+            return_value=False,
+        ):
             with patch("engine.dispatcher.start_day", new_callable=AsyncMock):
                 await dispatcher._handle_run(query)
 
