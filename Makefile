@@ -15,9 +15,10 @@ format:
 	black config
 	black connection
 	black engine
-	black utils
-	black tools
+	black game_info
 	black tests
+	black tools
+	black utils
 
 # ---- Запуск ----
 run:
