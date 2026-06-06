@@ -5,12 +5,13 @@ import subprocess
 import yaml
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-CONFIG_PATH = BASE_DIR / "config" / "roles.yaml"
 CONFIG_DIR = BASE_DIR / "config"
+GENERATED_DIR = BASE_DIR / "game_info"
 
-ROLES_FILE = CONFIG_DIR / "roles.py"
-ROLE_ACTIONS_FILE = CONFIG_DIR / "role_actions.py"
+CONFIG_PATH = CONFIG_DIR / "roles.yaml"
+
+ROLES_FILE = GENERATED_DIR / "roles.py"
+ROLE_ACTIONS_FILE = GENERATED_DIR / "role_actions.py"
 
 
 def load_roles():
@@ -93,7 +94,7 @@ def main():
     generate_roles_py(roles)
     generate_role_actions_py(roles)
 
-    subprocess.run(["black", str(CONFIG_DIR)], check=True)
+    subprocess.run(["black", str(GENERATED_DIR)], check=True)
 
     print("Roles generated successfully")
 
