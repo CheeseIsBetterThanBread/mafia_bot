@@ -2,12 +2,13 @@ from collections import deque
 from enum import Enum
 from random import choice
 
-from config.roles import MAFIA_TEAM
 from config.settings import (
     SECONDS_PER_PLAYER,
     SPEECH_LOWER_BOUND,
     SPEECH_UPPER_BOUND,
 )
+
+from game_info.roles import MAFIA_TEAM
 
 from utils.helpers import alive_sorted, rotate_queue
 

@@ -1,4 +1,4 @@
-from config.roles import ROLE_DESCRIPTIONS
+from game_info.roles import ROLE_DESCRIPTIONS
 
 
 class PlayerRoleStats:

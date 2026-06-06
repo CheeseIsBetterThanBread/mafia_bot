@@ -1,7 +1,7 @@
 from connection.events import ResponseBase
 from connection.event_bus import EventBus
 
-from config.roles import MAFIA_TEAM
+from game_info.roles import MAFIA_TEAM
 
 from engine.game_state import Game, GameState
 
