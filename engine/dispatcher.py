@@ -14,8 +14,11 @@ from connection.queries import QueryType
 from game_info.presets import ROOM_PRESETS
 from game_info.roles import ROLE_DESCRIPTIONS
 from game_info.role_actions import NightAction
+from game_info.room_and_id import get_room_id
+from game_info.teams import Team
 
 from utils.helpers import alive_sorted
+from utils.win_rate_db import win_rate_database
 
 from engine.game_state import Game, GameState
 from engine.models import Player
@@ -63,6 +66,10 @@ class EventDispatcher:
                 await self._handle_voted(query)
             case QueryType.STATUS:
                 await self._handle_status(query)
+            case QueryType.WIN_RATE:
+                await self._handle_win_rate(query)
+            case QueryType.WIN_RATE_TEAMS:
+                await self._handle_win_rate_teams(query)
             case QueryType.SPEECH:
                 await self._handle_speech(query)
             case QueryType.END_SPEECH:
@@ -405,6 +412,42 @@ class EventDispatcher:
             "\n".join([f"№{p.number} — {p.name} - {p.shurikens}" for p in alive])
         )
         await self.__send_response_base(query.chat_id, text, valid=True)
+
+    async def _handle_win_rate(self, query: InfoQuery):
+        game: Game = self.engine.get_game(query.chat_id)
+        player_ids: list[int] = [player.user_id for player in game.players.values()]
+        stats = win_rate_database.load_win_rate_by_players(player_ids)
+
+        message = ""
+        for player_id, player_stats in stats.items():
+            player = game.players[player_id]
+            message += f"Игрок {player.name}:\n{str(player_stats)}\n"
+
+        await self.__send_response_base(query.chat_id, message, valid=True)
+
+    async def _handle_win_rate_teams(self, query: InfoQuery):
+        game: Game = await self.__validate_game(query)
+        if game is None:
+            return
+
+        room_id: int = get_room_id(game.current_preset)
+        stats = win_rate_database.get_team_win_rates_by_room(room_id)
+
+        message = ""
+        for team, win_rate in stats.items():
+            match team:
+                case Team.TWO_FACE:
+                    continue
+                case Team.CITIZEN:
+                    message += "Процент побед мирных - "
+                case Team.MAFIA:
+                    message += "Процент побед мафии - "
+                case Team.MANIAC:
+                    message += "Процент побед маньяка - "
+
+            message += f"{100 * win_rate:.1f}\n"
+
+        await self.__send_response_base(query.chat_id, message, valid=True)
 
     # --- DAY / SPEECH ---
 

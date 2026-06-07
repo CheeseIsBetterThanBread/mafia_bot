@@ -81,3 +81,25 @@ class PlayerWinRateStats:
                     wins=room_data["wins"], total_games=room_data["total_games"]
                 )
         return stats
+
+    def collect_total(self) -> tuple[int, int]:
+        total_wins = 0
+        total_games = 0
+        for room_stats in self.role_stats.values():
+            for stats in room_stats.values():
+                total_wins += stats.wins
+                total_games += stats.total_games
+
+        return total_wins, total_games
+
+    def __str__(self):
+        total_wins, total_games = self.collect_total()
+        if total_games == 0:
+            return "Данных пока нет\n"
+
+        role_win_rates = self.get_all_win_rates()
+        message = f"\tЗаписанных игр - {total_games}, побед - {total_wins}, общий процент побед - {100 * total_wins / total_games:.1f}\n"
+        for role, rate in role_win_rates.items():
+            message += f"\t{role}: {100 * rate:.1f}\n"
+
+        return message
