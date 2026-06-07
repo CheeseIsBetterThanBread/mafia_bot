@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 
 from engine.services.victory import (
     check_victory,
@@ -34,7 +34,8 @@ class TestCheckVictory:
         for player in game.players.values():
             player.is_alive = False
 
-        result = await check_victory(mock_bus, game)
+        with patch("engine.services.victory.win_rate_database.update_win_rate_info"):
+            result = await check_victory(mock_bus, game)
 
         assert result is True
         assert game.state == GameState.FINISHED
@@ -51,7 +52,8 @@ class TestCheckVictory:
         for player in game.players.values():
             player.role = "Мирный житель"
 
-        result = await check_victory(mock_bus, game)
+        with patch("engine.services.victory.win_rate_database.update_win_rate_info"):
+            result = await check_victory(mock_bus, game)
 
         assert result is True
         assert game.state == GameState.FINISHED
@@ -66,7 +68,8 @@ class TestCheckVictory:
         for i, player in enumerate(game.players.values()):
             player.role = roles[i]
 
-        result = await check_victory(mock_bus, game)
+        with patch("engine.services.victory.win_rate_database.update_win_rate_info"):
+            result = await check_victory(mock_bus, game)
 
         assert result is True
         assert game.state == GameState.FINISHED
@@ -84,7 +87,8 @@ class TestCheckVictory:
         players[0].role = "Маньяк"
         players[1].role = "Мирный житель"
 
-        result = await check_victory(mock_bus, game)
+        with patch("engine.services.victory.win_rate_database.update_win_rate_info"):
+            result = await check_victory(mock_bus, game)
 
         assert result is True
         assert game.state == GameState.FINISHED
@@ -102,7 +106,8 @@ class TestCheckVictory:
         players[0].role = "Маньяк"
         players[1].role = "Мафия"
 
-        result = await check_victory(mock_bus, game)
+        with patch("engine.services.victory.win_rate_database.update_win_rate_info"):
+            result = await check_victory(mock_bus, game)
 
         assert result is True
         assert game.state == GameState.FINISHED
@@ -114,7 +119,8 @@ class TestCheckVictory:
         for i, player in enumerate(game.players.values()):
             player.role = roles[i]
 
-        result = await check_victory(mock_bus, game)
+        with patch("engine.services.victory.win_rate_database.update_win_rate_info"):
+            result = await check_victory(mock_bus, game)
 
         assert result is False
         assert game.state != GameState.FINISHED
@@ -126,7 +132,8 @@ class TestCheckVictory:
         for i, player in enumerate(game.players.values()):
             player.role = roles[i]
 
-        result = await check_victory(mock_bus, game)
+        with patch("engine.services.victory.win_rate_database.update_win_rate_info"):
+            result = await check_victory(mock_bus, game)
 
         assert result is False
         assert game.state != GameState.FINISHED
@@ -137,7 +144,8 @@ class TestCheckVictory:
         for i, player in enumerate(game.players.values()):
             player.role = roles[i]
 
-        result = await check_victory(mock_bus, game)
+        with patch("engine.services.victory.win_rate_database.update_win_rate_info"):
+            result = await check_victory(mock_bus, game)
 
         assert result is False
         mock_bus.assert_not_called()
@@ -151,7 +159,8 @@ class TestCheckVictory:
         two_face = list(game.players.values())[3]
         two_face.found_mafia = True
 
-        result = await check_victory(mock_bus, game)
+        with patch("engine.services.victory.win_rate_database.update_win_rate_info"):
+            result = await check_victory(mock_bus, game)
 
         assert result is True
         assert game.state == GameState.FINISHED
@@ -169,7 +178,8 @@ class TestCheckVictory:
         two_face = list(game.players.values())[3]
         two_face.found_mafia = False
 
-        result = await check_victory(mock_bus, game)
+        with patch("engine.services.victory.win_rate_database.update_win_rate_info"):
+            result = await check_victory(mock_bus, game)
 
         assert result is False
         mock_bus.assert_not_called()
@@ -180,7 +190,8 @@ class TestCheckVictory:
             player.is_alive = i == 0
             player.role = "Маньяк с бинтами"
 
-        result = await check_victory(mock_bus, game)
+        with patch("engine.services.victory.win_rate_database.update_win_rate_info"):
+            result = await check_victory(mock_bus, game)
 
         assert result is True
         assert game.state == GameState.FINISHED
@@ -199,7 +210,8 @@ class TestCheckVictory:
         players[1].role = "Мирный житель"
         players[2].role = "Мирный житель"
 
-        result = await check_victory(mock_bus, game)
+        with patch("engine.services.victory.win_rate_database.update_win_rate_info"):
+            result = await check_victory(mock_bus, game)
 
         assert result is False
         mock_bus.assert_not_called()
@@ -212,7 +224,8 @@ class TestCheckVictory:
         list(game.players.values())[0].role = "Маньяк"
         list(game.players.values())[0].is_alive = False
 
-        result = await check_victory(mock_bus, game)
+        with patch("engine.services.victory.win_rate_database.update_win_rate_info"):
+            result = await check_victory(mock_bus, game)
 
         assert result is True
         assert game.state == GameState.FINISHED
@@ -227,11 +240,13 @@ class TestCheckVictory:
         for i, player in enumerate(game.players.values()):
             player.role = roles[i]
 
-        await check_victory(mock_bus, game)
+        with patch("engine.services.victory.win_rate_database.update_win_rate_info"):
+            await check_victory(mock_bus, game)
         assert game.state != GameState.FINISHED
 
         for player in game.players.values():
             player.is_alive = False
 
-        await check_victory(mock_bus, game)
+        with patch("engine.services.victory.win_rate_database.update_win_rate_info"):
+            await check_victory(mock_bus, game)
         assert game.state == GameState.FINISHED
