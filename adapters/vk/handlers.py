@@ -270,6 +270,26 @@ def setup_labeler(bus: EventBus):
         )
         await getattr(labeler, "bus", fallback_bus).emit(query)
 
+    @labeler.message(CommandRule("win_rate", ["/"]))
+    async def cmd_win_rate(message: Message):
+        query = InfoQuery(
+            QueryType.WIN_RATE,
+            VK_ADMINS,
+            message.peer_id,
+            message.from_id,
+        )
+        await getattr(labeler, "bus", fallback_bus).emit(query)
+
+    @labeler.message(CommandRule("win_rate_teams", ["/"]))
+    async def cmd_win_rate_teams(message: Message):
+        query = InfoQuery(
+            QueryType.WIN_RATE_TEAMS,
+            VK_ADMINS,
+            message.peer_id,
+            message.from_id,
+        )
+        await getattr(labeler, "bus", fallback_bus).emit(query)
+
     # --- РЕЧИ ---
 
     @labeler.message(CommandRule("speech", ["/"]))

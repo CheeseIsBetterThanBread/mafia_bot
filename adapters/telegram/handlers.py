@@ -177,6 +177,22 @@ async def cmd_status(message: Message):
     await getattr(router, "bus", fallback_bus).emit(query)
 
 
+@router.message(Command("win_rate"))
+async def cmd_win_rate(message: Message):
+    query = InfoQuery(
+        QueryType.WIN_RATE, TELEGRAM_ADMINS, message.chat.id, message.from_user.id
+    )
+    await getattr(router, "bus", fallback_bus).emit(query)
+
+
+@router.message(Command("win_rate_teams"))
+async def cmd_win_rate_teams(message: Message):
+    query = InfoQuery(
+        QueryType.WIN_RATE_TEAMS, TELEGRAM_ADMINS, message.chat.id, message.from_user.id
+    )
+    await getattr(router, "bus", fallback_bus).emit(query)
+
+
 # --- РЕЧИ ---
 
 
