@@ -12,6 +12,7 @@ CONFIG_PATH = CONFIG_DIR / "roles.yaml"
 
 ROLES_FILE = GENERATED_DIR / "roles.py"
 ROLE_ACTIONS_FILE = GENERATED_DIR / "role_actions.py"
+TEAMS_FILE = GENERATED_DIR / "teams.py"
 
 
 def load_roles():
@@ -36,7 +37,7 @@ def generate_roles_py(roles):
 
     mafia_lines = []
     for role in roles:
-        if role.get("is_mafia", False):
+        if role["team"] == "mafia":
             mafia_lines.append(f'"{role["name"]}",')
 
     content = f"ROLE_DESCRIPTIONS = {{{chr(10).join(role_lines)}}}\n\n"
@@ -87,12 +88,35 @@ def generate_role_actions_py(roles):
     ROLE_ACTIONS_FILE.write_text(content, encoding="utf-8")
 
 
+def generate_teams(roles):
+    all_teams = set()
+    team_lines = []
+
+    for role in roles:
+        team_name = role["team"]
+        all_teams.add(team_name)
+
+        role_name = role["name"]
+        team_lines.append(f'"{role_name}": Team.{team_name.upper()},')
+
+    enum_lines = []
+    for team in sorted(all_teams):
+        enum_lines.append(f'    {team.upper()} = "{team}"')
+
+    content = "from enum import Enum\n"
+    content += f"class Team(str, Enum):\n{chr(10).join(enum_lines)}\n"
+    content += f"ROLE_TO_TEAM = {{{chr(10).join(team_lines)}}}"
+
+    TEAMS_FILE.write_text(content, encoding="utf-8")
+
+
 def main():
     roles = load_roles()
     validate_roles(roles)
 
     generate_roles_py(roles)
     generate_role_actions_py(roles)
+    generate_teams(roles)
 
     subprocess.run(["black", str(GENERATED_DIR)], check=True)
 
