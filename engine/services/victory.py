@@ -8,6 +8,7 @@ from engine.game_state import Game, GameState
 
 from utils.win_rate_db import win_rate_database
 
+
 async def check_victory(bus: EventBus, game: Game):
     if game.simulation:
         return False
