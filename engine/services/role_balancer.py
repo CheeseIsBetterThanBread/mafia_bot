@@ -14,7 +14,7 @@ from game_info.player_stats import PlayerRoleStats
 
 from engine.models import Player
 
-from utils.stats_db import stats_database
+from utils.stats_db import roles_database
 from utils.user_confirmation import confirm
 
 
@@ -32,7 +32,7 @@ class RoleBalancer:
             return cls._assign_roles_simulation(players)
 
         player_ids: list[int] = [player.user_id for player in players]
-        stats: dict[int, PlayerRoleStats] = stats_database.load_player_stats(player_ids)
+        stats: dict[int, PlayerRoleStats] = roles_database.load_player_stats(player_ids)
 
         if not balance_allowed:
             assert plain_allowed
@@ -126,7 +126,7 @@ class RoleBalancer:
 
             stats[player_id].role_balance[role] = cls._clamp(current_balance)
 
-        stats_database.save_player_stats(stats)
+        roles_database.save_player_stats(stats)
 
     @staticmethod
     def _calculate_probabilities(roles: list[str]) -> dict[str, float]:
