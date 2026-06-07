@@ -12,6 +12,8 @@ class QueryType(Enum):
     NOMINATED = "nominated"
     VOTED = "voted"
     STATUS = "status"
+    WIN_RATE = "win_rate"
+    WIN_RATE_TEAMS = "win_rate_teams"
     SPEECH = "speech"
     END_SPEECH = "end_speech"
     PRE_NOMINATE = "pre_nominate"

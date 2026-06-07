@@ -115,7 +115,7 @@ RunQuery = QueryBase
 # Обработка /terminate
 TerminateQuery = QueryBase
 
-# Обработка /alive, /description, /roles, /nominated, /voted, /status (wip)
+# Обработка /alive, /description, /roles, /nominated, /voted, /status, /win_rate, /win_rate_teams
 InfoQuery = QueryBase
 
 # Обработка /speech, /end_speech
