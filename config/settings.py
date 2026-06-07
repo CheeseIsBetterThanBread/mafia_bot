@@ -28,14 +28,22 @@ TELEGRAM_ADMINS = [
     for admin_id in os.getenv("TELEGRAM_ADMINS", "").split(",")
     if admin_id
 ]
-TELEGRAM_DB_PATH = DATABASE_DIR / "telegram.db"
 
 # --- vk ---
 VK_BOT_TOKEN = os.getenv("VK_BOT_TOKEN", "")
 VK_ADMINS = [
     int(admin_id) for admin_id in os.getenv("VK_ADMINS", "").split(",") if admin_id
 ]
+
+# --- database path ---
+TELEGRAM_DB_PATH = DATABASE_DIR / "telegram.db"
 VK_DB_PATH = DATABASE_DIR / "vk.db"
+
+match ADAPTER_TYPE:
+    case AdapterType.TELEGRAM:
+        DB_PATH = TELEGRAM_DB_PATH
+    case AdapterType.VK:
+        DB_PATH = VK_DB_PATH
 
 # --- day timers ---
 SECONDS_PER_PLAYER = 8
