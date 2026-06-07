@@ -2,9 +2,11 @@ from connection.events import ResponseBase
 from connection.event_bus import EventBus
 
 from game_info.roles import MAFIA_TEAM
+from game_info.teams import Team
 
 from engine.game_state import Game, GameState
 
+from utils.win_rate_db import win_rate_database
 
 async def check_victory(bus: EventBus, game: Game):
     if game.simulation:
@@ -13,6 +15,7 @@ async def check_victory(bus: EventBus, game: Game):
     alive = game.get_alive_players()
 
     if not alive:
+        win_rate_database.update_win_rate_info(game, Team.MAFIA)
         response = ResponseBase(
             game.chat_id, "💀 Все умерли — победа мафии", valid=True
         )
@@ -31,6 +34,7 @@ async def check_victory(bus: EventBus, game: Game):
     town = len(alive) - mafia - maniac
 
     if len(alive) <= 2 and maniac > 0:
+        win_rate_database.update_win_rate_info(game, Team.MANIAC)
         response = ResponseBase(
             game.chat_id,
             "🔪 Маньяк остался один на один с жертвой! ПОБЕДА МАНЬЯКА!",
@@ -41,6 +45,7 @@ async def check_victory(bus: EventBus, game: Game):
         return True
 
     if mafia == 0 and maniac == 0:
+        win_rate_database.update_win_rate_info(game, Team.CITIZEN)
         response = ResponseBase(
             game.chat_id,
             "🕊 Вся мафия и маньяки уничтожены! ПОБЕДА МИРНОГО ГОРОДА!",
@@ -51,6 +56,7 @@ async def check_victory(bus: EventBus, game: Game):
         return True
 
     if mafia >= town and maniac == 0:
+        win_rate_database.update_win_rate_info(game, Team.MAFIA)
         response = ResponseBase(
             game.chat_id,
             "🕴 Мафий за столом стало не меньше, чем мирных! ПОБЕДА МАФИИ!",
