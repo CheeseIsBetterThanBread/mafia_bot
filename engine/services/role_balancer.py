@@ -2,31 +2,20 @@ from collections import Counter
 import random
 
 from config.settings import (
-    ADAPTER_TYPE,
-    TELEGRAM_DB_PATH,
-    VK_DB_PATH,
     PLAIN_ASSIGNMENT,
     BALANCE_ASSIGNMENT,
     SIMULATION_ASSIGNMENT,
     CURRENT_ASSIGNMENT,
     BALANCE_CUT_OFF,
     PROBABILITY_THRESHOLD,
-    AdapterType,
 )
 
 from game_info.player_stats import PlayerRoleStats
 
 from engine.models import Player
 
-from utils.stats_db import PlayerStatsDatabase
+from utils.stats_db import stats_database
 from utils.user_confirmation import confirm
-
-match ADAPTER_TYPE:
-    case AdapterType.TELEGRAM:
-        db_path = TELEGRAM_DB_PATH
-    case AdapterType.VK:
-        db_path = VK_DB_PATH
-stats_database = PlayerStatsDatabase(db_path)
 
 
 class RoleBalancer:

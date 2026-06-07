@@ -3,6 +3,8 @@ from typing import Union
 import os
 import sqlite3
 
+from config.settings import AdapterType, ADAPTER_TYPE, TELEGRAM_DB_PATH, VK_DB_PATH
+
 from game_info.player_stats import PlayerRoleStats
 
 
@@ -109,3 +111,11 @@ class PlayerStatsDatabase:
                 )
 
             conn.commit()
+
+
+match ADAPTER_TYPE:
+    case AdapterType.TELEGRAM:
+        adapter_db_path = TELEGRAM_DB_PATH
+    case AdapterType.VK:
+        adapter_db_path = VK_DB_PATH
+stats_database = PlayerStatsDatabase(adapter_db_path)
