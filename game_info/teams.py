@@ -3,9 +3,9 @@ from enum import Enum
 
 class Team(str, Enum):
     CITIZEN = "citizen"
-    FLUID = "fluid"
     MAFIA = "mafia"
     MANIAC = "maniac"
+    TWO_FACE = "two_face"
 
 
 ROLE_TO_TEAM = {
@@ -20,6 +20,6 @@ ROLE_TO_TEAM = {
     "Шериф": Team.CITIZEN,
     "Маньяк без бинтов": Team.MANIAC,
     "Маньяк с бинтами": Team.MANIAC,
-    "Двуликий": Team.FLUID,
+    "Двуликий": Team.TWO_FACE,
     "Бессмертный": Team.CITIZEN,
 }
