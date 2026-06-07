@@ -44,6 +44,8 @@ match ADAPTER_TYPE:
         DB_PATH = TELEGRAM_DB_PATH
     case AdapterType.VK:
         DB_PATH = VK_DB_PATH
+    case _:
+        raise ValueError(f"Missing database path for adapter {ADAPTER_TYPE}")
 
 # --- day timers ---
 SECONDS_PER_PLAYER = 8
