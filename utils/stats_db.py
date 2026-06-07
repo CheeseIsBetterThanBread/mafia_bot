@@ -113,4 +113,4 @@ class PlayerStatsDatabase:
             conn.commit()
 
 
-stats_database = PlayerStatsDatabase(DB_PATH)
+roles_database = PlayerStatsDatabase(DB_PATH)
