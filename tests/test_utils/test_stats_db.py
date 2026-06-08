@@ -1,7 +1,6 @@
 import pytest
 import sqlite3
 from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
 import tempfile
 import os
 
@@ -541,7 +540,7 @@ class TestEdgeCases:
                 t.join()
 
             assert len(errors) == 0
-            assert len(results) == 100  # 10 workers * 10 iterations
+            assert len(results) == 100
         finally:
             os.unlink(db_path)
 
