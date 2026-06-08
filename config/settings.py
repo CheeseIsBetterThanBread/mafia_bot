@@ -65,6 +65,7 @@ LOGS_DIR = ROOT_DIR / "logs"
 LOGS_DIR.mkdir(exist_ok=True)
 
 LOG_FILE = LOGS_DIR / "app.log"
+VERBOSE_LOG_FILE = LOGS_DIR / "verbose.log"
 MAX_BYTES_PER_FILE = 2**20
 BACKUP_FILES = 3
 LOG_FORMAT = "%(asctime)s - %(levelname)s - %(funcName)s - %(message)s"
