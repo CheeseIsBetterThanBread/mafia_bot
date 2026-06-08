@@ -19,6 +19,7 @@ class UserNameCache:
             if datetime.now() - timestamp < self.ttl:
                 return name
 
+        LOGGER.verbose_debug(f"Cache is invalid, making API call for id {user_id}")
         try:
             users = await api.users.get(user_ids=[user_id])
             if users:
