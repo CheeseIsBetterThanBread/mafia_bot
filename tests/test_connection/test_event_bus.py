@@ -4,6 +4,7 @@ import pytest
 from unittest.mock import AsyncMock
 
 from connection.event_bus import EventBus, prepare_bus
+from connection.events import Event
 
 from tests.conftest import capture_logger_output
 
@@ -287,14 +288,14 @@ class TestIntegration:
         bus = prepare_bus()
         results = []
 
-        class UserCreated:
+        class UserCreated(Event):
             def __init__(self, user_id):
                 self.user_id = user_id
 
             def get_log_string(self):
                 return f"UserId: {self.user_id}"
 
-        class UserDeleted:
+        class UserDeleted(Event):
             def __init__(self, user_id):
                 self.user_id = user_id
 

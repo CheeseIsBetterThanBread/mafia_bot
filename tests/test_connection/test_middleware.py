@@ -4,11 +4,12 @@ import pytest
 from unittest.mock import AsyncMock
 
 from connection.middleware import logging_middleware, error_middleware
+from connection.events import Event
 
 from tests.conftest import capture_logger_output
 
 
-class MockEvent:
+class MockEvent(Event):
     def __init__(self, log_string="test_event"):
         self._log_string = log_string
 
