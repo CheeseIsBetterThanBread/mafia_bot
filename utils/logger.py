@@ -51,6 +51,8 @@ def add_custom_methods(logger):
             f.write("=" * 80 + "\n\n")
             f.write("\n".join(verbose_logs))
 
+        print(f"Saved verbose logs to {VERBOSE_LOG_FILE}")
+
     def clear_verbose_log():
         verbose_logs.clear()
 
