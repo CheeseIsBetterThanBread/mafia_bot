@@ -1,5 +1,8 @@
 from config.settings import ADAPTER_TYPE, AdapterType
 
+from utils.logger import LOGGER
+from utils.user_confirmation import confirm
+
 def run_adapter():
     match ADAPTER_TYPE:
         case AdapterType.TELEGRAM:
@@ -17,3 +20,5 @@ if __name__ == "__main__":
         run_adapter()
     except KeyboardInterrupt:
         print("\nGraceful shutdown\n")
+        if confirm("Save verbose logs?", default_answer=False):
+            LOGGER.save_verbose_log()
