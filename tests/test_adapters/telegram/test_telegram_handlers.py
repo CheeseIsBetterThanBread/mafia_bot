@@ -163,6 +163,8 @@ class TestTelegramHandlers:
             ("nominated", QueryType.NOMINATED),
             ("voted", QueryType.VOTED),
             ("status", QueryType.STATUS),
+            ("win_rate", QueryType.WIN_RATE),
+            ("win_rate_teams", QueryType.WIN_RATE_TEAMS),
         ],
     )
     async def test_telegram_info_commands(
@@ -177,6 +179,8 @@ class TestTelegramHandlers:
             "nominated": cmd_nominated,
             "voted": cmd_voted,
             "status": cmd_status,
+            "win_rate": cmd_win_rate,
+            "win_rate_teams": cmd_win_rate_teams,
         }
 
         await commands_map[command](mock_message)

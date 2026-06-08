@@ -260,6 +260,8 @@ class TestInfoCommands:
             ("nominated", QueryType.NOMINATED),
             ("voted", QueryType.VOTED),
             ("status", QueryType.STATUS),
+            ("win_rate", QueryType.WIN_RATE),
+            ("win_rate_teams", QueryType.WIN_RATE_TEAMS),
         ],
     )
     async def test_info_commands(self, labeler_with_handlers, command, expected_type):
