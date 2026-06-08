@@ -1,5 +1,7 @@
 class Event:
     def get_log_string(self): ...
+    def get_verbose_log_string(self):
+        return self.get_log_string()
 
 
 # Базовые классы
@@ -153,6 +155,16 @@ class NightActionQuery(QueryWithCallback):
             query=self.cmd, chat_id=self.chat_id, action=self.action
         )
 
+    def get_verbose_log_string(self):
+        template_string = "[{query}]: {chat_id} - {user_id} - {target_id} - {action}"
+        return template_string.format(
+            query=self.cmd,
+            chat_id=self.chat_id,
+            user_id=self.user_id,
+            target_id=self.target,
+            action=self.action,
+        )
+
 
 # Обработка чата мафии
 class MafiaChatQuery(QueryBase):
@@ -164,4 +176,13 @@ class MafiaChatQuery(QueryBase):
         template_string = "[{query}]: {chat_id} - {text_head}"
         return template_string.format(
             query=self.cmd, chat_id=self.chat_id, text_head=self.text.split("\n")[0]
+        )
+
+    def get_verbose_log_string(self):
+        template_string = "[{query}]: {chat_id} - {user_id} - {text_head}"
+        return template_string.format(
+            query=self.cmd,
+            chat_id=self.chat_id,
+            user_id=self.user_id,
+            text_head=self.text.split("\n")[0],
         )
