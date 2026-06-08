@@ -7,6 +7,8 @@ from config.settings import DB_PATH
 
 from game_info.player_stats import PlayerRoleStats
 
+from utils.logger import LOGGER
+
 
 class PlayerStatsDatabase:
     def __init__(self, db_path: Union[str, Path]):
@@ -21,6 +23,7 @@ class PlayerStatsDatabase:
     def _ensure_db_directory(self):
         db_dir = os.path.dirname(self._db_path)
         if db_dir:
+            LOGGER.verbose_debug(f"Creating database directory {db_dir}")
             Path(db_dir).mkdir(parents=True, exist_ok=True)
 
     def _init_db(self) -> None:
@@ -41,6 +44,7 @@ class PlayerStatsDatabase:
                 """)
 
             conn.commit()
+            LOGGER.verbose_debug(f"Created role stats database")
 
     def load_player_stats(self, player_ids: list[int]) -> dict[int, PlayerRoleStats]:
         result: dict[int, PlayerRoleStats] = {}
@@ -54,6 +58,7 @@ class PlayerStatsDatabase:
             self._save_player_stats_by_id(player_id, player_stats)
 
     def delete_player_stats(self, player_id: int) -> None:
+        LOGGER.verbose_debug(f"Deleting role stats for player with id {player_id}")
         with sqlite3.connect(self._db_path) as conn:
             cursor = conn.cursor()
 
@@ -86,6 +91,7 @@ class PlayerStatsDatabase:
             rows = cursor.fetchall()
 
         if not rows:
+            LOGGER.verbose_debug(f"Did not find player with id {player_id}")
             return PlayerRoleStats()
 
         role_balance = {role: balance for role, balance in rows}

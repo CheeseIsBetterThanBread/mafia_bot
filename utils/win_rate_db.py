@@ -12,6 +12,8 @@ from game_info.room_and_id import get_room_id
 from game_info.teams import ROLE_TO_TEAM, Team
 from game_info.win_rate_stats import PlayerWinRateStats, WinRateData
 
+from utils.logger import LOGGER
+
 
 class WinRateDatabase:
     def __init__(self, db_path: Union[str, Path]):
@@ -26,6 +28,7 @@ class WinRateDatabase:
     def _ensure_db_directory(self):
         db_dir = os.path.dirname(self._db_path)
         if db_dir:
+            LOGGER.verbose_debug(f"Creating database directory {db_dir}")
             Path(db_dir).mkdir(parents=True, exist_ok=True)
 
     def _init_db(self) -> None:
@@ -49,6 +52,7 @@ class WinRateDatabase:
                 """)
 
             conn.commit()
+            LOGGER.verbose_debug(f"Created win rate database")
 
     def load_win_rate_by_players(
         self, player_ids: list[int]
@@ -65,6 +69,7 @@ class WinRateDatabase:
             self._update_player_win_rate(player, room_id, winner)
 
     def delete_player_info(self, player_id: int) -> None:
+        LOGGER.verbose_debug(f"Deleting role stats for player with id {player_id}")
         with sqlite3.connect(self._db_path) as conn:
             cursor = conn.cursor()
 
