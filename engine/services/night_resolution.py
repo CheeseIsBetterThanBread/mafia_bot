@@ -10,6 +10,8 @@ from engine.game_state import Game
 from engine.phases.day import start_day
 from engine.services.victory import check_victory
 
+from utils.logger import LOGGER
+
 
 async def generate_random_moves(bus: EventBus, game: Game):
     alive_players = game.get_alive_players()
@@ -26,6 +28,7 @@ async def generate_random_moves(bus: EventBus, game: Game):
             game.night_actions.setdefault(p.user_id, {})[
                 NightAction.SHURIKEN
             ] = target.number
+            LOGGER.verbose_debug(f"Ninja skipped night move: send to {target.user_id}")
 
             response = ResponseBase(
                 p.user_id,
@@ -36,6 +39,7 @@ async def generate_random_moves(bus: EventBus, game: Game):
             continue
 
         if p.role == "Тула":
+            LOGGER.verbose_debug("Tula skipped night move")
             valid_targets = [t for t in alive_players if t.number != p.last_healed]
             if valid_targets:
                 target = random.choice(valid_targets)
@@ -62,6 +66,7 @@ async def generate_random_moves(bus: EventBus, game: Game):
             game.night_actions.setdefault(p.user_id, {})[
                 NightAction.MANIAC_KILL
             ] = target.number
+            LOGGER.verbose_debug(f"Maniac skipped night move: send to {target.user_id}")
 
             response = ResponseBase(
                 p.user_id,
@@ -76,6 +81,9 @@ async def generate_random_moves(bus: EventBus, game: Game):
             game.night_actions.setdefault(p.user_id, {})[
                 NightAction.TWO_FACE_KILL
             ] = target.number
+            LOGGER.verbose_debug(
+                f"Two face skipped night move: send to {target.user_id}"
+            )
 
             response = ResponseBase(
                 p.user_id,
@@ -86,9 +94,11 @@ async def generate_random_moves(bus: EventBus, game: Game):
             continue
 
         if p.role == "Доктор":
+            LOGGER.verbose_debug("Doctor skipped night move")
             p.last_healed = None
 
         if p.role == "Адвокат":
+            LOGGER.verbose_debug("Lawyer skipped night move")
             p.last_alibi = None
 
 
@@ -167,7 +177,7 @@ async def resolve_night(bus: EventBus, game: Game):
             if leaders:
                 mafia_victim = game.players_by_number[random.choice(leaders)]
         else:
-            # --- ВСЯ МАФИЯ ПРОСПАЛА - СЛУЧАЙНЫЙ ВЫСТРЕЛ ---
+            LOGGER.verbose_debug("Entire mafia skipped night move")
             alive_players = game.get_alive_players()
             if alive_players and not game.simulation:
                 mafia_victim = random.choice(alive_players)
