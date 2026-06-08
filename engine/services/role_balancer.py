@@ -15,7 +15,6 @@ from game_info.player_stats import PlayerRoleStats
 from engine.models import Player
 
 from utils.stats_db import roles_database
-from utils.user_confirmation import confirm
 
 
 class RoleBalancer:
@@ -108,9 +107,6 @@ class RoleBalancer:
     def _update_balances(
         cls, stats: dict[int, PlayerRoleStats], assignments: dict[int, str]
     ) -> None:
-        if not confirm("Update role statistics for players?", True):
-            return
-
         probabilities = cls._calculate_probabilities(list(assignments.values()))
 
         for player_stats in stats.values():
