@@ -6,6 +6,7 @@ import sqlite3
 from config.settings import DB_PATH
 
 from engine.game_state import Game
+from engine.models import Player
 
 from game_info.room_and_id import get_room_id
 from game_info.teams import ROLE_TO_TEAM, Team
@@ -61,7 +62,7 @@ class WinRateDatabase:
     def update_win_rate_info(self, game: Game, winner: Team) -> None:
         room_id: int = get_room_id(game.current_preset)
         for player in game.players.values():
-            self._update_player_win_rate(player.user_id, player.role, room_id, winner)
+            self._update_player_win_rate(player, room_id, winner)
 
     def delete_player_info(self, player_id: int) -> None:
         with sqlite3.connect(self._db_path) as conn:
@@ -100,6 +101,8 @@ class WinRateDatabase:
 
             for role, wins, games in cursor.fetchall():
                 team = ROLE_TO_TEAM[role]
+                if role == "Двуликий":
+                    team = Team.MAFIA
 
                 if team not in team_stats.keys():
                     team_stats[team] = {"wins": 0, "games": 0}
@@ -137,9 +140,9 @@ class WinRateDatabase:
         return stats
 
     def _update_player_win_rate(
-        self, player_id: int, role: str, room_id: int, winner: Team
+        self, player: Player, room_id: int, winner: Team
     ) -> None:
-        win_delta = 1 if self._is_player_winner(role, winner) else 0
+        win_delta = 1 if self._is_player_winner(player, winner) else 0
 
         with sqlite3.connect(self._db_path) as conn:
             cursor = conn.cursor()
@@ -152,17 +155,17 @@ class WinRateDatabase:
                     wins = wins + ?,
                     total_games = total_games + 1
             """,
-                (player_id, role, room_id, win_delta, 1, win_delta),
+                (player.user_id, player.role, room_id, win_delta, 1, win_delta),
             )
 
             conn.commit()
 
     @staticmethod
-    def _is_player_winner(role: str, winner: Team) -> bool:
-        if role == "Двуликий":
-            return winner == Team.MAFIA
+    def _is_player_winner(player: Player, winner: Team) -> bool:
+        if player.role == "Двуликий":
+            return winner == Team.MAFIA and player.found_mafia
 
-        return winner == ROLE_TO_TEAM[role]
+        return winner == ROLE_TO_TEAM[player.role]
 
 
 win_rate_database = WinRateDatabase(DB_PATH)
