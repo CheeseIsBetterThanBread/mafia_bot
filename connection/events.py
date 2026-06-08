@@ -179,10 +179,10 @@ class MafiaChatQuery(QueryBase):
         )
 
     def get_verbose_log_string(self):
-        template_string = "[{query}]: {chat_id} - {user_id} - {text_head}"
+        template_string = "[{query}]: {chat_id} - {user_id} - {text}"
         return template_string.format(
             query=self.cmd,
             chat_id=self.chat_id,
             user_id=self.user_id,
-            text_head=self.text.split("\n")[0],
+            text=self.text,
         )
