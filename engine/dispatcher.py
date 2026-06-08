@@ -18,6 +18,7 @@ from game_info.room_and_id import get_room_id
 from game_info.teams import Team
 
 from utils.helpers import alive_sorted
+from utils.logger import LOGGER
 from utils.win_rate_db import win_rate_database
 
 from engine.game_state import Game, GameState
@@ -211,6 +212,11 @@ class EventDispatcher:
 
         roles = game.set_preset(player_count)
         game.simulation = RoleBalancer.assign_roles(list(game.players.values()), roles)
+        if game.simulation:
+            LOGGER.verbose_debug(f"Game is running in simulation mode")
+        else:
+            role_str = ", ".join(roles)
+            LOGGER.verbose_debug(f"Game is running with roles: {role_str}")
 
         game.day_starter_num = ((game.game_number - 1) % player_count) + 1
 
