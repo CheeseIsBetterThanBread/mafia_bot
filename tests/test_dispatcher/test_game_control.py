@@ -159,10 +159,13 @@ class TestGameHandlers:
         query = RunQuery(QueryType.RUN, [1], -100, 1)
         mock_engine.get_game.return_value = game
 
-        with patch(
-            "engine.services.role_balancer.RoleBalancer._update_balances",
-            return_value=None,
-        ):
+        class MockBalancer:
+            @staticmethod
+            def assign_roles(players: list[Player], roles: list[str]):
+                for i, role in enumerate(roles):
+                    players[i].role = role
+
+        with patch("engine.dispatcher.RoleBalancer", MockBalancer):
             with patch(
                 "engine.dispatcher.start_day", new_callable=AsyncMock
             ) as mock_start_day:
