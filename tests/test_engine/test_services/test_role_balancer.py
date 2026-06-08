@@ -168,18 +168,21 @@ class TestAssignRolesPlain:
         }
 
     def test_assign_roles_plain_shuffles_roles(self, players, roles, mock_stats):
-        with patch("engine.services.role_balancer.random.shuffle") as mock_shuffle:
-            RoleBalancer._assign_roles_plain(players, roles, mock_stats)
-            mock_shuffle.assert_called_once_with(roles)
+        with patch("engine.services.role_balancer.roles_database.save_player_stats"):
+            with patch("engine.services.role_balancer.random.shuffle") as mock_shuffle:
+                RoleBalancer._assign_roles_plain(players, roles, mock_stats)
+                mock_shuffle.assert_called_once_with(roles)
 
     def test_assign_roles_plain_assigns_correctly(self, players, roles, mock_stats):
-        with patch(
-            "engine.services.role_balancer.random.shuffle", side_effect=lambda x: None
-        ):
-            RoleBalancer._assign_roles_plain(players, roles, mock_stats)
+        with patch("engine.services.role_balancer.roles_database.save_player_stats"):
+            with patch(
+                "engine.services.role_balancer.random.shuffle",
+                side_effect=lambda x: None,
+            ):
+                RoleBalancer._assign_roles_plain(players, roles, mock_stats)
 
-            for i, player in enumerate(players):
-                assert player.role == roles[i]
+                for i, player in enumerate(players):
+                    assert player.role == roles[i]
 
     def test_assign_roles_plain_updates_balances(self, players, roles, mock_stats):
         with patch.object(RoleBalancer, "_update_balances") as mock_update:
@@ -189,7 +192,7 @@ class TestAssignRolesPlain:
             mock_update.assert_called_once_with(mock_stats, expected_assignments)
 
     def test_assign_roles_plain_returns_false(self, players, roles, mock_stats):
-        with patch.object(RoleBalancer, "_update_balances") as mock_update:
+        with patch.object(RoleBalancer, "_update_balances"):
             result = RoleBalancer._assign_roles_plain(players, roles, mock_stats)
         assert result is False
 
@@ -222,17 +225,19 @@ class TestAssignRolesBalance:
     def test_assign_roles_balance_selects_players_for_each_role(
         self, players, roles, mock_stats
     ):
-        with patch.object(RoleBalancer, "_select_player") as mock_select:
-            mock_select.side_effect = [1, 2, 3]
 
-            RoleBalancer._assign_roles_balance(players, roles, mock_stats)
+        with patch("engine.services.role_balancer.roles_database.save_player_stats"):
+            with patch.object(RoleBalancer, "_select_player") as mock_select:
+                mock_select.side_effect = [1, 2, 3]
 
-            assert mock_select.call_count == 3
+                RoleBalancer._assign_roles_balance(players, roles, mock_stats)
 
-            calls = [call[0] for call in mock_select.call_args_list]
-            assert calls[0][0] == "Мафия"
-            assert calls[1][0] == "Комиссар"
-            assert calls[2][0] == "Мирный житель"
+                assert mock_select.call_count == 3
+
+                calls = [call[0] for call in mock_select.call_args_list]
+                assert calls[0][0] == "Мафия"
+                assert calls[1][0] == "Комиссар"
+                assert calls[2][0] == "Мирный житель"
 
     def test_assign_roles_balance_removes_selected_players(
         self, players, roles, mock_stats
@@ -244,23 +249,26 @@ class TestAssignRolesBalance:
             selected_players.append(selected)
             return selected
 
-        with patch.object(RoleBalancer, "_select_player", side_effect=mock_select):
-            RoleBalancer._assign_roles_balance(players, roles, mock_stats)
+        with patch("engine.services.role_balancer.roles_database.save_player_stats"):
+            with patch.object(RoleBalancer, "_select_player", side_effect=mock_select):
+                RoleBalancer._assign_roles_balance(players, roles, mock_stats)
 
-            assert len(set(selected_players)) == 3
+                assert len(set(selected_players)) == 3
 
     def test_assign_roles_balance_assigns_roles_to_players(
         self, players, roles, mock_stats
     ):
-        with patch.object(RoleBalancer, "_select_player") as mock_select:
-            mock_select.side_effect = [2, 1, 3]
 
-            RoleBalancer._assign_roles_balance(players, roles, mock_stats)
+        with patch("engine.services.role_balancer.roles_database.save_player_stats"):
+            with patch.object(RoleBalancer, "_select_player") as mock_select:
+                mock_select.side_effect = [2, 1, 3]
 
-            player_roles = {player.user_id: player.role for player in players}
-            assert player_roles[2] == "Мафия"
-            assert player_roles[1] == "Комиссар"
-            assert player_roles[3] == "Мирный житель"
+                RoleBalancer._assign_roles_balance(players, roles, mock_stats)
+
+                player_roles = {player.user_id: player.role for player in players}
+                assert player_roles[2] == "Мафия"
+                assert player_roles[1] == "Комиссар"
+                assert player_roles[3] == "Мирный житель"
 
     def test_assign_roles_balance_updates_balances(self, players, roles, mock_stats):
         with patch.object(RoleBalancer, "_select_player") as mock_select:
@@ -274,10 +282,11 @@ class TestAssignRolesBalance:
                 mock_update.assert_called_once_with(mock_stats, expected_assignments)
 
     def test_assign_roles_balance_returns_false(self, players, roles, mock_stats):
-        with patch.object(RoleBalancer, "_select_player") as mock_select:
-            mock_select.side_effect = [1, 2, 3]
-            result = RoleBalancer._assign_roles_balance(players, roles, mock_stats)
-            assert result is False
+        with patch("engine.services.role_balancer.roles_database.save_player_stats"):
+            with patch.object(RoleBalancer, "_select_player") as mock_select:
+                mock_select.side_effect = [1, 2, 3]
+                result = RoleBalancer._assign_roles_balance(players, roles, mock_stats)
+                assert result is False
 
 
 class TestAssignRolesSimulation:
@@ -396,41 +405,46 @@ class TestUpdateBalances:
     def test_update_balances_alters_balance(self, mock_stats):
         assignments = {1: "Мафия", 2: "Комиссар"}
 
-        with patch.object(RoleBalancer, "_calculate_probabilities") as mock_calc:
-            mock_calc.return_value = {"Мафия": 0.5, "Комиссар": 0.5}
-            with patch(
-                "engine.services.role_balancer.roles_database.save_player_stats"
-            ):
-                RoleBalancer._update_balances(mock_stats, assignments)
+        with patch("engine.services.role_balancer.roles_database.save_player_stats"):
+            with patch.object(RoleBalancer, "_calculate_probabilities") as mock_calc:
+                mock_calc.return_value = {"Мафия": 0.5, "Комиссар": 0.5}
+                with patch(
+                    "engine.services.role_balancer.roles_database.save_player_stats"
+                ):
+                    RoleBalancer._update_balances(mock_stats, assignments)
 
-                assert mock_stats[1].role_balance["Мафия"] == 0.5 - 1.0
-                assert mock_stats[1].role_balance["Комиссар"] == 0.5
-                assert mock_stats[2].role_balance["Мафия"] == 0.5
-                assert mock_stats[2].role_balance["Комиссар"] == 0.5 - 1.0
+                    assert mock_stats[1].role_balance["Мафия"] == 0.5 - 1.0
+                    assert mock_stats[1].role_balance["Комиссар"] == 0.5
+                    assert mock_stats[2].role_balance["Мафия"] == 0.5
+                    assert mock_stats[2].role_balance["Комиссар"] == 0.5 - 1.0
 
     def test_update_balances_clamps_values(self, mock_stats):
         assignments = {1: "Мафия"}
 
-        with patch.object(RoleBalancer, "_calculate_probabilities") as mock_calc:
-            mock_calc.return_value = {"Мафия": 100.0}
-            with patch(
-                "engine.services.role_balancer.roles_database.save_player_stats"
-            ):
-                RoleBalancer._update_balances(mock_stats, assignments)
+        with patch("engine.services.role_balancer.roles_database.save_player_stats"):
+            with patch.object(RoleBalancer, "_calculate_probabilities") as mock_calc:
+                mock_calc.return_value = {"Мафия": 100.0}
+                with patch(
+                    "engine.services.role_balancer.roles_database.save_player_stats"
+                ):
+                    RoleBalancer._update_balances(mock_stats, assignments)
 
-                assert mock_stats[1].role_balance["Мафия"] <= RoleBalancer._max_balance
+                    assert (
+                        mock_stats[1].role_balance["Мафия"] <= RoleBalancer._max_balance
+                    )
 
     def test_update_balances_saves_stats(self, mock_stats):
         assignments = {1: "Мафия", 2: "Комиссар"}
 
-        with patch.object(RoleBalancer, "_calculate_probabilities") as mock_calc:
-            mock_calc.return_value = {"Мафия": 0.5, "Комиссар": 0.5}
-            with patch(
-                "engine.services.role_balancer.roles_database.save_player_stats"
-            ) as mock_save:
-                RoleBalancer._update_balances(mock_stats, assignments)
+        with patch("engine.services.role_balancer.roles_database.save_player_stats"):
+            with patch.object(RoleBalancer, "_calculate_probabilities") as mock_calc:
+                mock_calc.return_value = {"Мафия": 0.5, "Комиссар": 0.5}
+                with patch(
+                    "engine.services.role_balancer.roles_database.save_player_stats"
+                ) as mock_save:
+                    RoleBalancer._update_balances(mock_stats, assignments)
 
-                mock_save.assert_called_once_with(mock_stats)
+                    mock_save.assert_called_once_with(mock_stats)
 
     def test_update_balances_handles_missing_keys(self):
         stats = {
@@ -442,15 +456,16 @@ class TestUpdateBalances:
 
         assignments = {1: "Мафия", 2: "Комиссар"}
 
-        with patch.object(RoleBalancer, "_calculate_probabilities") as mock_calc:
-            mock_calc.return_value = {"Мафия": 0.5, "Комиссар": 0.5}
-            with patch(
-                "engine.services.role_balancer.roles_database.save_player_stats"
-            ):
-                RoleBalancer._update_balances(stats, assignments)
+        with patch("engine.services.role_balancer.roles_database.save_player_stats"):
+            with patch.object(RoleBalancer, "_calculate_probabilities") as mock_calc:
+                mock_calc.return_value = {"Мафия": 0.5, "Комиссар": 0.5}
+                with patch(
+                    "engine.services.role_balancer.roles_database.save_player_stats"
+                ):
+                    RoleBalancer._update_balances(stats, assignments)
 
-                assert "Мафия" in stats[1].role_balance
-                assert "Комиссар" in stats[2].role_balance
+                    assert "Мафия" in stats[1].role_balance
+                    assert "Комиссар" in stats[2].role_balance
 
 
 class TestCalculateProbabilities:
