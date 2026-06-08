@@ -432,3 +432,120 @@ class TestInfoHandlers:
         dispatcher.bus.emit.assert_called_once()
         response = dispatcher.bus.emit.call_args[0][0]
         assert "Игра сейчас не идет" in response.text
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("state", RUNNING_STATES)
+    async def test_handle_win_rate_success(self, dispatcher, mock_engine, game, state):
+        game.state = state
+
+        query = InfoQuery(QueryType.WIN_RATE, [1], -100, 10)
+        mock_engine.get_game.return_value = game
+
+        stats = {1: "плох", 2: "неплох"}
+
+        with patch(
+            "engine.dispatcher.win_rate_database.load_win_rate_by_players",
+            return_value=stats,
+        ):
+            await dispatcher._handle_win_rate(query)
+
+        response = dispatcher.bus.emit.call_args[0][0]
+        for player_id, player_stats in stats.items():
+            player = game.players[player_id]
+            expected = f"Игрок {player.name}:\n{str(player_stats)}\n"
+            assert expected in response.text
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("state", [GameState.LOBBY, GameState.FINISHED])
+    async def test_handle_win_rate_invalid_state(
+        self, dispatcher, mock_engine, game, state
+    ):
+        game.state = state
+
+        query = InfoQuery(QueryType.WIN_RATE, [1], -100, 10)
+        mock_engine.get_game.return_value = game
+
+        await dispatcher._handle_win_rate(query)
+
+        dispatcher.bus.emit.assert_called_once()
+        response = dispatcher.bus.emit.call_args[0][0]
+        assert "Игра сейчас не идет" in response.text
+
+    @pytest.mark.asyncio
+    async def test_handle_win_rate_no_game(self, dispatcher, mock_engine):
+        query = InfoQuery(QueryType.WIN_RATE, [1], -100, 1)
+        mock_engine.get_game.return_value = None
+
+        await dispatcher._handle_win_rate(query)
+
+        dispatcher.bus.emit.assert_called_once()
+        response = dispatcher.bus.emit.call_args[0][0]
+        assert "Игра сейчас не идет" in response.text
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("state", RUNNING_STATES)
+    async def test_handle_win_rate_teams_success(
+        self, dispatcher, mock_engine, game, state
+    ):
+        game.state = state
+
+        query = InfoQuery(QueryType.WIN_RATE_TEAMS, [1], -100, 10)
+        mock_engine.get_game.return_value = game
+
+        stats = {
+            Team.CITIZEN: 0.2,
+            Team.MAFIA: 0.5,
+            Team.MANIAC: 0.3,
+            Team.TWO_FACE: 0.4,
+        }
+
+        with patch(
+            "engine.dispatcher.win_rate_database.get_team_win_rates_by_room",
+            return_value=stats,
+        ):
+            with patch("engine.dispatcher.get_room_id", return_value=0):
+                await dispatcher._handle_win_rate_teams(query)
+
+        response = dispatcher.bus.emit.call_args[0][0]
+
+        for team, win_rate in stats.items():
+            message = ""
+            match team:
+                case Team.TWO_FACE:
+                    continue
+                case Team.CITIZEN:
+                    message += "Процент побед мирных - "
+                case Team.MAFIA:
+                    message += "Процент побед мафии - "
+                case Team.MANIAC:
+                    message += "Процент побед маньяка - "
+
+            message += f"{100 * win_rate:.1f}\n"
+            assert message in response.text
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("state", [GameState.LOBBY, GameState.FINISHED])
+    async def test_handle_win_rate_teams_invalid_state(
+        self, dispatcher, mock_engine, game, state
+    ):
+        game.state = state
+
+        query = InfoQuery(QueryType.WIN_RATE_TEAMS, [1], -100, 10)
+        mock_engine.get_game.return_value = game
+
+        await dispatcher._handle_win_rate_teams(query)
+
+        dispatcher.bus.emit.assert_called_once()
+        response = dispatcher.bus.emit.call_args[0][0]
+        assert "Игра сейчас не идет" in response.text
+
+    @pytest.mark.asyncio
+    async def test_handle_win_rate_teams_no_game(self, dispatcher, mock_engine):
+        query = InfoQuery(QueryType.WIN_RATE_TEAMS, [1], -100, 1)
+        mock_engine.get_game.return_value = None
+
+        await dispatcher._handle_win_rate_teams(query)
+
+        dispatcher.bus.emit.assert_called_once()
+        response = dispatcher.bus.emit.call_args[0][0]
+        assert "Игра сейчас не идет" in response.text
