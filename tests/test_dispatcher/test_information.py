@@ -66,33 +66,6 @@ class TestInfoHandlers:
         assert "№4" not in response.text
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize("state", [GameState.LOBBY, GameState.FINISHED])
-    async def test_handle_alive_invalid_state(
-        self, dispatcher, mock_engine, game, state
-    ):
-        game.state = state
-        mock_engine.get_game.return_value = game
-
-        query = InfoQuery(QueryType.ALIVE, [1], -100, 1)
-
-        await dispatcher._handle_alive(query)
-
-        dispatcher.bus.emit.assert_called_once()
-        response = dispatcher.bus.emit.call_args[0][0]
-        assert "Игра сейчас не идет" in response.text
-
-    @pytest.mark.asyncio
-    async def test_handle_alive_no_game(self, dispatcher, mock_engine):
-        query = InfoQuery(QueryType.ALIVE, [1], -100, 1)
-        mock_engine.get_game.return_value = None
-
-        await dispatcher._handle_alive(query)
-
-        dispatcher.bus.emit.assert_called_once()
-        response = dispatcher.bus.emit.call_args[0][0]
-        assert "Игра сейчас не идет" in response.text
-
-    @pytest.mark.asyncio
     @pytest.mark.parametrize("state", RUNNING_STATES)
     async def test_handle_description_success(
         self, dispatcher, mock_engine, game, state
@@ -121,30 +94,6 @@ class TestInfoHandlers:
             assert response.parse_mode == "HTML"
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize("state", [GameState.LOBBY, GameState.FINISHED])
-    async def test_handle_description_invalid_state(
-        self, dispatcher, mock_engine, game, state
-    ):
-        game.state = state
-
-        query = InfoQuery(QueryType.DESCRIPTION, [1], -100, 1)
-        mock_engine.get_game.return_value = game
-
-        with patch(
-            "engine.dispatcher.ROLE_DESCRIPTIONS",
-            {
-                "Мафия": "Mafia description",
-                "Доктор": "Doctor description",
-                "Мирный житель": "Civilian description",
-            },
-        ):
-            await dispatcher._handle_description(query)
-
-            dispatcher.bus.emit.assert_called_once()
-            response = dispatcher.bus.emit.call_args[0][0]
-            assert "Игра сейчас не идет" in response.text
-
-    @pytest.mark.asyncio
     @pytest.mark.parametrize("state", RUNNING_STATES)
     async def test_handle_description_unique_roles(
         self, dispatcher, mock_engine, game, state
@@ -167,17 +116,6 @@ class TestInfoHandlers:
             assert response.text.count("Мирный") == 1
 
     @pytest.mark.asyncio
-    async def test_handle_description_no_game(self, dispatcher, mock_engine):
-        query = InfoQuery(QueryType.DESCRIPTION, [1], -100, 1)
-        mock_engine.get_game.return_value = None
-
-        await dispatcher._handle_description(query)
-
-        dispatcher.bus.emit.assert_called_once()
-        response = dispatcher.bus.emit.call_args[0][0]
-        assert "Игра сейчас не идет" in response.text
-
-    @pytest.mark.asyncio
     @pytest.mark.parametrize("state", RUNNING_STATES)
     async def test_handle_roles_success(self, dispatcher, mock_engine, game, state):
         game.state = state
@@ -193,34 +131,6 @@ class TestInfoHandlers:
         assert "Набор ролей в этой игре" in response.text
         for role in game.current_preset:
             assert role in response.text
-
-    @pytest.mark.asyncio
-    @pytest.mark.parametrize("state", [GameState.LOBBY, GameState.FINISHED])
-    async def test_handle_roles_invalid_state(
-        self, dispatcher, mock_engine, game, state
-    ):
-        game.state = state
-        game.current_preset = ["Мафия", "Доктор", "Мирный", "Шериф", "Дон"]
-
-        query = InfoQuery(QueryType.ROLES, [1], -100, 1)
-        mock_engine.get_game.return_value = game
-
-        await dispatcher._handle_roles(query)
-
-        dispatcher.bus.emit.assert_called_once()
-        response = dispatcher.bus.emit.call_args[0][0]
-        assert "Игра сейчас не идет" in response.text
-
-    @pytest.mark.asyncio
-    async def test_handle_roles_no_game(self, dispatcher, mock_engine):
-        query = InfoQuery(QueryType.ROLES, [1], -100, 1)
-        mock_engine.get_game.return_value = None
-
-        await dispatcher._handle_roles(query)
-
-        dispatcher.bus.emit.assert_called_once()
-        response = dispatcher.bus.emit.call_args[0][0]
-        assert "Игра сейчас не идет" in response.text
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize("state", RUNNING_STATES)
@@ -240,23 +150,6 @@ class TestInfoHandlers:
         assert "Выставлены: 2, 4, 5" in response.text
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize("state", [GameState.LOBBY, GameState.FINISHED])
-    async def test_handle_nominated_invalid_state(
-        self, dispatcher, mock_engine, game, state
-    ):
-        game.state = state
-        game.nominated = [2, 4, 5]
-
-        query = InfoQuery(QueryType.NOMINATED, [1], -100, 1)
-        mock_engine.get_game.return_value = game
-
-        await dispatcher._handle_nominated(query)
-
-        dispatcher.bus.emit.assert_called_once()
-        response = dispatcher.bus.emit.call_args[0][0]
-        assert "Игра сейчас не идет" in response.text
-
-    @pytest.mark.asyncio
     @pytest.mark.parametrize("state", RUNNING_STATES)
     async def test_handle_nominated_empty(self, dispatcher, mock_engine, game, state):
         game.state = state
@@ -269,17 +162,6 @@ class TestInfoHandlers:
 
         response = dispatcher.bus.emit.call_args[0][0]
         assert "Пока никто не выставлен" in response.text
-
-    @pytest.mark.asyncio
-    async def test_handle_nominated_no_game(self, dispatcher, mock_engine):
-        query = InfoQuery(QueryType.NOMINATED, [1], -100, 1)
-        mock_engine.get_game.return_value = None
-
-        await dispatcher._handle_nominated(query)
-
-        dispatcher.bus.emit.assert_called_once()
-        response = dispatcher.bus.emit.call_args[0][0]
-        assert "Игра сейчас не идет" in response.text
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize("state", [GameState.VOTING, GameState.REVOTE])
@@ -402,38 +284,6 @@ class TestInfoHandlers:
         assert "№4" not in response.text
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize("state", [GameState.LOBBY, GameState.FINISHED])
-    async def test_handle_status_invalid_state(
-        self, dispatcher, mock_engine, game, state
-    ):
-        game.state = state
-        game.players[1].shurikens = 0
-        game.players[2].shurikens = 1
-        game.players[3].shurikens = 2
-        game.players[4].is_alive = False
-        game.players[5].shurikens = 0
-
-        query = InfoQuery(QueryType.STATUS, [1], -100, 10)
-        mock_engine.get_game.return_value = game
-
-        await dispatcher._handle_status(query)
-
-        dispatcher.bus.emit.assert_called_once()
-        response = dispatcher.bus.emit.call_args[0][0]
-        assert "Игра сейчас не идет" in response.text
-
-    @pytest.mark.asyncio
-    async def test_handle_status_no_game(self, dispatcher, mock_engine):
-        query = InfoQuery(QueryType.STATUS, [1], -100, 1)
-        mock_engine.get_game.return_value = None
-
-        await dispatcher._handle_status(query)
-
-        dispatcher.bus.emit.assert_called_once()
-        response = dispatcher.bus.emit.call_args[0][0]
-        assert "Игра сейчас не идет" in response.text
-
-    @pytest.mark.asyncio
     @pytest.mark.parametrize("state", RUNNING_STATES)
     async def test_handle_win_rate_success(self, dispatcher, mock_engine, game, state):
         game.state = state
@@ -454,33 +304,6 @@ class TestInfoHandlers:
             player = game.players[player_id]
             expected = f"Игрок {player.name}:\n{str(player_stats)}\n"
             assert expected in response.text
-
-    @pytest.mark.asyncio
-    @pytest.mark.parametrize("state", [GameState.LOBBY, GameState.FINISHED])
-    async def test_handle_win_rate_invalid_state(
-        self, dispatcher, mock_engine, game, state
-    ):
-        game.state = state
-
-        query = InfoQuery(QueryType.WIN_RATE, [1], -100, 10)
-        mock_engine.get_game.return_value = game
-
-        await dispatcher._handle_win_rate(query)
-
-        dispatcher.bus.emit.assert_called_once()
-        response = dispatcher.bus.emit.call_args[0][0]
-        assert "Игра сейчас не идет" in response.text
-
-    @pytest.mark.asyncio
-    async def test_handle_win_rate_no_game(self, dispatcher, mock_engine):
-        query = InfoQuery(QueryType.WIN_RATE, [1], -100, 1)
-        mock_engine.get_game.return_value = None
-
-        await dispatcher._handle_win_rate(query)
-
-        dispatcher.bus.emit.assert_called_once()
-        response = dispatcher.bus.emit.call_args[0][0]
-        assert "Игра сейчас не идет" in response.text
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize("state", RUNNING_STATES)
@@ -525,26 +348,56 @@ class TestInfoHandlers:
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize("state", [GameState.LOBBY, GameState.FINISHED])
-    async def test_handle_win_rate_teams_invalid_state(
-        self, dispatcher, mock_engine, game, state
+    @pytest.mark.parametrize(
+        "query_type,handler",
+        [
+            (QueryType.ALIVE, "_handle_alive"),
+            (QueryType.DESCRIPTION, "_handle_description"),
+            (QueryType.ROLES, "_handle_roles"),
+            (QueryType.NOMINATED, "_handle_nominated"),
+            (QueryType.STATUS, "_handle_status"),
+            (QueryType.WIN_RATE, "_handle_win_rate"),
+            (QueryType.WIN_RATE_TEAMS, "_handle_win_rate_teams"),
+        ],
+    )
+    async def test_handle_info_invalid_state(
+        self, dispatcher, mock_engine, game, state, query_type, handler
     ):
         game.state = state
 
-        query = InfoQuery(QueryType.WIN_RATE_TEAMS, [1], -100, 10)
+        query = InfoQuery(query_type, [1], -100, 10)
         mock_engine.get_game.return_value = game
 
-        await dispatcher._handle_win_rate_teams(query)
+        dispatcher_handler = getattr(dispatcher, handler, None)
+        assert dispatcher_handler
+        await dispatcher_handler(query)
 
         dispatcher.bus.emit.assert_called_once()
         response = dispatcher.bus.emit.call_args[0][0]
         assert "Игра сейчас не идет" in response.text
 
     @pytest.mark.asyncio
-    async def test_handle_win_rate_teams_no_game(self, dispatcher, mock_engine):
-        query = InfoQuery(QueryType.WIN_RATE_TEAMS, [1], -100, 1)
+    @pytest.mark.parametrize(
+        "query_type,handler",
+        [
+            (QueryType.ALIVE, "_handle_alive"),
+            (QueryType.DESCRIPTION, "_handle_description"),
+            (QueryType.ROLES, "_handle_roles"),
+            (QueryType.NOMINATED, "_handle_nominated"),
+            (QueryType.STATUS, "_handle_status"),
+            (QueryType.WIN_RATE, "_handle_win_rate"),
+            (QueryType.WIN_RATE_TEAMS, "_handle_win_rate_teams"),
+        ],
+    )
+    async def test_handle_info_no_game(
+        self, dispatcher, mock_engine, query_type, handler
+    ):
+        query = InfoQuery(query_type, [1], -100, 1)
         mock_engine.get_game.return_value = None
 
-        await dispatcher._handle_win_rate_teams(query)
+        dispatcher_handler = getattr(dispatcher, handler, None)
+        assert dispatcher_handler
+        await dispatcher_handler(query)
 
         dispatcher.bus.emit.assert_called_once()
         response = dispatcher.bus.emit.call_args[0][0]
