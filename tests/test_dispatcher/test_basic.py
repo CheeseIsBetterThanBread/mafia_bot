@@ -47,6 +47,8 @@ class TestEventDispatcher:
             (QueryType.NOMINATED, "_handle_nominated"),
             (QueryType.VOTED, "_handle_voted"),
             (QueryType.STATUS, "_handle_status"),
+            (QueryType.WIN_RATE, "_handle_win_rate"),
+            (QueryType.WIN_RATE_TEAMS, "_handle_win_rate_teams"),
             (QueryType.SPEECH, "_handle_speech"),
             (QueryType.END_SPEECH, "_handle_end_speech"),
             (QueryType.PRE_NOMINATE, "_handle_pre_nominate"),
