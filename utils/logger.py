@@ -4,7 +4,14 @@ from datetime import datetime
 from pathlib import Path
 from logging.handlers import RotatingFileHandler
 
-from config.settings import LOG_FILE, VERBOSE_LOG_FILE, MAX_BYTES_PER_FILE, BACKUP_FILES, LOG_FORMAT
+from config.settings import (
+    LOG_FILE,
+    VERBOSE_LOG_FILE,
+    MAX_BYTES_PER_FILE,
+    BACKUP_FILES,
+    LOG_FORMAT,
+)
+
 
 def add_custom_methods(logger):
     verbose_logs = []
@@ -37,12 +44,12 @@ def add_custom_methods(logger):
             print("No verbose logs to save")
             return
 
-        with open(VERBOSE_LOG_FILE, 'w', encoding='utf-8') as f:
+        with open(VERBOSE_LOG_FILE, "w", encoding="utf-8") as f:
             f.write(f"Verbose Debug Log\n")
             f.write(f"Generated: {datetime.now()}\n")
             f.write(f"Total entries: {len(verbose_logs)}\n")
             f.write("=" * 80 + "\n\n")
-            f.write('\n'.join(verbose_logs))
+            f.write("\n".join(verbose_logs))
 
     def clear_verbose_log():
         verbose_logs.clear()
@@ -56,6 +63,7 @@ def add_custom_methods(logger):
     logger.get_verbose_log_count = get_verbose_log_count
 
     return logger
+
 
 def setup_rotating_logger(log_file, max_bytes, backup_count, logger_name="App"):
     logger = logging.getLogger(logger_name)
@@ -72,5 +80,6 @@ def setup_rotating_logger(log_file, max_bytes, backup_count, logger_name="App"):
     return logger
 
 
-LOGGER = setup_rotating_logger(LOG_FILE, MAX_BYTES_PER_FILE, BACKUP_FILES)
-add_custom_methods(LOGGER)
+LOGGER = add_custom_methods(
+    setup_rotating_logger(LOG_FILE, MAX_BYTES_PER_FILE, BACKUP_FILES)
+)
