@@ -414,11 +414,9 @@ class EventDispatcher:
         await self.__send_response_base(query.chat_id, text, valid=True)
 
     async def _handle_win_rate(self, query: InfoQuery):
-        game: Game = self.engine.get_game(query.chat_id)
-        if not game:
-            await self.__send_response_base(
-                query.chat_id, "Нет игры в этом чате", valid=False
-            )
+        game: Game = await self.__validate_game(query)
+        if game is None:
+            return
 
         player_ids: list[int] = [player.user_id for player in game.players.values()]
         stats = win_rate_database.load_win_rate_by_players(player_ids)
